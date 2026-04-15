@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#1b4332">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>整体院TAK 会計・顧客管理</title>
+<style>
+:root{--g1:#0c3b2e;--g2:#1b4332;--g3:#2d6a4f;--g4:#f0fdf4;--r1:#991b1b;--b1:#1d4ed8;--bg:#f7f8f9;--white:#fff;--bdr:#f0f0f0;--gray:#9ca3af;--dark:#111;--ff:'Helvetica Neue','Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+body{font-family:var(--ff);background:var(--bg);color:var(--dark);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+input,textarea,select,button{font-family:var(--ff)}
+input:focus,textarea:focus,select:focus{border-color:var(--g3)!important;outline:none}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-10px)}10%{opacity:1;transform:translate(-50%,0)}85%{opacity:1}100%{opacity:0}}
+.fade{animation:fadeIn .2s ease}
+#app{max-width:480px;margin:0 auto;min-height:100vh;padding-bottom:72px}
+.hdr{background:linear-gradient(135deg,var(--g1),var(--g2) 40%,var(--g3));padding:16px 18px 12px;color:#fff;display:flex;align-items:center;gap:10}
+.logo{width:40px;height:40px;border-radius:9px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;letter-spacing:1.5px;flex-shrink:0}
+.hdr-t{font-size:17px;font-weight:700}.hdr-s{font-size:10px;opacity:.6;margin-top:1px}
+.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:var(--g2);color:#fff;padding:9px 26px;border-radius:22px;font-size:13px;z-index:200;box-shadow:0 6px 24px rgba(0,0,0,.3);animation:toast 2s ease forwards;pointer-events:none}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:flex;background:#fff;border-top:1px solid #e5e7eb;padding:5px 0 env(safe-area-inset-bottom,6px);z-index:100}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;background:none;border:none;padding:5px 0;cursor:pointer;color:var(--gray);font-size:9px;font-weight:600;transition:color .15s}
+.nav button.active{color:var(--g2)}
+.nav button .ni{font-size:17px}.nav button .ni.big{font-size:22px}
+.main{padding:0 14px}
+.date-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0 6px}
+.arr{width:36px;height:36px;border-radius:9px;border:1px solid #e5e7eb;background:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#374151}
+.date-c{display:flex;align-items:center;gap:8px}
+.date-m{font-size:16px;font-weight:700}.dow{font-size:12px;color:var(--gray);margin-left:3px;font-weight:400}
+.today-c{font-size:10px;padding:2px 9px;border-radius:9px;border:1px solid var(--g3);background:var(--g4);color:var(--g2);cursor:pointer;font-weight:600}
+.c2{display:flex;gap:8px;margin-bottom:10px}
+.card{flex:1;padding:12px;border-radius:13px;color:#fff;display:flex;flex-direction:column;gap:2px}
+.cL{font-size:9px;opacity:.7;font-weight:600;letter-spacing:.5px}.cV{font-size:19px;font-weight:800;letter-spacing:-.5px}.cM{font-size:10px;opacity:.6}
+.qrow{display:flex;gap:7px;margin-bottom:10px}
+.qbtn{flex:1;padding:9px 5px;border-radius:11px;border:none;font-size:11px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.qbtn .qi{font-size:17px}
+.churn-ban{width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid #fbbf24;background:#fffbeb;color:#92400e;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:10px;text-align:left}
+.sec{margin-bottom:14px}.sec-h{font-size:10px;font-weight:800;color:var(--gray);margin:0 0 6px;letter-spacing:1.2px;text-transform:uppercase}
+.list{display:flex;flex-direction:column;gap:5px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#fff;border-radius:11px;border:1px solid var(--bdr)}
+.row-btn{cursor:pointer;width:100%;text-align:left;font-family:var(--ff);background:#fff}
+.row-sel{border-color:var(--g3)!important;background:var(--g4)!important}
+.rT{font-size:13px;font-weight:600;color:var(--dark)}.rS{font-size:10px;color:var(--gray);margin-top:1px}.rA{font-size:14px;font-weight:800}
+.empty{text-align:center;color:var(--gray);font-size:12px;padding:20px 0}
+.cno{font-size:11px;color:var(--gray);font-weight:500;margin-right:4px}
+.new-b{font-size:9px;background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:6px;font-weight:700;margin-left:4px}
+.fH{display:flex;align-items:center;gap:8px;padding:12px 0 8px}
+.fT{margin:0;font-size:16px;font-weight:700;flex:1}
+.back{font-size:12px;color:var(--g3);background:none;border:none;font-weight:700;cursor:pointer;padding:0}
+.badge{font-size:11px;font-weight:700;color:var(--g3);background:var(--g4);padding:2px 9px;border-radius:9px}
+.label{display:block;font-size:10px;font-weight:800;color:var(--gray);margin-bottom:5px;letter-spacing:.7px;text-transform:uppercase}
+.inp{width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 12px;font-size:14px;background:#fff;color:var(--dark)}
+.search{width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:9px 12px;font-size:13px;background:#fff;margin-bottom:8px}
+.skip-btn{display:block;width:100%;text-align:center;padding:9px;color:var(--gray);background:none;border:1px dashed #d1d5db;border-radius:9px;font-size:12px;cursor:pointer;margin-bottom:8px}
+.menu-grid{display:flex;flex-wrap:wrap;gap:7px}
+.menu-card{padding:9px 12px;border-radius:10px;border:2px solid #e5e7eb;background:#fff;cursor:pointer;display:flex;flex-direction:column;gap:2px;transition:border-color .15s}
+.menu-card.sel{border-color:var(--g3)}
+.mN{font-size:12px;font-weight:600}.mP{font-size:11px;color:var(--gray)}.mC{font-size:10px;color:var(--gray)}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:6px 13px;border-radius:18px;border:1.5px solid #e5e7eb;background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:#374151;transition:all .15s}
+.chip.on{border-color:var(--g3);background:var(--g3);color:#fff}
+.chip.on-r{border-color:var(--r1);background:var(--r1);color:#fff}
+.amt-w{display:flex;align-items:center;background:#fff;border-radius:11px;border:1.5px solid #e5e7eb;padding:0 12px}
+.ys{font-size:18px;font-weight:800;color:var(--gray);margin-right:4px}
+.amt-f{flex:1;border:none;outline:none;font-size:22px;font-weight:800;padding:10px 0;background:transparent;color:var(--dark)}
+.dots{display:flex;gap:4px}.dot{width:7px;height:7px;border-radius:50%;transition:background .2s}
+.mbtn{width:100%;padding:12px 0;border-radius:11px;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer}
+.det-card{background:#fff;border-radius:13px;border:1px solid var(--bdr);overflow:hidden;margin-bottom:10px}
+.det-row{display:flex;justify-content:space-between;padding:9px 14px;border-bottom:1px solid #fafafa}
+.dL{font-size:11px;color:var(--gray)}.dV{font-size:12px;font-weight:600}
+.act-row{display:flex;gap:7px;margin-bottom:14px}
+.act-btn{flex:1;padding:9px 5px;border-radius:9px;border:1px solid #e5e7eb;background:#fff;font-size:11px;font-weight:600;cursor:pointer;color:#374151}
+.del-btn{width:100%;padding:10px 0;border-radius:11px;border:1.5px solid #fecaca;background:#fff;color:var(--r1);font-size:12px;font-weight:600;cursor:pointer}
+.confirm{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#fef2f2;border-radius:11px;margin-top:6px}
+.sm-btn{padding:6px 14px;border-radius:7px;border:1px solid #e5e7eb;background:#fff;font-size:11px;font-weight:600;cursor:pointer;color:#374151}
+.cfg-panel{padding:12px 0;animation:fadeIn .2s ease}
+.bar-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.bar-lbl{font-size:11px;color:var(--gray);width:72px;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{flex:1;height:20px;background:#f3f4f6;border-radius:5px;overflow:hidden}
+.bar-fill{height:100%;border-radius:5px;transition:width .3s}
+.bar-val{font-size:11px;font-weight:700;width:64px;text-align:right;flex-shrink:0}
+textarea{resize:vertical}
+.mt8{margin-top:8px}.mt10{margin-top:10px}.mt12{margin-top:12px}.mt14{margin-top:14px}.mt16{margin-top:16px}.mt18{margin-top:18px}.mt32{margin-top:32px}.mb8{margin-bottom:8px}.mb10{margin-bottom:10px}.mb12{margin-bottom:12px}.mb14{margin-bottom:14px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ═══════════════════════════════════════════════
+// 整体院TAK 会計・顧客管理 v3 — Single HTML
+// ═══════════════════════════════════════════════
+
+const SK="tak-v3",SKC="tak-v3-cfg";
+const DOW=["日","月","火","水","木","金","土"];
+const td=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const yen=n=>"¥"+Number(n||0).toLocaleString();
+const mk=d=>d?d.slice(0,7):"";
+const h=s=>{const d=document.createElement("div");d.textContent=s;return d.innerHTML};
+
+const DCFG={
+  menus:[
+    {id:"trial",name:"初回体験コース",price:2980,category:"整体売上",active:true},
+    {id:"deep",name:"深層リリース整体",price:11000,category:"整体売上",active:true},
+    {id:"monthly",name:"月イチ整体",price:8800,category:"整体売上",active:true},
+    {id:"diet3",name:"ダイエット(3ヶ月)",price:330000,category:"栄養売上",active:true},
+    {id:"diet1",name:"ダイエット(1ヶ月)",price:138000,category:"栄養売上",active:true},
+    {id:"indiba",name:"インディバ",price:8800,category:"美容売上",active:true},
+    {id:"other",name:"その他",price:0,category:"整体売上",active:true},
+  ],
+  payments:["現金","PayPay","クレジット","Square","銀行振込","回数券"],
+  genders:["女性","男性"],
+  ages:["20代","30代","40代","50代","60代","70代以上"],
+  areas:["袋井市","磐田市","掛川市","浜松市","その他"],
+  sources:["Google検索","Instagram","LINE","チラシ","紹介","看板","HP","Meta広告","その他"],
+  expenseCats:["消耗品","交通費","広告宣伝費","通信費","地代家賃","外注費","研修費","支払手数料","雑費","その他"],
+  churnDays:30,
+  salesCategories:["整体売上","栄養売上","美容売上"],
+  customerFields:[
+    {key:"name",label:"名前",required:true,active:true},
+    {key:"kana",label:"ふりがな",required:false,active:true},
+    {key:"gender",label:"性別",required:false,active:true},
+    {key:"age",label:"年代",required:false,active:true},
+    {key:"phone",label:"電話番号",required:false,active:true},
+    {key:"area",label:"エリア",required:false,active:true},
+    {key:"source",label:"集客方法",required:false,active:true},
+  ],
+};
+
+let db,cfg,state={tab:"home",sub:null,ctx:{},date:td(),month:td().slice(0,7),q:"",step:1};
+
+function loadDB(){try{const d=localStorage.getItem(SK);db=d?JSON.parse(d):{customers:[],sales:[],expenses:[],tickets:[],notes:[],nextCustNo:1}}catch(e){db={customers:[],sales:[],expenses:[],tickets:[],notes:[],nextCustNo:1}}}
+function saveDB(){localStorage.setItem(SK,JSON.stringify(db))}
+function loadCfg(){try{const c=localStorage.getItem(SKC);cfg=c?{...DCFG,...JSON.parse(c)}:{...DCFG}}catch(e){cfg={...DCFG}}}
+function saveCfg(){localStorage.setItem(SKC,JSON.stringify(cfg))}
+
+function flash(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+function go(tab,sub,ctx){state={...state,tab,sub:sub||null,ctx:ctx||{},q:"",step:1};render()}
+
+// ═══ RENDER ═══
+function render(){
+  const app=document.getElementById("app");
+  let html=`<header class="hdr"><div class="logo">TAK</div><div><div class="hdr-t">整体院TAK</div><div class="hdr-s">会計・顧客管理</div></div></header>`;
+  html+=`<div class="main">`;
+  const {tab,sub}=state;
+  if(tab==="home") html+=renderHome();
+  else if(tab==="sale") html+=renderSale();
+  else if(tab==="expense") html+=renderExpense();
+  else if(tab==="cust"&&!sub) html+=renderCustList();
+  else if(tab==="cust"&&sub==="add") html+=renderCustForm();
+  else if(tab==="cust"&&sub==="detail") html+=renderCustDetail();
+  else if(tab==="tickets"&&!sub) html+=renderTicketList();
+  else if(tab==="tickets"&&sub==="add") html+=renderTicketForm();
+  else if(tab==="notes"&&!sub) html+=renderNoteList();
+  else if(tab==="notes"&&sub==="add") html+=renderNoteForm();
+  else if(tab==="analytics") html+=renderAnalytics();
+  else if(tab==="churn") html+=renderChurn();
+  else if(tab==="config") html+=renderConfig();
+  html+=`</div>`;
+  html+=renderNav();
+  app.innerHTML=html;
+  bindEvents();
+  window.scrollTo(0,0);
+}
+
+// ═══ NAV ═══
+function renderNav(){
+  const tabs=[["home","🏠","ホーム"],["cust","👤","顧客"],["sale","＋","記録"],["analytics","📊","分析"],["config","⚙","設定"]];
+  return `<nav class="nav">${tabs.map(([id,ic,lb])=>`<button onclick="go('${id}')" class="${state.tab===id?"active":""}"><span class="ni${id==="sale"?" big":""}">${ic}</span>${lb}</button>`).join("")}</nav>`;
+}
+
+// ═══ HOME ═══
+function renderHome(){
+  const d=state.date,ds=db.sales.filter(s=>s.date===d),de=db.expenses.filter(e=>e.date===d);
+  const ts=ds.reduce((a,s)=>a+(s.amount||0),0);
+  const m=mk(d),ms=db.sales.filter(s=>mk(s.date)===m);
+  const mT=ms.reduce((a,s)=>a+(s.amount||0),0),mN=ms.filter(s=>s.isNew).length,mR=ms.length-mN;
+  const dow=DOW[new Date(d).getDay()];
+  const [,mm,dd2]=d.split("-");
+
+  // churn
+  const cut=new Date();cut.setDate(cut.getDate()-cfg.churnDays);const cs=cut.toISOString().slice(0,10);
+  const churnN=db.customers.filter(c=>{const l=db.sales.filter(s=>s.customerId===c.id).sort((a,b)=>b.date.localeCompare(a.date))[0];return l&&l.date<cs}).length;
+
+  let o=`<div class="fade">`;
+  o+=`<div class="date-row"><button class="arr" onclick="shiftDate(-1)">◀</button><div class="date-c"><span class="date-m">${parseInt(mm)}月${parseInt(dd2)}日<span class="dow">(${dow})</span></span>${d!==td()?`<button class="today-c" onclick="setDate('${td()}')">今日</button>`:""}</div><button class="arr" onclick="shiftDate(1)">▶</button></div>`;
+  o+=`<div class="c2"><div class="card" style="background:linear-gradient(135deg,#1b4332,#2d6a4f)"><span class="cL">本日売上</span><span class="cV">${yen(ts)}</span><span class="cM">${ds.length}件</span></div><div class="card" style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8)"><span class="cL">今月累計</span><span class="cV">${yen(mT)}</span><span class="cM">新規${mN} / リピート${mR}</span></div></div>`;
+  o+=`<div class="qrow"><button class="qbtn" style="background:#f0fdf4;color:#1b4332" onclick="go('sale')"><span class="qi">＋</span>売上入力</button><button class="qbtn" style="background:#fef2f2;color:#991b1b" onclick="go('expense')"><span class="qi">−</span>経費</button><button class="qbtn" style="background:#eff6ff;color:#1e40af" onclick="go('notes','add')"><span class="qi">📝</span>カルテ</button></div>`;
+  o+=`<a href="monshin.html" style="display:block;width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid #2D7A5F;background:#F2F8F5;color:#2D7A5F;font-size:13px;font-weight:600;text-decoration:none;text-align:center;margin-bottom:10px">📋 新規患者に問診票を記入してもらう →</a>`;
+  if(churnN>0) o+=`<button class="churn-ban" onclick="go('churn')">⚠ ${cfg.churnDays}日以上未来院: ${churnN}名 → 確認する</button>`;
+  o+=`<div class="sec"><h3 class="sec-h">本日の取引</h3>`;
+  if(ds.length===0&&de.length===0) o+=`<p class="empty">取引なし</p>`;
+  else{
+    o+=`<div class="list">`;
+    ds.forEach(s=>{const c=db.customers.find(x=>x.id===s.customerId);o+=`<div class="row"><div><div class="rT">${h(s.menuName)}${s.isNew?'<span class="new-b">新規</span>':""}</div><div class="rS">${h(c?.name||"—")} / ${h(s.payment)}</div></div><span class="rA" style="color:#2d6a4f">+${yen(s.amount)}</span></div>`});
+    de.forEach(e=>{o+=`<div class="row"><div><div class="rT">${h(e.category)}</div><div class="rS">${h(e.memo||"")}</div></div><span class="rA" style="color:#991b1b">-${yen(e.amount)}</span></div>`});
+    o+=`</div>`;
+  }
+  o+=`</div></div>`;return o;
+}
+
+// ═══ SALE ═══
+function renderSale(){
+  const step=state.step,custId=state.ctx.custId||"";
+  let o=`<div class="fade"><div class="fH"><button class="back" onclick="${step>1?`setState('step',${step-1})`:"go('home')"}">← 戻る</button><h2 class="fT">売上入力</h2><div class="dots">${[1,2,3].map(n=>`<div class="dot" style="background:${step>=n?"#2d6a4f":"#e5e7eb"}"></div>`).join("")}</div></div>`;
+
+  if(step===1){
+    o+=`<input class="search" placeholder="顧客名 / No.で検索..." oninput="setState('q',this.value)" value="${h(state.q||"")}">`;
+    o+=`<button class="skip-btn" onclick="pickCust('')">顧客なしで続ける →</button>`;
+    const q=state.q||"";
+    const list=db.customers.filter(c=>!q||c.name.includes(q)||(c.kana||"").includes(q)||(c.custNo+"").includes(q)).slice(0,15);
+    o+=`<div class="list">${list.map(c=>`<button class="row row-btn" onclick="pickCust('${c.id}')"><div><div class="rT"><span class="cno">#${c.custNo}</span> ${h(c.name)}</div><div class="rS">${h(c.gender||"")} ${h(c.age||"")} ${h(c.area||"")}</div></div><span style="color:#9ca3af">▶</span></button>`).join("")}</div>`;
+    o+=`<button class="mbtn mt10" style="background:#374151" onclick="go('cust','add')">＋ 新規顧客登録</button>`;
+  }
+  else if(step===2){
+    o+=`<label class="label">日付</label><input type="date" class="inp" value="${state.ctx.saleDate||td()}" onchange="state.ctx.saleDate=this.value">`;
+    o+=`<label class="label mt14">メニュー</label><div class="menu-grid">`;
+    cfg.menus.filter(m=>m.active).forEach(m=>{
+      o+=`<button class="menu-card${state.ctx.menuId===m.id?" sel":""}" onclick="pickMenu('${m.id}')"><div class="mN">${h(m.name)}</div>${m.price>0?`<div class="mP">${yen(m.price)}</div>`:""}<div class="mC">${h(m.category)}</div></button>`;
+    });
+    o+=`</div>`;
+  }
+  else if(step===3){
+    const m=cfg.menus.find(x=>x.id===state.ctx.menuId);
+    o+=`<div class="card mb14" style="background:linear-gradient(135deg,#1b4332,#2d6a4f)"><span class="cL">${h(m?.name||"")}</span><div style="display:flex;align-items:center;gap:6px"><span style="font-size:18px;opacity:.7">¥</span><input type="number" id="sale-amt" class="amt-f" style="background:transparent;border:none;color:#fff;font-size:26px;font-weight:800;width:100%;outline:none" value="${state.ctx.amount||""}"></div><span class="cM">${h(m?.category||"")}</span></div>`;
+    o+=`<label class="label">支払方法</label><div class="chip-row">${cfg.payments.map(p=>`<button class="chip${state.ctx.payment===p?" on":""}" onclick="setState('ctx.payment','${p}');render()">${h(p)}</button>`).join("")}</div>`;
+    o+=`<label class="label mt14">メモ</label><input class="inp" id="sale-memo" placeholder="任意" value="${h(state.ctx.memo||"")}">`;
+    o+=`<button class="mbtn mt18" style="background:#1b4332" onclick="saveSale()">記録する</button>`;
+  }
+  o+=`</div>`;return o;
+}
+
+// ═══ EXPENSE ═══
+function renderExpense(){
+  let o=`<div class="fade"><div class="fH"><button class="back" onclick="go('home')">← 戻る</button><h2 class="fT">経費入力</h2></div>`;
+  o+=`<label class="label">日付</label><input type="date" class="inp" id="exp-date" value="${td()}">`;
+  o+=`<label class="label mt14">カテゴリ</label><div class="chip-row">${cfg.expenseCats.map(c=>`<button class="chip${state.ctx.expCat===c?" on-r":""}" onclick="setState('ctx.expCat','${c}');render()">${h(c)}</button>`).join("")}</div>`;
+  o+=`<label class="label mt14">金額</label><div class="amt-w"><span class="ys">¥</span><input type="number" class="amt-f" id="exp-amt" placeholder="0"></div>`;
+  o+=`<label class="label mt14">メモ</label><input class="inp" id="exp-memo" placeholder="例: 施術用タオル">`;
+  o+=`<button class="mbtn mt18" style="background:#991b1b" onclick="saveExpense()">経費を記録</button></div>`;
+  return o;
+}
+
+// ═══ CUSTOMER LIST ═══
+function renderCustList(){
+  let o=`<div class="fade"><div class="fH"><h2 class="fT">顧客一覧</h2><span class="badge">${db.customers.length}名</span></div>`;
+  o+=`<input class="search" placeholder="名前 / No.で検索..." oninput="setState('q',this.value)" value="${h(state.q||"")}">`;
+  o+=`<button class="mbtn mb10" style="background:#374151" onclick="go('cust','add')">＋ 新規顧客登録</button>`;
+  const q=state.q||"";
+  let list=db.customers.filter(c=>!q||c.name.includes(q)||(c.kana||"").includes(q)||(c.custNo+"").includes(q));
+  list.sort((a,b)=>{
+    const la=db.sales.filter(s=>s.customerId===a.id).sort((x,y)=>y.date.localeCompare(x.date))[0]?.date||"";
+    const lb=db.sales.filter(s=>s.customerId===b.id).sort((x,y)=>y.date.localeCompare(x.date))[0]?.date||"";
+    return lb.localeCompare(la);
+  });
+  o+=`<div class="list">${list.map(c=>{
+    const v=db.sales.filter(s=>s.customerId===c.id).length;
+    const ld=db.sales.filter(s=>s.customerId===c.id).sort((a,b)=>b.date.localeCompare(a.date))[0]?.date;
+    return `<button class="row row-btn" onclick="go('cust','detail',{custId:'${c.id}'})"><div><div class="rT"><span class="cno">#${c.custNo}</span> ${h(c.name)}</div><div class="rS">${h(c.gender||"")} ${h(c.age||"")} ${h(c.area||"")} — ${h(c.source||"")}</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:700;color:#2d6a4f">${v}回</div><div style="font-size:10px;color:#9ca3af">${ld?ld.slice(5):"—"}</div></div></button>`;
+  }).join("")}</div></div>`;
+  return o;
+}
+
+// ═══ CUSTOMER FORM ═══
+function renderCustForm(){
+  let o=`<div class="fade"><div class="fH"><button class="back" onclick="go('cust')">← 戻る</button><h2 class="fT">新規顧客登録</h2></div>`;
+  o+=`<div class="row mb14" style="background:#f0fdf4;border-color:#2d6a4f"><span style="font-size:13px;color:#2d6a4f;font-weight:700">顧客No. #${db.nextCustNo||db.customers.length+1}（自動採番）</span></div>`;
+  cfg.customerFields.filter(f=>f.active).forEach(f=>{
+    o+=`<div class="mb14"><label class="label">${h(f.label)} ${f.required?"*":""}</label>`;
+    if(f.key==="gender") o+=`<div class="chip-row">${cfg.genders.map(g=>`<button class="chip" onclick="this.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));this.classList.add('on');document.getElementById('cf-gender').value='${g}'">${g}</button>`).join("")}<input type="hidden" id="cf-gender"></div>`;
+    else if(f.key==="age") o+=`<div class="chip-row">${cfg.ages.map(a=>`<button class="chip" onclick="this.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));this.classList.add('on');document.getElementById('cf-age').value='${a}'">${a}</button>`).join("")}<input type="hidden" id="cf-age"></div>`;
+    else if(f.key==="area") o+=`<div class="chip-row">${cfg.areas.map(a=>`<button class="chip" onclick="this.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));this.classList.add('on');document.getElementById('cf-area').value='${a}'">${a}</button>`).join("")}<input type="hidden" id="cf-area"></div>`;
+    else if(f.key==="source") o+=`<div class="chip-row">${cfg.sources.map(s=>`<button class="chip" onclick="this.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));this.classList.add('on');document.getElementById('cf-source').value='${s}'">${s}</button>`).join("")}<input type="hidden" id="cf-source"></div>`;
+    else if(f.key==="phone") o+=`<input type="tel" class="inp" id="cf-phone" placeholder="090-xxxx-xxxx">`;
+    else o+=`<input class="inp" id="cf-${f.key}" placeholder="${f.key==="name"?"例: 山田花子":f.key==="kana"?"やまだ はなこ":""}">`;
+    o+=`</div>`;
+  });
+  o+=`<button class="mbtn mt8" style="background:#1b4332" onclick="saveCust()">登録する</button></div>`;
+  return o;
+}
+
+// ═══ CUSTOMER DETAIL ═══
+function renderCustDetail(){
+  const c=db.customers.find(x=>x.id===state.ctx.custId);if(!c)return`<p>Not found</p>`;
+  const sales=db.sales.filter(s=>s.customerId===c.id).sort((a,b)=>b.date.localeCompare(a.date));
+  const ltv=sales.reduce((a,s)=>a+(s.amount||0),0),avg=sales.length?Math.round(ltv/sales.length):0;
+  const notes=db.notes.filter(n=>n.customerId===c.id).sort((a,b)=>b.date.localeCompare(a.date));
+  const tickets=db.tickets.filter(t=>t.customerId===c.id&&t.remaining>0);
+
+  let o=`<div class="fade"><div class="fH"><button class="back" onclick="go('cust')">← 一覧</button><h2 class="fT"><span class="cno">#${c.custNo}</span> ${h(c.name)}</h2></div>`;
+  o+=`<div class="card mb10" style="background:linear-gradient(135deg,#1b4332,#2d6a4f)"><div style="display:flex;justify-content:space-between;width:100%;flex-wrap:wrap;gap:8px"><div><span class="cL">来院回数</span><span class="cV">${sales.length}回</span></div><div><span class="cL">平均単価</span><span class="cV">${yen(avg)}</span></div><div><span class="cL">累計LTV</span><span class="cV">${yen(ltv)}</span></div></div></div>`;
+  o+=`<div class="det-card">`;
+  [["性別",c.gender],["年代",c.age],["電話",c.phone],["生年月日",c.birthday],["エリア",c.area],["集客",c.source],["登録日",c.createdAt],["最終来院",sales[0]?.date],["登録元",c.fromMonshin?"問診票":"手動"]].forEach(([l,v])=>{if(v)o+=`<div class="det-row"><span class="dL">${l}</span><span class="dV">${h(v)}</span></div>`});
+  o+=`</div>`;
+  o+=`<div class="act-row"><button class="act-btn" onclick="go('sale',null,{custId:'${c.id}'})">＋ 売上</button><button class="act-btn" onclick="go('notes','add',{custId:'${c.id}'})">📝 カルテ</button><button class="act-btn" onclick="go('tickets','add')">🎟 回数券</button></div>`;
+
+  if(tickets.length>0){o+=`<div class="sec"><h3 class="sec-h">回数券</h3>`;tickets.forEach(t=>{o+=`<div class="row" style="border-left:3px solid #10b981"><div><div class="rT">${h(t.menuName)}</div><div class="rS">購入: ${t.purchaseDate}</div></div><div style="text-align:right"><span style="font-size:18px;font-weight:800;color:#2d6a4f">${t.remaining}</span><span style="font-size:11px;color:#9ca3af">/${t.total}</span></div></div>`});o+=`</div>`}
+  if(notes.length>0){o+=`<div class="sec"><h3 class="sec-h">カルテ</h3>`;notes.slice(0,5).forEach(n=>{o+=`<div class="row"><div><div class="rT">${n.date} ${n.menuName?`/ ${h(n.menuName)}`:""}</div><div style="font-size:13px;color:#374151;margin-top:3px;line-height:1.5">${h(n.content)}</div></div></div>`});o+=`</div>`}
+  if(sales.length>0){o+=`<div class="sec"><h3 class="sec-h">施術履歴</h3>`;sales.slice(0,10).forEach(s=>{o+=`<div class="row"><div><div class="rT">${h(s.menuName)}${s.isNew?'<span class="new-b">新規</span>':""}</div><div class="rS">${s.date} / ${h(s.payment)}</div></div><span class="rA" style="color:#2d6a4f">${yen(s.amount)}</span></div>`});o+=`</div>`}
+  o+=`<button class="del-btn" onclick="deleteCust('${c.id}')">この顧客を削除</button></div>`;
+  return o;
+}
+
+// ═══ TICKETS ═══
+function renderTicketList(){
+  const active=db.tickets.filter(t=>t.remaining>0);
+  let o=`<div class="fade"><div class="fH"><h2 class="fT">回数券管理</h2></div>`;
+  o+=`<button class="mbtn mb10" style="background:#374151" onclick="go('tickets','add')">＋ 回数券発行</button>`;
+  if(!active.length)o+=`<p class="empty">有効な回数券なし</p>`;
+  active.forEach(t=>{const c=db.customers.find(x=>x.id===t.customerId);o+=`<div class="row" style="border-left:3px solid #10b981"><div><div class="rT">${h(c?.name||"—")}</div><div class="rS">${h(t.menuName)}</div></div><div style="text-align:right"><span style="font-size:20px;font-weight:800;color:#2d6a4f">${t.remaining}</span><span style="font-size:12px;color:#9ca3af">/${t.total}</span></div></div>`});
+  o+=`</div>`;return o;
+}
+
+function renderTicketForm(){
+  let o=`<div class="fade"><div class="fH"><button class="back" onclick="go('tickets')">← 戻る</button><h2 class="fT">回数券発行</h2></div>`;
+  o+=`<label class="label">顧客</label><input class="search" id="tk-q" placeholder="検索..." oninput="setState('q',this.value)">`;
+  const q=state.q||"";const list=db.customers.filter(c=>!q||c.name.includes(q)).slice(0,10);
+  o+=`<div class="list mb14" style="max-height:140px;overflow:auto">${list.map(c=>`<button class="row row-btn${state.ctx.tkCust===c.id?" row-sel":""}" onclick="setState('ctx.tkCust','${c.id}');render()"><div class="rT">#${c.custNo} ${h(c.name)}</div></button>`).join("")}</div>`;
+  o+=`<label class="label">メニュー</label><div class="chip-row">${cfg.menus.filter(m=>m.active&&m.id!=="other").map(m=>`<button class="chip${state.ctx.tkMenu===m.id?" on":""}" onclick="setState('ctx.tkMenu','${m.id}');render()">${h(m.name)}</button>`).join("")}</div>`;
+  o+=`<label class="label mt14">回数</label><div class="chip-row">${["3","5","10","12"].map(n=>`<button class="chip${state.ctx.tkN===n?" on":""}" onclick="setState('ctx.tkN','${n}');render()">${n}回</button>`).join("")}</div>`;
+  o+=`<button class="mbtn mt18" style="background:#1b4332" onclick="saveTicket()">発行する</button></div>`;
+  return o;
+}
+
+// ═══ NOTES ═══
+function renderNoteList(){
+  const sorted=[...db.notes].sort((a,b)=>b.date.localeCompare(a.date));
+  let o=`<div class="fade"><div class="fH"><h2 class="fT">カルテ</h2></div>`;
+  o+=`<button class="mbtn mb10" style="background:#374151" onclick="go('notes','add')">＋ カルテ記録</button>`;
+  if(!sorted.length)o+=`<p class="empty">カルテなし</p>`;
+  sorted.slice(0,30).forEach(n=>{const c=db.customers.find(x=>x.id===n.customerId);o+=`<div class="row"><div><div class="rT">${h(c?.name||"—")} <span style="font-weight:400;color:#9ca3af">${n.date}</span></div><div style="font-size:13px;color:#374151;margin-top:3px;line-height:1.5">${h(n.content)}</div></div></div>`});
+  o+=`</div>`;return o;
+}
+
+function renderNoteForm(){
+  const custId=state.ctx.custId||"";
+  let o=`<div class="fade"><div class="fH"><button class="back" onclick="go('notes')">← 戻る</button><h2 class="fT">カルテ記録</h2></div>`;
+  o+=`<label class="label">日付</label><input type="date" class="inp" id="note-date" value="${td()}">`;
+  if(!custId){
+    o+=`<label class="label mt12">顧客</label><input class="search" placeholder="検索..." oninput="setState('q',this.value)">`;
+    const q=state.q||"";const list=db.customers.filter(c=>!q||c.name.includes(q)).slice(0,10);
+    o+=`<div class="list mb10" style="max-height:140px;overflow:auto">${list.map(c=>`<button class="row row-btn" onclick="setState('ctx.custId','${c.id}');render()"><div class="rT">#${c.custNo} ${h(c.name)}</div></button>`).join("")}</div>`;
+  }else{
+    const c=db.customers.find(x=>x.id===custId);
+    o+=`<div class="row mt10" style="background:#f0fdf4;border-color:#2d6a4f"><div class="rT">${h(c?.name||"")}</div><button style="font-size:12px;color:#6b7280;background:none;border:none;cursor:pointer" onclick="setState('ctx.custId','');render()">変更</button></div>`;
+  }
+  o+=`<label class="label mt12">施術メニュー</label><div class="chip-row">${cfg.menus.filter(m=>m.active&&m.id!=="other").map(m=>`<button class="chip${state.ctx.noteMenu===m.name?" on":""}" onclick="setState('ctx.noteMenu','${m.name}');render()">${h(m.name)}</button>`).join("")}</div>`;
+  o+=`<label class="label mt12">施術内容・気づき</label><textarea class="inp" id="note-content" style="min-height:100px" placeholder="症状、施術内容、次回への申し送り..."></textarea>`;
+  o+=`<button class="mbtn mt16" style="background:#1b4332" onclick="saveNote()">カルテを保存</button></div>`;
+  return o;
+}
+
+// ═══ CHURN ═══
+function renderChurn(){
+  const cut=new Date();cut.setDate(cut.getDate()-cfg.churnDays);const cs=cut.toISOString().slice(0,10);
+  const list=db.customers.map(c=>{const l=db.sales.filter(s=>s.customerId===c.id).sort((a,b)=>b.date.localeCompare(a.date))[0];if(!l||l.date>=cs)return null;return{...c,lastDate:l.date,days:Math.floor((new Date()-new Date(l.date))/864e5)}}).filter(Boolean).sort((a,b)=>b.days-a.days);
+  let o=`<div class="fade"><div class="fH"><button class="back" onclick="go('home')">← 戻る</button><h2 class="fT">離脱リスト</h2><span class="badge">${list.length}名</span></div>`;
+  o+=`<p style="font-size:12px;color:#6b7280;margin-bottom:12px">${cfg.churnDays}日以上来院のない顧客</p>`;
+  if(!list.length)o+=`<p class="empty">離脱リスクの顧客なし 🎉</p>`;
+  list.forEach(c=>{o+=`<button class="row row-btn" style="border-left:3px solid ${c.days>60?"#ef4444":"#f59e0b"}" onclick="go('cust','detail',{custId:'${c.id}'})"><div><div class="rT">#${c.custNo} ${h(c.name)}</div><div class="rS">最終来院: ${c.lastDate}</div></div><div style="text-align:right"><span style="font-size:16px;font-weight:800;color:${c.days>60?"#ef4444":"#f59e0b"}">${c.days}日</span>${c.phone?`<div style="font-size:10px;color:#6b7280">${h(c.phone)}</div>`:""}</div></button>`});
+  o+=`</div>`;return o;
+}
+
+// ═══ ANALYTICS ═══
+function renderAnalytics(){
+  const m=state.month,[y,mm]=m.split("-").map(Number);
+  const ms=db.sales.filter(s=>mk(s.date)===m),me=db.expenses.filter(e=>mk(e.date)===m);
+  const tS=ms.reduce((a,s)=>a+(s.amount||0),0),tE=me.reduce((a,e)=>a+(e.amount||0),0),nC=ms.filter(s=>s.isNew).length;
+
+  const byCat={},byMenu={},byPay={},byDow={};
+  DOW.forEach(d=>{byDow[d+"曜"]=0});
+  ms.forEach(s=>{const k=s.salesCategory||"整体売上";byCat[k]=(byCat[k]||0)+(s.amount||0);byMenu[s.menuName]=(byMenu[s.menuName]||0)+(s.amount||0);byPay[s.payment]=(byPay[s.payment]||0)+(s.amount||0);byDow[DOW[new Date(s.date).getDay()]+"曜"]+=(s.amount||0)});
+
+  const cids=[...new Set(ms.map(s=>s.customerId).filter(Boolean))];
+  const custs=cids.map(id=>db.customers.find(c=>c.id===id)).filter(Boolean);
+  const byG={},byA={},byAr={},bySrc={};
+  custs.forEach(c=>{byG[c.gender||"不明"]=(byG[c.gender||"不明"]||0)+1;byA[c.age||"不明"]=(byA[c.age||"不明"]||0)+1;byAr[c.area||"不明"]=(byAr[c.area||"不明"]||0)+1;bySrc[c.source||"不明"]=(bySrc[c.source||"不明"]||0)+1});
+
+  let o=`<div class="fade"><div class="fH"><h2 class="fT">分析ダッシュボード</h2></div>`;
+  o+=`<div class="date-row"><button class="arr" onclick="chgMonth(-1)">◀</button><span class="date-m">${y}年${mm}月</span><button class="arr" onclick="chgMonth(1)">▶</button></div>`;
+  o+=`<div class="c2"><div class="card" style="background:linear-gradient(135deg,#1b4332,#2d6a4f)"><span class="cL">売上</span><span class="cV">${yen(tS)}</span><span class="cM">${ms.length}件 (新規${nC})</span></div><div class="card" style="background:${tS-tE>=0?"linear-gradient(135deg,#1e3a5f,#1d4ed8)":"linear-gradient(135deg,#7f1d1d,#991b1b)"}"><span class="cL">粗利</span><span class="cV">${yen(tS-tE)}</span><span class="cM">経費 ${yen(tE)}</span></div></div>`;
+
+  if(ms.length>0){
+    if(Object.keys(byCat).length>1) o+=barSec("売上区分（freee連携）",byCat,"#0f766e",true);
+    o+=barSec("コース別",byMenu,"#2d6a4f",true);
+    o+=barSec("支払方法別",byPay,"#1d4ed8",true);
+    o+=barSec("曜日別売上",byDow,"#0891b2",true);
+  }
+  if(custs.length>0){
+    o+=barSec("性別",byG,"#7c3aed");
+    o+=barSec("年代別",byA,"#0ea5e9");
+    o+=barSec("エリア別",byAr,"#d97706");
+    o+=barSec("集客方法別",bySrc,"#db2777");
+  }
+  if(!ms.length)o+=`<p class="empty">この月のデータなし</p>`;
+  o+=`<button class="mbtn mt12" style="background:#374151" onclick="go('churn')">📋 離脱リストを見る</button></div>`;
+  return o;
+}
+
+function barSec(title,data,color,isYen){
+  const ent=Object.entries(data).sort((a,b)=>b[1]-a[1]);
+  const max=Math.max(...ent.map(e=>e[1]),1);
+  let o=`<div class="sec"><h3 class="sec-h">${title}</h3>`;
+  ent.forEach(([k,v])=>{const pct=(v/max)*100;o+=`<div class="bar-row"><span class="bar-lbl">${h(k)}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div><span class="bar-val">${isYen?yen(v):v}</span></div>`});
+  o+=`</div>`;return o;
+}
+
+// ═══ CONFIG ═══
+function renderConfig(){
+  let o=`<div class="fade"><div class="fH"><h2 class="fT">設定</h2></div>`;
+  o+=`<div class="det-card">${[["顧客数",db.customers.length+"名"],["売上記録",db.sales.length+"件"],["経費記録",db.expenses.length+"件"],["回数券",db.tickets.length+"枚"],["カルテ",db.notes.length+"件"]].map(([l,v])=>`<div class="det-row"><span class="dL">${l}</span><span class="dV">${v}</span></div>`).join("")}</div>`;
+
+  // Sections
+  const secs=[["menus","🍽 メニュー管理"],["payments","💳 支払方法"],["areas","📍 エリア"],["sources","📢 集客方法"],["expenseCats","📁 経費カテゴリ"],["fields","📋 顧客項目ON/OFF"],["churn","⏰ 離脱判定日数"],["export","📥 エクスポート"]];
+  secs.forEach(([id,label])=>{
+    const open=state.ctx.cfgSec===id;
+    o+=`<button class="row row-btn mt8" onclick="setState('ctx.cfgSec',state.ctx.cfgSec==='${id}'?'':'${id}');render()"><span class="rT">${label}</span><span style="color:#9ca3af">${open?"▲":"▼"}</span></button>`;
+    if(open){
+      o+=`<div class="cfg-panel">`;
+      if(id==="menus"){
+        cfg.menus.forEach((m,i)=>{o+=`<div class="row mb8" style="opacity:${m.active?1:.4}"><div><div class="rT">${h(m.name)}</div><div class="rS">${yen(m.price)} / ${h(m.category)}</div></div><div style="display:flex;gap:6px"><button class="sm-btn" onclick="toggleMenu(${i})">${m.active?"OFF":"ON"}</button><button class="sm-btn" style="color:#991b1b" onclick="removeMenu(${i})">✕</button></div></div>`});
+        o+=`<input class="inp mb8" id="nm-name" placeholder="メニュー名"><div style="display:flex;gap:8px" class="mb8"><input type="number" class="inp" style="flex:1" id="nm-price" placeholder="価格"><select class="inp" style="flex:1" id="nm-cat">${cfg.salesCategories.map(c=>`<option value="${c}">${c}</option>`).join("")}</select></div><button class="mbtn" style="background:#374151" onclick="addMenu()">＋ メニュー追加</button>`;
+      }
+      else if(["payments","areas","sources","expenseCats"].includes(id)){
+        o+=`<div class="chip-row mb10">${cfg[id].map((item,i)=>`<span class="chip" style="display:flex;gap:6px;align-items:center">${h(item)}<button style="background:none;border:none;color:#991b1b;font-size:14px;cursor:pointer;padding:0" onclick="removeListItem('${id}',${i})">✕</button></span>`).join("")}</div>`;
+        o+=`<div style="display:flex;gap:8px"><input class="inp" style="flex:1" id="nl-val" placeholder="新しい項目"><button class="mbtn" style="width:auto;padding:0 20px;background:#374151" onclick="addListItem('${id}')">追加</button></div>`;
+      }
+      else if(id==="fields"){
+        cfg.customerFields.forEach(f=>{o+=`<div class="row mb8" style="opacity:${f.active?1:.5}"><div><div class="rT">${h(f.label)} ${f.required?'<span style="font-size:10px;color:#991b1b">必須</span>':""}</div></div><button class="sm-btn" style="background:${f.active?"#2d6a4f":"#e5e7eb"};color:${f.active?"#fff":"#374151"}" onclick="toggleField('${f.key}')"${f.required?" disabled":""}>${f.active?"ON":"OFF"}</button></div>`});
+      }
+      else if(id==="churn"){
+        o+=`<label class="label">離脱判定日数</label><div class="chip-row">${[14,21,30,45,60,90].map(d=>`<button class="chip${cfg.churnDays===d?" on":""}" onclick="setChurnDays(${d})">${d}日</button>`).join("")}</div>`;
+      }
+      else if(id==="export"){
+        o+=`<button class="mbtn mb8" style="background:#374151" onclick="exportSalesCSV()">📥 売上CSV（全データ）</button>`;
+        o+=`<button class="mbtn mb8" style="background:#0f766e" onclick="exportFreeeCSV()">📥 freee連携用 売上区分別CSV</button>`;
+        o+=`<button class="mbtn" style="background:#374151" onclick="exportCustCSV()">📥 顧客CSV</button>`;
+      }
+      o+=`</div>`;
+    }
+  });
+
+  o+=`<div class="mt32"><h3 class="sec-h" style="color:#991b1b">危険ゾーン</h3><button class="del-btn" onclick="if(confirm('全データを完全に消去しますか？')){localStorage.removeItem('${SK}');localStorage.removeItem('${SKC}');location.reload()}">全データリセット</button></div></div>`;
+  return o;
+}
+
+// ═══ ACTIONS ═══
+function shiftDate(d){const dt=new Date(state.date);dt.setDate(dt.getDate()+d);state.date=dt.toISOString().slice(0,10);render()}
+function setDate(d){state.date=d;render()}
+function chgMonth(d){let[y,m]=state.month.split("-").map(Number);m+=d;if(m>12){m=1;y++}if(m<1){m=12;y--}state.month=y+"-"+String(m).padStart(2,"0");render()}
+
+function setState(path,val){
+  if(path.startsWith("ctx.")){state.ctx[path.slice(4)]=val}
+  else{state[path]=val}
+}
+
+function pickCust(id){state.ctx.custId=id;state.step=2;render()}
+function pickMenu(id){
+  state.ctx.menuId=id;
+  const m=cfg.menus.find(x=>x.id===id);
+  if(m&&m.price>0)state.ctx.amount=String(m.price);
+  state.ctx.payment=state.ctx.payment||cfg.payments[0]||"現金";
+  state.step=3;render();
+}
+
+function saveSale(){
+  const amt=document.getElementById("sale-amt")?.value;
+  const memo=document.getElementById("sale-memo")?.value||"";
+  const menuId=state.ctx.menuId,custId=state.ctx.custId||"";
+  if(!menuId||!amt)return;
+  const m=cfg.menus.find(x=>x.id===menuId);
+  const prev=db.sales.filter(s=>s.customerId===custId);
+  const isNew=custId?prev.length===0:false;
+  const id=uid();
+  const payment=state.ctx.payment||cfg.payments[0];
+  db.sales.push({id,date:state.ctx.saleDate||td(),customerId:custId,menuId,menuName:m.name,amount:Number(amt),payment,memo,isNew,salesCategory:m.category||"整体売上"});
+  if(payment==="回数券"){db.tickets.forEach(t=>{if(t.customerId===custId&&t.remaining>0&&t.menuId===menuId){t.remaining--;t.uses=(t.uses||[]);t.uses.push({date:td(),saleId:id})}})}
+  saveDB();flash("✓ 売上を記録");go("home");
+}
+
+function saveExpense(){
+  const date=document.getElementById("exp-date")?.value||td();
+  const cat=state.ctx.expCat;
+  const amt=document.getElementById("exp-amt")?.value;
+  const memo=document.getElementById("exp-memo")?.value||"";
+  if(!cat||!amt)return flash("カテゴリと金額を入力してください");
+  db.expenses.push({id:uid(),date,category:cat,amount:Number(amt),memo});
+  saveDB();flash("✓ 経費を記録");go("home");
+}
+
+function saveCust(){
+  const name=document.getElementById("cf-name")?.value;
+  if(!name)return flash("名前を入力してください");
+  const c={id:uid(),custNo:db.nextCustNo||db.customers.length+1,name,
+    kana:document.getElementById("cf-kana")?.value||"",
+    gender:document.getElementById("cf-gender")?.value||"",
+    age:document.getElementById("cf-age")?.value||"",
+    phone:document.getElementById("cf-phone")?.value||"",
+    area:document.getElementById("cf-area")?.value||"",
+    source:document.getElementById("cf-source")?.value||"",
+    createdAt:td()};
+  db.customers.push(c);db.nextCustNo=(db.nextCustNo||db.customers.length)+1;
+  saveDB();flash("✓ 顧客を登録");go("cust");
+}
+
+function deleteCust(id){
+  if(!confirm(db.customers.find(c=>c.id===id)?.name+"を削除しますか？"))return;
+  db.customers=db.customers.filter(c=>c.id!==id);
+  saveDB();flash("削除しました");go("cust");
+}
+
+function saveTicket(){
+  const custId=state.ctx.tkCust,menuId=state.ctx.tkMenu,n=state.ctx.tkN||"5";
+  if(!custId||!menuId)return flash("顧客とメニューを選択してください");
+  const m=cfg.menus.find(x=>x.id===menuId);
+  db.tickets.push({id:uid(),customerId:custId,menuId,menuName:m.name,total:Number(n),remaining:Number(n),purchaseDate:td(),uses:[]});
+  saveDB();flash("✓ 回数券を発行");go("tickets");
+}
+
+function saveNote(){
+  const custId=state.ctx.custId;
+  const date=document.getElementById("note-date")?.value||td();
+  const content=document.getElementById("note-content")?.value;
+  if(!custId||!content)return flash("顧客と内容を入力してください");
+  db.notes.push({id:uid(),customerId:custId,date,menuName:state.ctx.noteMenu||"",content});
+  saveDB();flash("✓ カルテを保存");go("notes");
+}
+
+// Config actions
+function toggleMenu(i){cfg.menus[i].active=!cfg.menus[i].active;saveCfg();render()}
+function removeMenu(i){cfg.menus.splice(i,1);saveCfg();render()}
+function addMenu(){
+  const name=document.getElementById("nm-name")?.value;
+  const price=document.getElementById("nm-price")?.value||0;
+  const cat=document.getElementById("nm-cat")?.value||"整体売上";
+  if(!name)return;
+  cfg.menus.push({id:uid(),name,price:Number(price),category:cat,active:true});
+  saveCfg();render();flash("メニュー追加");
+}
+function removeListItem(field,i){cfg[field].splice(i,1);saveCfg();render()}
+function addListItem(field){
+  const v=document.getElementById("nl-val")?.value;if(!v)return;
+  cfg[field].push(v);saveCfg();render();flash("追加しました");
+}
+function toggleField(key){
+  const f=cfg.customerFields.find(x=>x.key===key);
+  if(f&&!f.required){f.active=!f.active;saveCfg();render()}
+}
+function setChurnDays(d){cfg.churnDays=d;saveCfg();render()}
+
+// CSV Export
+function dlCSV(rows,name){
+  const csv=rows.map(r=>r.map(c=>typeof c==="string"&&c.includes(",")?`"${c}"`:c).join(",")).join("\n");
+  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);
+}
+function exportSalesCSV(){
+  const rows=[["日付","売上区分","メニュー","顧客No","顧客名","金額","支払方法","新規/リピート","メモ"]];
+  db.sales.forEach(s=>{const c=db.customers.find(x=>x.id===s.customerId);rows.push([s.date,s.salesCategory||"整体売上",s.menuName,c?.custNo||"",c?.name||"",s.amount,s.payment,s.isNew?"新規":"リピート",s.memo||""])});
+  dlCSV(rows,"tak-sales.csv");flash("売上CSV完了");
+}
+function exportFreeeCSV(){
+  const months=[...new Set(db.sales.map(s=>mk(s.date)))].sort();
+  const rows=[["月度",...cfg.salesCategories,"売上合計"]];
+  months.forEach(m=>{const ms=db.sales.filter(s=>mk(s.date)===m);const row=[m];cfg.salesCategories.forEach(cat=>{row.push(ms.filter(s=>(s.salesCategory||"整体売上")===cat).reduce((a,s)=>a+(s.amount||0),0))});row.push(ms.reduce((a,s)=>a+(s.amount||0),0));rows.push(row)});
+  dlCSV(rows,"tak-freee-uriage.csv");flash("freee用CSV完了");
+}
+function exportCustCSV(){
+  const rows=[["顧客No","名前","ふりがな","性別","年代","電話","エリア","集客方法","登録日","来院回数","累計売上","平均単価","最終来院"]];
+  db.customers.forEach(c=>{const sales=db.sales.filter(s=>s.customerId===c.id);const total=sales.reduce((a,s)=>a+(s.amount||0),0);const last=sales.sort((a,b)=>b.date.localeCompare(a.date))[0]?.date||"";rows.push([c.custNo,c.name,c.kana||"",c.gender||"",c.age||"",c.phone||"",c.area||"",c.source||"",c.createdAt,sales.length,total,sales.length?Math.round(total/sales.length):0,last])});
+  dlCSV(rows,"tak-customers.csv");flash("顧客CSV完了");
+}
+
+function bindEvents(){}
+
+// ═══ INIT ═══
+loadDB();loadCfg();render();
+</script>
+</body>
+</html>

@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>問診票｜整体院TAK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --green:#2D7A5F;--green-light:#E8F0EC;--green-pale:#F2F8F5;
+  --pink:#B05A6E;--pink-light:#F5EAED;
+  --beige:#FAF6F1;--beige-dark:#F0E8DF;
+  --text:#2C2B28;--text-sub:#6B6964;--text-light:#9B9790;
+  --white:#FFFFFF;--border:#E5E0D8;
+  --shadow:0 2px 12px rgba(0,0,0,0.04);
+}
+body{
+  font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;
+  background:var(--beige);color:var(--text);
+  line-height:1.7;-webkit-font-smoothing:antialiased;
+  padding-bottom:80px;
+}
+
+/* Header */
+.header{
+  background:var(--green);padding:40px 20px 32px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.header::before{
+  content:'';position:absolute;width:250px;height:250px;border-radius:50%;
+  background:rgba(255,255,255,0.06);top:-60px;right:-40px;
+}
+.header h1{color:#fff;font-size:20px;font-weight:700;letter-spacing:0.05em;}
+.header p{color:rgba(255,255,255,0.8);font-size:13px;margin-top:8px;}
+
+/* Pricing notice */
+.pricing{
+  background:var(--white);margin:16px;border-radius:14px;padding:20px;
+  box-shadow:var(--shadow);border-left:4px solid var(--green);
+}
+.pricing-title{font-size:13px;font-weight:700;color:var(--green);margin-bottom:10px;}
+.pricing-grid{display:flex;flex-direction:column;gap:8px;}
+.pricing-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;}
+.pricing-row .label{color:var(--text-sub);}
+.pricing-row .price{font-weight:700;color:var(--text);}
+.pricing-note{font-size:11px;color:var(--text-light);margin-top:10px;line-height:1.6;}
+
+/* Progress */
+.progress-wrap{
+  position:sticky;top:0;z-index:100;background:var(--beige);
+  padding:10px 16px 6px;border-bottom:1px solid var(--border);
+}
+.progress-bar{height:4px;background:var(--border);border-radius:4px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--green);border-radius:4px;transition:width 0.4s ease;}
+.progress-text{font-size:11px;color:var(--text-light);text-align:right;margin-top:4px;}
+
+/* Section */
+.section{
+  background:var(--white);margin:16px;border-radius:14px;
+  padding:24px 20px;box-shadow:var(--shadow);
+  display:none;
+}
+.section.active{display:block;animation:fadeIn 0.3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.section-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:50%;
+  background:var(--green-light);color:var(--green);
+  font-size:13px;font-weight:700;margin-bottom:10px;
+}
+.section-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.section-desc{font-size:13px;color:var(--text-sub);margin-bottom:18px;}
+
+/* Form elements */
+.input-group{margin-bottom:16px;}
+.input-label{font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px;display:block;}
+.input-label .req{color:var(--pink);font-size:11px;margin-left:4px;}
+input[type="text"],input[type="email"],input[type="tel"],input[type="date"]{
+  width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;
+  font-size:15px;font-family:inherit;background:var(--white);
+  transition:border-color 0.2s;
+}
+input:focus{outline:none;border-color:var(--green);}
+
+/* Checkbox grid */
+.check-grid{display:flex;flex-direction:column;gap:8px;}
+.check-item{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border-radius:10px;border:1.5px solid var(--border);
+  cursor:pointer;transition:all 0.2s;user-select:none;
+  font-size:14px;color:var(--text);
+}
+.check-item:active{transform:scale(0.98);}
+.check-item.checked{
+  border-color:var(--green);background:var(--green-pale);
+}
+.check-box{
+  width:22px;height:22px;border-radius:6px;border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:all 0.2s;
+}
+.check-item.checked .check-box{
+  border-color:var(--green);background:var(--green);
+}
+.check-box svg{width:14px;height:14px;opacity:0;transition:opacity 0.2s;}
+.check-item.checked .check-box svg{opacity:1;}
+
+/* Radio */
+.radio-grid{display:flex;flex-direction:column;gap:8px;}
+.radio-item{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border-radius:10px;border:1.5px solid var(--border);
+  cursor:pointer;transition:all 0.2s;user-select:none;font-size:14px;
+}
+.radio-item:active{transform:scale(0.98);}
+.radio-item.selected{border-color:var(--green);background:var(--green-pale);}
+.radio-dot{
+  width:22px;height:22px;border-radius:50%;border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:all 0.2s;
+}
+.radio-item.selected .radio-dot{border-color:var(--green);}
+.radio-dot-inner{width:12px;height:12px;border-radius:50%;background:var(--green);opacity:0;transition:opacity 0.2s;}
+.radio-item.selected .radio-dot-inner{opacity:1;}
+
+/* Body map */
+.body-map-wrap{text-align:center;margin:16px 0;}
+.body-map-wrap p{font-size:12px;color:var(--text-sub);margin-bottom:8px;}
+.body-map{
+  position:relative;display:inline-block;
+  width:240px;height:400px;
+  background:var(--beige);border-radius:12px;border:1px solid var(--border);
+}
+.body-map svg{width:100%;height:100%;}
+.pain-dot{
+  position:absolute;width:24px;height:24px;border-radius:50%;
+  background:rgba(176,90,110,0.3);border:2px solid var(--pink);
+  cursor:pointer;transform:translate(-50%,-50%);
+  display:none;
+}
+.pain-dot.active{display:block;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(176,90,110,0.3)}50%{box-shadow:0 0 0 8px rgba(176,90,110,0)}}
+
+/* Textarea */
+textarea{
+  width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;
+  font-size:14px;font-family:inherit;resize:vertical;min-height:80px;
+  transition:border-color 0.2s;
+}
+textarea:focus{outline:none;border-color:var(--green);}
+
+/* Navigation */
+.nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--white);border-top:1px solid var(--border);
+  padding:12px 16px;display:flex;gap:12px;
+  z-index:200;
+}
+.btn{
+  flex:1;padding:14px;border-radius:12px;font-size:15px;font-weight:700;
+  text-align:center;cursor:pointer;border:none;font-family:inherit;
+  transition:all 0.2s;
+}
+.btn:active{transform:scale(0.97);}
+.btn-back{background:var(--beige-dark);color:var(--text-sub);}
+.btn-next{background:var(--green);color:#fff;box-shadow:0 4px 12px rgba(45,122,95,0.25);}
+.btn-next:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* Submit options */
+.submit-options{display:flex;flex-direction:column;gap:12px;margin-top:20px;}
+.submit-btn{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:16px;border-radius:12px;font-size:15px;font-weight:700;
+  cursor:pointer;border:none;font-family:inherit;transition:all 0.2s;width:100%;
+}
+.submit-btn:active{transform:scale(0.97);}
+.submit-btn.email{background:var(--green);color:#fff;box-shadow:0 4px 12px rgba(45,122,95,0.25);}
+.submit-btn.line{background:#06C755;color:#fff;box-shadow:0 4px 12px rgba(6,199,85,0.25);}
+.submit-btn svg{width:20px;height:20px;}
+
+/* Complete */
+.complete{
+  text-align:center;padding:60px 20px;
+  display:none;
+}
+.complete.show{display:block;}
+.complete-icon{font-size:48px;margin-bottom:16px;}
+.complete h2{font-size:20px;font-weight:700;margin-bottom:8px;}
+.complete p{font-size:14px;color:var(--text-sub);line-height:1.8;}
+
+/* Hide nav on complete */
+.nav.hidden{display:none;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>問診票</h1>
+  <p>整体院TAK ｜ 桑原院長が直接拝見します</p>
+</div>
+
+<!-- Pricing pre-notice -->
+<div class="pricing">
+  <div class="pricing-title">📌 施術料金のご案内</div>
+  <div class="pricing-grid">
+    <div class="pricing-row"><span class="label">初回体験（60分）</span><span class="price">¥2,980</span></div>
+    <div class="pricing-row"><span class="label">2回目以降（60分）</span><span class="price">¥11,000</span></div>
+    <div class="pricing-row"><span class="label">月イチ整体（45分）</span><span class="price">¥8,800</span></div>
+  </div>
+  <div class="pricing-note">※初回の施術で改善の可能性を感じていただけましたら、継続的にフォローさせていただきたいと考えております。お得な回数券もございます。</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-text" id="progressText">0 / 9</div>
+</div>
+
+<!-- Step 0: Basic info -->
+<div class="section active" data-step="0">
+  <div class="section-num">0</div>
+  <div class="section-title">基本情報</div>
+  <div class="section-desc">お名前・ご連絡先をご記入ください</div>
+  <div class="input-group">
+    <label class="input-label">お名前<span class="req">*必須</span></label>
+    <input type="text" id="name" placeholder="例：山田 花子">
+  </div>
+  <div class="input-group">
+    <label class="input-label">ふりがな<span class="req">*必須</span></label>
+    <input type="text" id="furigana" placeholder="例：やまだ はなこ">
+  </div>
+  <div class="input-group">
+    <label class="input-label">生年月日</label>
+    <input type="date" id="birthday">
+  </div>
+  <div class="input-group">
+    <label class="input-label">お電話番号<span class="req">*必須</span></label>
+    <input type="tel" id="phone" placeholder="例：090-1234-5678">
+  </div>
+</div>
+
+<!-- Step 1: 症状 -->
+<div class="section" data-step="1">
+  <div class="section-num">1</div>
+  <div class="section-title">どのような症状でお困りですか？</div>
+  <div class="section-desc">当てはまるものすべてにチェック</div>
+  <div class="check-grid" data-name="symptoms">
+    <label class="check-item" data-value="腰痛"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>腰痛</label>
+    <label class="check-item" data-value="肩こり・首こり"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>肩こり・首こり</label>
+    <label class="check-item" data-value="頭痛"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>頭痛</label>
+    <label class="check-item" data-value="膝の痛み"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>膝の痛み</label>
+    <label class="check-item" data-value="坐骨神経痛・しびれ"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>坐骨神経痛・しびれ</label>
+    <label class="check-item" data-value="股関節の痛み"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>股関節の痛み</label>
+    <label class="check-item" data-value="背中の痛み"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>背中の痛み</label>
+    <label class="check-item" data-value="全身の倦怠感・疲労感"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>全身の倦怠感・疲労感</label>
+    <label class="check-item" data-value="その他"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>その他</label>
+  </div>
+  <div class="input-group" style="margin-top:12px">
+    <textarea id="symptoms_other" placeholder="「その他」の方はこちらにご記入ください" rows="2"></textarea>
+  </div>
+</div>
+
+<!-- Step 2: いつ頃から -->
+<div class="section" data-step="2">
+  <div class="section-num">2</div>
+  <div class="section-title">その症状はいつ頃から感じていますか？</div>
+  <div class="section-desc">最も近いものを1つ選んでください</div>
+  <div class="radio-grid" data-name="duration">
+    <label class="radio-item" data-value="1週間以内"><div class="radio-dot"><div class="radio-dot-inner"></div></div>1週間以内</label>
+    <label class="radio-item" data-value="1ヶ月以内"><div class="radio-dot"><div class="radio-dot-inner"></div></div>1ヶ月以内</label>
+    <label class="radio-item" data-value="3ヶ月以内"><div class="radio-dot"><div class="radio-dot-inner"></div></div>3ヶ月以内</label>
+    <label class="radio-item" data-value="半年〜1年"><div class="radio-dot"><div class="radio-dot-inner"></div></div>半年〜1年</label>
+    <label class="radio-item" data-value="1年以上"><div class="radio-dot"><div class="radio-dot-inner"></div></div>1年以上</label>
+    <label class="radio-item" data-value="いつからか分からない"><div class="radio-dot"><div class="radio-dot-inner"></div></div>いつからか分からない</label>
+  </div>
+</div>
+
+<!-- Step 3: 日常への影響 -->
+<div class="section" data-step="3">
+  <div class="section-num">3</div>
+  <div class="section-title">その症状により、日常でどんな不安がありますか？</div>
+  <div class="section-desc">当てはまるものすべてにチェック</div>
+  <div class="check-grid" data-name="impact">
+    <label class="check-item" data-value="家事や育児に支障が出ている（出そうで不安）"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>家事や育児に支障が出ている（出そう）</label>
+    <label class="check-item" data-value="仕事に差し支えている（差し支えそうで不安）"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>仕事に差し支えている（差し支えそう）</label>
+    <label class="check-item" data-value="趣味や運動ができなくなっている"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>趣味や運動ができなくなっている</label>
+    <label class="check-item" data-value="睡眠の質が落ちている"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>睡眠の質が落ちている</label>
+    <label class="check-item" data-value="気分が落ち込む・イライラする"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>気分が落ち込む・イライラする</label>
+    <label class="check-item" data-value="この先さらに悪くなるのではと不安"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>この先さらに悪くなるのではと不安</label>
+    <label class="check-item" data-value="周囲に迷惑をかけていると感じる"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>周囲に迷惑をかけていると感じる</label>
+    <label class="check-item" data-value="外出が億劫になっている"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>外出が億劫になっている</label>
+  </div>
+</div>
+
+<!-- Step 4: 良くなったら何を優先したいか -->
+<div class="section" data-step="4">
+  <div class="section-num">4</div>
+  <div class="section-title">今より状況が良くなったら、何を優先したいですか？</div>
+  <div class="section-desc">当てはまるものすべてにチェック</div>
+  <div class="check-grid" data-name="priority">
+    <label class="check-item" data-value="家事・育児をもっと楽にこなしたい"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>家事・育児をもっと楽にこなしたい</label>
+    <label class="check-item" data-value="仕事に集中したい"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>仕事に集中したい</label>
+    <label class="check-item" data-value="趣味や旅行を楽しみたい"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>趣味や旅行を楽しみたい</label>
+    <label class="check-item" data-value="運動を再開したい"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>運動を再開したい</label>
+    <label class="check-item" data-value="ぐっすり眠りたい"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>ぐっすり眠りたい</label>
+    <label class="check-item" data-value="気持ちを前向きにしたい"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>気持ちを前向きにしたい</label>
+    <label class="check-item" data-value="痛みを気にせず過ごしたい"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>痛みを気にせず過ごしたい</label>
+  </div>
+  <div class="input-group" style="margin-top:12px">
+    <textarea id="priority_other" placeholder="その他、ご自由にどうぞ" rows="2"></textarea>
+  </div>
+</div>
+
+<!-- Step 5: 今までしてきた対策 -->
+<div class="section" data-step="5">
+  <div class="section-num">5</div>
+  <div class="section-title">今までその悩みに対して、何をしてきましたか？</div>
+  <div class="section-desc">当てはまるものすべてにチェック</div>
+  <div class="check-grid" data-name="past_treatment">
+    <label class="check-item" data-value="整形外科"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>整形外科</label>
+    <label class="check-item" data-value="整骨院・接骨院"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>整骨院・接骨院</label>
+    <label class="check-item" data-value="整体院"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>整体院</label>
+    <label class="check-item" data-value="鍼灸"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>鍼灸</label>
+    <label class="check-item" data-value="マッサージ・リラクゼーション"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>マッサージ・リラクゼーション</label>
+    <label class="check-item" data-value="湿布・痛み止め"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>湿布・痛み止め</label>
+    <label class="check-item" data-value="ストレッチ・運動"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>ストレッチ・運動</label>
+    <label class="check-item" data-value="サプリメント"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>サプリメント</label>
+    <label class="check-item" data-value="特に何もしていない"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>特に何もしていない</label>
+  </div>
+</div>
+
+<!-- Step 6: 今日の施術への期待 -->
+<div class="section" data-step="6">
+  <div class="section-num">6</div>
+  <div class="section-title">本日の施術で、どんな結果を期待しますか？</div>
+  <div class="section-desc">最も近いものを1つ選んでください</div>
+  <div class="radio-grid" data-name="today_goal">
+    <label class="radio-item" data-value="少しでも変化を感じたい"><div class="radio-dot"><div class="radio-dot-inner"></div></div>少しでも変化を感じたい</label>
+    <label class="radio-item" data-value="痛みが軽減すれば嬉しい"><div class="radio-dot"><div class="radio-dot-inner"></div></div>痛みが軽減すれば嬉しい</label>
+    <label class="radio-item" data-value="自分に合うかどうか確かめたい"><div class="radio-dot"><div class="radio-dot-inner"></div></div>自分に合うかどうか確かめたい</label>
+    <label class="radio-item" data-value="根本的に改善したい"><div class="radio-dot"><div class="radio-dot-inner"></div></div>根本的に改善したい</label>
+    <label class="radio-item" data-value="原因を知りたい"><div class="radio-dot"><div class="radio-dot-inner"></div></div>原因を知りたい</label>
+  </div>
+</div>
+
+<!-- Step 7: 今後の理想 -->
+<div class="section" data-step="7">
+  <div class="section-num">7</div>
+  <div class="section-title">今後、どうなれるのが理想ですか？</div>
+  <div class="section-desc">当てはまるものすべてにチェック</div>
+  <div class="check-grid" data-name="future_goal">
+    <label class="check-item" data-value="しっかり改善したい"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>しっかり改善したい</label>
+    <label class="check-item" data-value="再発しないようにしたい"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>再発しないようにしたい</label>
+    <label class="check-item" data-value="定期的にメンテナンスしたい"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>定期的にメンテナンスしたい</label>
+    <label class="check-item" data-value="薬に頼らない生活をしたい"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>薬に頼らない生活をしたい</label>
+    <label class="check-item" data-value="体質から変えたい"><div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>体質から変えたい</label>
+  </div>
+</div>
+
+<!-- Step 8: いつまでに -->
+<div class="section" data-step="8">
+  <div class="section-num">8</div>
+  <div class="section-title">いつまでにそうなりたいですか？</div>
+  <div class="section-desc">最も近いものを1つ選んでください</div>
+  <div class="radio-grid" data-name="timeline">
+    <label class="radio-item" data-value="今すぐにでも"><div class="radio-dot"><div class="radio-dot-inner"></div></div>今すぐにでも</label>
+    <label class="radio-item" data-value="1ヶ月以内"><div class="radio-dot"><div class="radio-dot-inner"></div></div>1ヶ月以内</label>
+    <label class="radio-item" data-value="3ヶ月以内"><div class="radio-dot"><div class="radio-dot-inner"></div></div>3ヶ月以内</label>
+    <label class="radio-item" data-value="半年以内"><div class="radio-dot"><div class="radio-dot-inner"></div></div>半年以内</label>
+    <label class="radio-item" data-value="期限は特にない"><div class="radio-dot"><div class="radio-dot-inner"></div></div>期限は特にない</label>
+  </div>
+
+  <div style="margin-top:20px">
+    <div class="section-title" style="font-size:14px;margin-bottom:8px;">その他、不安なことやお知らせしたいこと</div>
+    <textarea id="free_comment" placeholder="ご自由にご記入ください（任意）" rows="3"></textarea>
+  </div>
+
+  <!-- Submit options -->
+  <div class="submit-options">
+    <button class="submit-btn email" onclick="sendEmail()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      メールで送信
+    </button>
+    <button class="submit-btn line" onclick="sendLINE()">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+      LINEで送信
+    </button>
+  </div>
+</div>
+
+<!-- Complete -->
+<div class="complete" id="complete">
+  <div class="complete-icon">✅</div>
+  <h2>送信完了</h2>
+  <p>ご記入ありがとうございました。<br>桑原が内容を確認いたします。<br><br>ご来院をお待ちしております。</p>
+  <div style="margin-top:24px">
+    <a href="index.html" style="display:inline-block;padding:12px 28px;background:#2D7A5F;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">🏠 管理画面に戻る（スタッフ用）</a>
+  </div>
+</div>
+
+<!-- Navigation -->
+<div class="nav" id="nav">
+  <button class="btn btn-back" id="btnBack" onclick="prevStep()" style="display:none">戻る</button>
+  <button class="btn btn-next" id="btnNext" onclick="nextStep()">次へ</button>
+</div>
+
+<script>
+let currentStep = 0;
+const totalSteps = 9;
+
+// Check items
+document.querySelectorAll('.check-item').forEach(item => {
+  item.addEventListener('click', () => {
+    item.classList.toggle('checked');
+  });
+});
+
+// Radio items
+document.querySelectorAll('.radio-grid').forEach(grid => {
+  grid.querySelectorAll('.radio-item').forEach(item => {
+    item.addEventListener('click', () => {
+      grid.querySelectorAll('.radio-item').forEach(r => r.classList.remove('selected'));
+      item.classList.add('selected');
+    });
+  });
+});
+
+function updateUI() {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const active = document.querySelector(`[data-step="${currentStep}"]`);
+  if (active) active.classList.add('active');
+
+  const pct = Math.round((currentStep / (totalSteps - 1)) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = currentStep + ' / ' + (totalSteps - 1);
+
+  document.getElementById('btnBack').style.display = currentStep === 0 ? 'none' : 'block';
+
+  if (currentStep === totalSteps - 1) {
+    document.getElementById('btnNext').style.display = 'none';
+  } else {
+    document.getElementById('btnNext').style.display = 'block';
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function nextStep() {
+  if (currentStep === 0) {
+    const name = document.getElementById('name').value.trim();
+    const furigana = document.getElementById('furigana').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    if (!name || !furigana || !phone) {
+      alert('お名前・ふりがな・お電話番号をご記入ください');
+      return;
+    }
+  }
+  if (currentStep < totalSteps - 1) {
+    currentStep++;
+    updateUI();
+  }
+}
+
+function prevStep() {
+  if (currentStep > 0) {
+    currentStep--;
+    updateUI();
+  }
+}
+
+function gatherData() {
+  const data = {};
+  data['お名前'] = document.getElementById('name').value;
+  data['ふりがな'] = document.getElementById('furigana').value;
+  data['生年月日'] = document.getElementById('birthday').value || '未記入';
+  data['電話番号'] = document.getElementById('phone').value;
+
+  // Checkboxes
+  const checkGroups = ['symptoms', 'impact', 'priority', 'past_treatment', 'future_goal'];
+  const labels = {
+    symptoms: '①症状',
+    impact: '③日常への影響',
+    priority: '④良くなったら優先したいこと',
+    past_treatment: '⑤今までの対策',
+    future_goal: '⑦今後の理想'
+  };
+  checkGroups.forEach(name => {
+    const grid = document.querySelector(`[data-name="${name}"]`);
+    const checked = grid.querySelectorAll('.checked');
+    const vals = Array.from(checked).map(c => c.dataset.value);
+    data[labels[name]] = vals.length ? vals.join('、') : '未選択';
+  });
+
+  // Other text fields
+  const sympOther = document.getElementById('symptoms_other').value.trim();
+  if (sympOther) data['①その他症状'] = sympOther;
+
+  const prioOther = document.getElementById('priority_other').value.trim();
+  if (prioOther) data['④その他優先事項'] = prioOther;
+
+  // Radios
+  const radioGroups = ['duration', 'today_goal', 'timeline'];
+  const radioLabels = {
+    duration: '②いつ頃から',
+    today_goal: '⑥本日の期待',
+    timeline: '⑧いつまでに'
+  };
+  radioGroups.forEach(name => {
+    const grid = document.querySelector(`[data-name="${name}"]`);
+    const selected = grid.querySelector('.selected');
+    data[radioLabels[name]] = selected ? selected.dataset.value : '未選択';
+  });
+
+  const freeComment = document.getElementById('free_comment').value.trim();
+  if (freeComment) data['その他コメント'] = freeComment;
+
+  return data;
+}
+
+function formatText(data) {
+  let text = '【整体院TAK 問診票】\n';
+  text += '━━━━━━━━━━\n';
+  for (const [key, val] of Object.entries(data)) {
+    text += `■ ${key}\n${val}\n\n`;
+  }
+  text += '━━━━━━━━━━';
+  return text;
+}
+
+function sendEmail() {
+  const data = gatherData();
+  registerToKaikeiApp(data);
+  const text = formatText(data);
+  const subject = encodeURIComponent('【問診票】' + data['お名前'] + '様');
+  const body = encodeURIComponent(text);
+  window.location.href = `mailto:lag20200401@gmail.com?subject=${subject}&body=${body}`;
+  showComplete();
+}
+
+function sendLINE() {
+  const data = gatherData();
+  registerToKaikeiApp(data);
+  const text = formatText(data);
+  const encoded = encodeURIComponent(text);
+  window.location.href = `https://line.me/R/oaMessage/@amr0795z/?${encoded}`;
+  showComplete();
+}
+
+// ═══ 会計アプリ連携: 顧客 + 初回カルテ自動登録 ═══
+function registerToKaikeiApp(data) {
+  try {
+    const SK = 'tak-v3';
+    const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const today = new Date().toISOString().slice(0, 10);
+
+    // Load existing DB
+    let db;
+    try {
+      const stored = localStorage.getItem(SK);
+      db = stored ? JSON.parse(stored) : null;
+    } catch(e) { db = null; }
+
+    if (!db) {
+      db = { customers: [], sales: [], expenses: [], tickets: [], notes: [], nextCustNo: 1 };
+    }
+
+    // Check for duplicate (same name + phone)
+    const name = data['お名前'] || '';
+    const phone = data['電話番号'] || '';
+    const exists = db.customers.find(c => c.name === name && c.phone === phone);
+    if (exists) {
+      // Customer already registered - just add a new note
+      const noteContent = buildKarteFromMonshin(data);
+      db.notes.push({
+        id: uid(),
+        customerId: exists.id,
+        date: today,
+        menuName: '問診票（再送信）',
+        content: noteContent
+      });
+      localStorage.setItem(SK, JSON.stringify(db));
+      console.log('既存顧客のカルテを更新しました: ' + name);
+      return;
+    }
+
+    // Determine age group from birthday
+    let ageGroup = '';
+    const birthday = data['生年月日'];
+    if (birthday && birthday !== '未記入') {
+      const birthYear = parseInt(birthday.split('-')[0]);
+      const age = new Date().getFullYear() - birthYear;
+      if (age < 30) ageGroup = '20代';
+      else if (age < 40) ageGroup = '30代';
+      else if (age < 50) ageGroup = '40代';
+      else if (age < 60) ageGroup = '50代';
+      else if (age < 70) ageGroup = '60代';
+      else ageGroup = '70代以上';
+    }
+
+    // Create customer
+    const custNo = db.nextCustNo || (db.customers.length + 1);
+    const custId = uid();
+    const customer = {
+      id: custId,
+      custNo: custNo,
+      name: name,
+      kana: data['ふりがな'] || '',
+      gender: '',
+      age: ageGroup,
+      phone: phone,
+      area: '',
+      source: '',
+      birthday: birthday !== '未記入' ? birthday : '',
+      createdAt: today,
+      fromMonshin: true
+    };
+
+    db.customers.push(customer);
+    db.nextCustNo = custNo + 1;
+
+    // Create initial karte from monshin data
+    const noteContent = buildKarteFromMonshin(data);
+    db.notes.push({
+      id: uid(),
+      customerId: custId,
+      date: today,
+      menuName: '初回問診票',
+      content: noteContent
+    });
+
+    localStorage.setItem(SK, JSON.stringify(db));
+    console.log('会計アプリに顧客を登録しました: #' + custNo + ' ' + name);
+  } catch(e) {
+    console.error('会計アプリ連携エラー:', e);
+    // Don't block the email/LINE send even if this fails
+  }
+}
+
+function buildKarteFromMonshin(data) {
+  let note = '【問診票より自動登録】\n';
+  const fields = [
+    ['症状', data['①症状']],
+    ['いつ頃から', data['②いつ頃から']],
+    ['日常への影響', data['③日常への影響']],
+    ['改善後の優先事項', data['④良くなったら優先したいこと']],
+    ['今までの対策', data['⑤今までの対策']],
+    ['本日の期待', data['⑥本日の期待']],
+    ['今後の理想', data['⑦今後の理想']],
+    ['いつまでに', data['⑧いつまでに']],
+  ];
+  fields.forEach(([label, val]) => {
+    if (val && val !== '未選択') note += label + ': ' + val + '\n';
+  });
+  if (data['①その他症状']) note += 'その他症状: ' + data['①その他症状'] + '\n';
+  if (data['④その他優先事項']) note += 'その他: ' + data['④その他優先事項'] + '\n';
+  if (data['その他コメント']) note += 'コメント: ' + data['その他コメント'] + '\n';
+  return note.trim();
+}
+
+function showComplete() {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('complete').classList.add('show');
+  document.getElementById('nav').classList.add('hidden');
+  document.querySelector('.progress-wrap').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>
