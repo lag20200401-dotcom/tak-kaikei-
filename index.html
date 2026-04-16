@@ -1141,7 +1141,8 @@ ${extra ? `【追加指示・状況】${extra}` : ''}
   btn.classList.add('generating');
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbxqsyCHPCjzNRNnmTP64xUIdxn9The5U6hX2kXv4CFGzt5704AX_v20TazKNummEWQ3XQ/exec';
+    const res = await fetch(GAS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
