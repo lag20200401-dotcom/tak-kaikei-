@@ -229,8 +229,12 @@
       </div>
     </div>
     <div class="form-group" style="margin-top:10px">
-      <label>メモ</label>
+      <label>メモ（領収書・記録用）</label>
       <textarea id="co-memo" rows="2" placeholder="特記事項など"></textarea>
+    </div>
+    <div class="form-group" style="margin-top:10px">
+      <label>🔍 今日気になったこと（LINEフォローに自動反映）</label>
+      <textarea id="co-note" rows="3" placeholder="例: 左の腰が特に張っていた。立ち仕事が続いているとのこと。施術後は可動域が改善。次回は股関節も診る予定。"></textarea>
     </div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="addCheckout()">✅ 会計を登録</button>
@@ -683,17 +687,19 @@ function addCheckout() {
   const price = parseInt(document.getElementById('co-price').value) || 0;
   const pay = document.getElementById('co-pay').value;
   const memo = document.getElementById('co-memo').value;
+  const note = document.getElementById('co-note').value.trim();
   if (!cid) { alert('顧客を選択してください'); return; }
   if (!menu) { alert('メニューを選択してください'); return; }
   if (!price) { alert('金額を入力してください'); return; }
   const c = customers.find(x => x.id === cid);
-  history.unshift({ id: genId(), customerId: cid, customerName: c ? c.name : '', date, menu, price, pay, memo, createdAt: nowStr() });
+  history.unshift({ id: genId(), customerId: cid, customerName: c ? c.name : '', date, menu, price, pay, memo, note, createdAt: nowStr() });
   if (c) { c.lastVisit = date; c.visitCount = (c.visitCount || 0) + 1; }
   save();
   alert('会計を登録しました！');
   document.getElementById('co-menu').value = '';
   document.getElementById('co-price').value = '';
   document.getElementById('co-memo').value = '';
+  document.getElementById('co-note').value = '';
   renderDash();
 }
 
@@ -1099,11 +1105,15 @@ function onLineCustomerChange() {
   if (!cid) return;
   const c = customers.find(x => x.id === cid);
   if (!c) return;
-  // 最終メニューを履歴から自動セット
+  // 最終メニューと気になったことメモを履歴から自動セット
   const last = history.find(h => h.customerId === cid);
   if (last) {
     const sel = document.getElementById('line-last-menu');
     for (let o of sel.options) { if (o.value === last.menu) { sel.value = last.menu; break; } }
+    // 気になったことメモを追加指示欄に自動セット
+    if (last.note) {
+      document.getElementById('line-extra').value = last.note;
+    }
   }
 }
 
@@ -1163,9 +1173,10 @@ async function generateLineMessage() {
 【メッセージ用途】${purposeMap[purpose] || purpose}
 【最終施術メニュー】${menu || '不明'}
 【トーン】${toneMap[tone]}
-${extra ? `【追加指示・状況】${extra}` : ''}
+${extra ? `【施術メモ・気になったこと】${extra}` : ''}
 
 【ルール】
+- 施術メモがある場合は必ずその内容に触れた個別感のある文章にする
 - LINEのテキストメッセージとして自然な文体
 - 院長のファーストネーム「Tak」で締める
 - 絵文字を適度に使う
