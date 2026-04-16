@@ -1142,15 +1142,14 @@ ${extra ? `【追加指示・状況】${extra}` : ''}
 
   try {
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbxqsyCHPCjzNRNnmTP64xUIdxn9The5U6hX2kXv4CFGzt5704AX_v20TazKNummEWQ3XQ/exec';
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
+    const payload = JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
     });
+    const form = new FormData();
+    form.append('payload', payload);
+    const res = await fetch(GAS_URL, { method: 'POST', body: form });
     const data = await res.json();
     const msg = data.content?.[0]?.text || 'エラーが発生しました';
 
