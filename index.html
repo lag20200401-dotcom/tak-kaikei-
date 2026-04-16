@@ -343,6 +343,8 @@
       <input type="text" id="hi-search" placeholder="顧客名・メニューで検索…" oninput="renderHistory()">
       <input type="month" id="hi-month" onchange="renderHistory()" style="max-width:150px">
       <button class="btn btn-secondary btn-sm" onclick="exportHistoryCSV()">⬇ CSV</button>
+      <button class="btn btn-primary btn-sm" onclick="exportMonthlyStats()">📊 月次統計をSheetsに送信</button>
+        <button class="btn btn-secondary btn-sm" onclick="downloadStatsCSV()">⬇ 統計CSV保存</button>
     </div>
     <div class="table-wrap"><table>
       <thead><tr><th>日付</th><th>顧客名</th><th>メニュー</th><th>金額</th><th>支払</th><th>メモ</th><th>削除</th></tr></thead>
@@ -1464,6 +1466,58 @@ async function registerFromMonshin() {
 // ===== INITIAL RENDER =====
 renderDash();
 populateCustomerSelect();
+  // ===== GAS連携・月次統計エクスポート =====
+const STATS_GAS_URL = 'https://script.google.com/macros/s/AKfycbzcKt5IISrdIP3hGOvBiktIRpSg3Z6lOvEkn98Ua8CUJ-jwqUfEAYqim96IXdQXun2i/exec';
+
+async function exportMonthlyStats() {
+  const month = document.getElementById('hi-month').value || today().slice(0,7);
+  const monthlyHistory = history.filter(h => h.date && h.date.startsWith(month));
+  if (!monthlyHistory.length) { alert(month + ' の履歴がありません'); return; }
+  if (!confirm(month + ' のデータ ' + monthlyHistory.length + '件をスプレッドシートに送信しますか？')) return;
+  const btn = event.target;
+  btn.textContent = '⏳ 送信中...'; btn.disabled = true;
+  try {
+    const form = new FormData();
+    form.append('action', 'writeStats');
+    form.append('month', month);
+    form.append('history', JSON.stringify(monthlyHistory));
+    form.append('customers', JSON.stringify(customers));
+    const res = await fetch(STATS_GAS_URL, { method: 'POST', body: form });
+    const data = await res.json();
+    if (data.ok) {
+      alert('✅ 完了！\nシート名: ' + data.sheetName + '\n売上: ¥' + Number(data.totalSales).toLocaleString('ja-JP') + '\n件数: ' + data.totalCount + '件（新規' + data.newCount + '件）');
+    } else {
+      alert('❌ エラー: ' + data.error);
+    }
+  } catch(err) {
+    alert('❌ 通信エラー: ' + err.message);
+  } finally {
+    btn.textContent = '📊 月次統計をSheetsに送信'; btn.disabled = false;
+  }
+}
+
+function downloadStatsCSV() {
+  const month = document.getElementById('hi-month').value || today().slice(0,7);
+  const monthlyHistory = history.filter(h => h.date && h.date.startsWith(month));
+  if (!monthlyHistory.length) { alert(month + ' の履歴がありません'); return; }
+  const isNew    = h => h.menu && (h.menu.includes('初回') || h.menu.includes('体験'));
+  const isTicket = h => h.menu && h.menu.includes('回数券') && !h.menu.includes('利用');
+  const isSub    = h => h.pay && h.pay.includes('サブスク');
+  const totalSales  = monthlyHistory.reduce((s,h) => s+(h.price||0), 0);
+  const newSales    = monthlyHistory.filter(isNew).reduce((s,h) => s+h.price, 0);
+  const ticketSales = monthlyHistory.filter(isTicket).reduce((s,h) => s+h.price, 0);
+  const subSales    = monthlyHistory.filter(isSub).reduce((s,h) => s+h.price, 0);
+  const norm = m => { if(!m) return '不明'; if(m.includes('紹介')) return '紹介'; if(m.includes('腰痛')||m.includes('HP')) return '腰痛HP'; if(m.includes('Meta')||m.includes('Facebook')) return 'Meta広告'; if(m.includes('Hotpeper')||m.includes('ホットペッパー')) return 'Hotpepper'; if(m.includes('YouTube')) return 'YouTube'; if(m.includes('折込')||m.includes('チラシ')) return '折込'; return 'その他'; };
+  const rows = [
+    [month + ' 月次統計'], [],
+    ['A. 売上サマリー'], ['月間売上合計', totalSales], ['新規売上', newSales], ['回数券売上', ticketSales], ['サブスク売上', subSales], ['客単価', monthlyHistory.length > 0 ? Math.round(totalSales/monthlyHistory.length) : 0], [],
+    ['D. 新規管理明細'], ['氏名','媒体','初回金額','来院日'],
+    ...monthlyHistory.filter(isNew).map(h => { const c = customers.find(cu => cu.id===h.customerId); return [h.customerName, c ? norm(c.motive||'') : '-', h.price, h.date]; }), [],
+    ['G. 全履歴'], ['日付','顧客名','メニュー','金額','支払'],
+    ...monthlyHistory.map(h => [h.date, h.customerName, h.menu, h.price, h.pay])
+  ];
+  downloadCSV(rows, 'TAK月次統計_' + month + '.csv');
+}
 </script>
 </body>
 </html>
