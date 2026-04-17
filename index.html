@@ -428,12 +428,13 @@
   <div class="card">
     <div class="card-title">💬 LINEメッセージ生成</div>
     <div class="form-grid">
-      <div class="form-group">
-        <label>顧客選択</label>
-        <select id="line-customer" onchange="onLineCustomerChange()">
-          <option value="">-- 顧客を選択（任意）--</option>
-        </select>
-      </div>
+     <div class="form-group">
+            <label>顧客選択</label>
+            <input type="text" id="line-customer-search" placeholder="名前で検索…" oninput="filterLineCustomers()" style="margin-bottom:4px">
+            <select id="line-customer" onchange="onLineCustomerChange()" size="1">
+              <option value="">-- 顧客を選択（任意）--</option>
+            </select>
+          </div>
       <div class="form-group">
         <label>メッセージ用途</label>
         <select id="line-purpose">
@@ -683,7 +684,22 @@ function populateLineCustomerSelect() {
   });
   sel.value = cur;
 }
-
+function filterLineCustomers() {
+  const q = document.getElementById('line-customer-search').value.toLowerCase();
+  const sel = document.getElementById('line-customer');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">-- 顧客を選択（任意）--</option>';
+  [...customers]
+    .filter(c => !q || c.name.includes(q) || (c.kana || '').includes(q))
+    .sort((a, b) => a.name.localeCompare(b.name, 'ja'))
+    .forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.id;
+      o.textContent = (c.no ? `[${c.no}] ` : '') + c.name;
+      sel.appendChild(o);
+    });
+  sel.value = cur;
+}
 // ===== CUSTOMER SELECT =====
 function populateCustomerSelect() {
   const sel = document.getElementById('co-customer');
