@@ -202,12 +202,13 @@
   <div class="card">
     <div class="card-title">💴 会計入力</div>
     <div class="form-grid">
-      <div class="form-group">
-        <label>顧客選択</label>
-        <select id="co-customer">
-          <option value="">-- 顧客を選択 --</option>
-        </select>
-      </div>
+     <div class="form-group">
+            <label>顧客選択</label>
+            <input type="text" id="co-customer-search" placeholder="名前で検索…" oninput="filterCoCustomers()" style="margin-bottom:4px">
+            <select id="co-customer" size="1">
+              <option value="">-- 顧客を選択 --</option>
+            </select>
+          </div>
       <div class="form-group">
         <label>来院日</label>
         <input type="date" id="co-date">
@@ -684,7 +685,23 @@ function populateLineCustomerSelect() {
   });
   sel.value = cur;
 }
-function filterLineCustomers() {
+function filterCoCustomers() {
+  const q = document.getElementById('co-customer-search').value.toLowerCase();
+  const sel = document.getElementById('co-customer');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">-- 顧客を選択 --</option>';
+  [...customers]
+    .filter(c => !q || c.name.includes(q) || (c.kana || '').includes(q))
+    .sort((a, b) => a.name.localeCompare(b.name, 'ja'))
+    .forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.id;
+      o.textContent = (c.no ? `[${c.no}] ` : '') + c.name + (c.kana ? ` (${c.kana})` : '');
+      sel.appendChild(o);
+    });
+  sel.value = cur;
+}
+  function filterLineCustomers() {
   const q = document.getElementById('line-customer-search').value.toLowerCase();
   const sel = document.getElementById('line-customer');
   const cur = sel.value;
