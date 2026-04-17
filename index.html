@@ -1091,7 +1091,7 @@ function parseAndPreviewCSV(text) {
     lastVisit: header.findIndex(h => h.includes('最終来店') || h.includes('最終来院')),
     visitCount:header.findIndex(h => h.includes('来店回数') || h.includes('来院回数')),
   };
-
+alert('列名確認: ' + header.slice(0,3).join(' / '));
   if (colMap.name < 0) {
     resultDiv.innerHTML = '<div class="import-result error">❌ 「顧客名」列が見つかりません。囲い込み職人のCSV形式を確認してください</div>';
     return;
