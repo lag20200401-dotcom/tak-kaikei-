@@ -1030,15 +1030,19 @@ function processCSVFile(file) {
   // Shift-JIS と UTF-8 両対応
   const reader = new FileReader();
   reader.onload = function(e) {
-    let text = e.target.result;
-    parseAndPreviewCSV(text);
-  };
-  // まず Shift-JIS で試みる
-  try {
-    reader.readAsText(file, 'Shift_JIS');
-  } catch {
-    reader.readAsText(file, 'UTF-8');
-  }
+      const buffer = e.target.result;
+      // TextDecoderでShift-JIS→UTF-8変換（Android対応）
+      try {
+        const decoder = new TextDecoder('shift-jis');
+        const text = decoder.decode(new Uint8Array(buffer));
+        parseAndPreviewCSV(text);
+      } catch(err) {
+        const decoder = new TextDecoder('utf-8');
+        const text = decoder.decode(new Uint8Array(buffer));
+        parseAndPreviewCSV(text);
+      }
+    };
+    reader.readAsArrayBuffer(file);
 }
 
 function parseCSVLine(line) {
