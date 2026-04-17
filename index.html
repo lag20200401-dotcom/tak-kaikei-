@@ -1072,7 +1072,7 @@ function parseAndPreviewCSV(text) {
     return;
   }
 
-  const header = parseCSVLine(lines[0]).map(h => h.trim());
+  const header = parseCSVLine(lines[0]).map(h => h.trim().replace(/[\s\u3000\ufeff]/g, ''));
   // 囲い込み職人の列マッピング
   const colMap = {
     no:        header.findIndex(h => h.includes('顧客No') || h.includes('顧客no')),
