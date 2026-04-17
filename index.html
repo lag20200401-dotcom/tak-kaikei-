@@ -174,6 +174,13 @@
     <div class="stat-card"><div class="stat-label">本日売上</div><div class="stat-value" id="stat-today">¥0</div><div class="stat-sub" id="stat-today-count">0件</div></div>
     <div class="stat-card"><div class="stat-label">顧客数</div><div class="stat-value" id="stat-customers">0</div><div class="stat-sub">登録顧客</div></div>
   </div>
+  <div class="card" id="alert-card" style="border-left:4px solid #e65100;display:none">
+    <div class="card-title" style="color:#e65100">⚠️ 次回予約が未設定の顧客</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>顧客名</th><th>最終来院</th><th>経過日数</th><th>アクション</th></tr></thead>
+      <tbody id="alert-tbody"></tbody>
+    </table></div>
+  </div>
   <div class="card">
     <div class="card-title">📅 直近の会計履歴</div>
     <div class="table-wrap"><table id="recent-table">
@@ -237,6 +244,10 @@
       <label>🔍 今日気になったこと（LINEフォローに自動反映）</label>
       <textarea id="co-note" rows="3" placeholder="例: 左の腰が特に張っていた。立ち仕事が続いているとのこと。施術後は可動域が改善。次回は股関節も診る予定。"></textarea>
     </div>
+    <div class="form-group" style="margin-top:10px">
+          <label>📅 次回予約日（未予約の場合は空欄）</label>
+          <input type="date" id="co-next-date">
+        </div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="addCheckout()">✅ 会計を登録</button>
       <button class="btn btn-secondary" onclick="previewReceipt()">🧾 領収書プレビュー</button>
@@ -699,11 +710,12 @@ function addCheckout() {
   const pay = document.getElementById('co-pay').value;
   const memo = document.getElementById('co-memo').value;
   const note = document.getElementById('co-note').value.trim();
+  const nextDate = document.getElementById('co-next-date').value;
   if (!cid) { alert('顧客を選択してください'); return; }
   if (!menu) { alert('メニューを選択してください'); return; }
   if (!price) { alert('金額を入力してください'); return; }
   const c = customers.find(x => x.id === cid);
-  history.unshift({ id: genId(), customerId: cid, customerName: c ? c.name : '', date, menu, price, pay, memo, note, createdAt: nowStr() });
+  history.unshift({ id: genId(), customerId: cid, customerName: c ? c.name : '', date, menu, price, pay, memo, note, nextDate, createdAt: nowStr() });
   if (c) { c.lastVisit = date; c.visitCount = (c.visitCount || 0) + 1; }
   save();
   alert('会計を登録しました！');
@@ -711,6 +723,7 @@ function addCheckout() {
   document.getElementById('co-price').value = '';
   document.getElementById('co-memo').value = '';
   document.getElementById('co-note').value = '';
+  document.getElementById('co-next-date').value = '';
   renderDash();
 }
 
@@ -884,6 +897,31 @@ function renderDash() {
     : '<tr><td colspan="4" class="empty-state">履歴なし</td></tr>';
 }
 
+  // 次回予約未設定アラート
+  const today7 = new Date(); today7.setDate(today7.getDate() - 7);
+  const noNext = history.filter(h => {
+    const isNew = h.menu && (h.menu.includes('初回') || h.menu.includes('体験'));
+    if (!isNew) return false;
+    if (h.nextDate) return false;
+    const diff = Math.floor((new Date() - new Date(h.date)) / 86400000);
+    return diff >= 7;
+  });
+  const alertCard = document.getElementById('alert-card');
+  const alertTbody = document.getElementById('alert-tbody');
+  if (noNext.length > 0) {
+    alertCard.style.display = 'block';
+    alertTbody.innerHTML = noNext.map(h => {
+      const diff = Math.floor((new Date() - new Date(h.date)) / 86400000);
+      return `<tr>
+        <td><strong>${h.customerName}</strong></td>
+        <td>${h.date}</td>
+        <td style="color:#e65100;font-weight:700">${diff}日経過</td>
+        <td><button class="btn btn-primary btn-sm" onclick="showPanel('line')">💬 LINE生成</button></td>
+      </tr>`;
+    }).join('');
+  } else {
+    alertCard.style.display = 'none';
+  }
 // ===== CSV EXPORT =====
 function exportCustomersCSV() {
   const rows = [['顧客No','氏名','ふりがな','性別','郵便番号','住所','メールアドレス','電話番号','生年月日','職業','動機','来院回数','最終来院']];
