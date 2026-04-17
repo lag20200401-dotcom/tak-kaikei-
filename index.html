@@ -397,7 +397,7 @@
       <p>クリックまたはCSVファイルをドラッグ＆ドロップ</p>
       <p style="font-size:11px; margin-top:4px;">対応形式: .csv（Shift-JIS / UTF-8）</p>
     </div>
-    <input type="file" id="importFileInput" accept=".csv" onchange="handleFileSelect(event)">
+    <input type="file" id="importFileInput" accept=".csv,text/csv,text/plain,*/*" onchange="handleFileSelect(event)">
 
     <div id="importResult"></div>
   </div>
