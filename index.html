@@ -1033,9 +1033,15 @@ function processCSVFile(file) {
       const buffer = e.target.result;
       // TextDecoderでShift-JIS→UTF-8変換（Android対応）
       try {
-        const decoder = new TextDecoder('shift-jis');
-        const text = decoder.decode(new Uint8Array(buffer));
-        parseAndPreviewCSV(text);
+        let text;
+      try {
+        const d1 = new TextDecoder('utf-8', {fatal: true});
+        text = d1.decode(new Uint8Array(buffer));
+      } catch(e) {
+        const d2 = new TextDecoder('shift-jis');
+        text = d2.decode(new Uint8Array(buffer));
+      }
+      parseAndPreviewCSV(text);
       } catch(err) {
         const decoder = new TextDecoder('utf-8');
         const text = decoder.decode(new Uint8Array(buffer));
