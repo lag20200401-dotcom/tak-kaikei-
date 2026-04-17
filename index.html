@@ -174,6 +174,13 @@
     <div class="stat-card"><div class="stat-label">本日売上</div><div class="stat-value" id="stat-today">¥0</div><div class="stat-sub" id="stat-today-count">0件</div></div>
     <div class="stat-card"><div class="stat-label">顧客数</div><div class="stat-value" id="stat-customers">0</div><div class="stat-sub">登録顧客</div></div>
   </div>
+  <div class="card" id="ticket-alert-card" style="border-left:4px solid #1565c0;display:none;margin-bottom:12px">
+    <div class="card-title" style="color:#1565c0">🎟 回数券残数わずかな顧客</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>顧客名</th><th>残数</th><th>最終来院</th><th>アクション</th></tr></thead>
+      <tbody id="ticket-alert-tbody"></tbody>
+    </table></div>
+  </div>
   <div class="card" id="alert-card" style="border-left:4px solid #e65100;display:none">
     <div class="card-title" style="color:#e65100">⚠️ 次回予約が未設定の顧客</div>
     <div class="table-wrap"><table>
@@ -896,7 +903,30 @@ function renderDash() {
     <tr><td>${h.date}</td><td>${h.customerName}</td><td>${h.menu}</td><td>${fmt(h.price)}</td></tr>`).join('')
     : '<tr><td colspan="4" class="empty-state">履歴なし</td></tr>';
 }
-
+// 回数券残数アラート
+  const isTicket = h => h.menu && h.menu.includes('回数券') && !h.menu.includes('利用');
+  const ticketAlerts = customers.map(c => {
+    const all = history.filter(h => h.customerId === c.id);
+    const purchased = all.filter(isTicket).reduce((s, h) => {
+      const m = h.menu.match(/(\d+)回/); return s + (m ? parseInt(m[1]) : 0);
+    }, 0);
+    const used = all.filter(h => h.menu && h.menu.includes('回数券利用')).length;
+    const remaining = purchased - used;
+    return purchased > 0 ? { name: c.name, remaining, lastVisit: c.lastVisit, id: c.id } : null;
+  }).filter(x => x && x.remaining <= 2 && x.remaining > 0);
+  const ticketCard = document.getElementById('ticket-alert-card');
+  const ticketTbody = document.getElementById('ticket-alert-tbody');
+  if (ticketAlerts.length > 0) {
+    ticketCard.style.display = 'block';
+    ticketTbody.innerHTML = ticketAlerts.map(c => `<tr>
+      <td><strong>${c.name}</strong></td>
+      <td style="color:#1565c0;font-weight:700">${c.remaining}回</td>
+      <td>${c.lastVisit || '-'}</td>
+      <td><button class="btn btn-primary btn-sm" onclick="showPanel('line')">💬 LINE生成</button></td>
+    </tr>`).join('');
+  } else {
+    ticketCard.style.display = 'none';
+  }
   // 次回予約未設定アラート
   const today7 = new Date(); today7.setDate(today7.getDate() - 7);
   const noNext = history.filter(h => {
