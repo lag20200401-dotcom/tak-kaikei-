@@ -669,7 +669,7 @@
     </div>
     <div style="display:flex;gap:5px;">
       <div style="flex:1;display:flex;flex-direction:column;">
-        <div style="position:relative;border-radius:8px;overflow:hidden;cursor:pointer;" onclick="baTriggerFile('before')" id="ba-a-bwrap">
+        <div style="position:relative;border-radius:8px;overflow:hidden;cursor:pointer;" onclick="baImgTap(event,'before')" id="ba-a-bwrap">
           <div id="ba-a-bzone" style="background:#1a1a2e;border-radius:8px;min-height:120px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;">
             <span style="font-size:28px;">🖼</span>
             <span style="font-size:11px;color:#555;">タップして選択</span>
@@ -680,7 +680,7 @@
       </div>
       <div style="width:2px;background:#c8f5a0;flex-shrink:0;border-radius:1px;"></div>
       <div style="flex:1;display:flex;flex-direction:column;">
-        <div style="position:relative;border-radius:8px;overflow:hidden;cursor:pointer;" onclick="baTriggerFile('after')" id="ba-a-awrap">
+        <div style="position:relative;border-radius:8px;overflow:hidden;cursor:pointer;" onclick="baImgTap(event,'after')" id="ba-a-awrap">
           <div id="ba-a-azone" style="background:#1a1a2e;border-radius:8px;min-height:120px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;">
             <span style="font-size:28px;">🖼</span>
             <span style="font-size:11px;color:#555;">タップして選択</span>
@@ -690,6 +690,61 @@
         <div style="text-align:center;padding:5px 0;font-size:10px;font-weight:800;letter-spacing:.08em;background:#c8f5a0;color:#0a1628;">AFTER</div>
       </div>
     </div>
+
+    <!-- 顔ぼかし：画像直下 -->
+    <div style="background:#0d1f38;border-radius:10px;padding:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:10px;font-weight:700;color:#c8f5a0;">😊 顔ぼかし</span>
+        <div style="display:flex;gap:4px;">
+          <button onclick="baSetBlur('logo')" id="ba-bt-logo" style="padding:4px 8px;border-radius:6px;border:1.5px solid #0a1628;background:#0a1628;color:#c8f5a0;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">TAK</button>
+          <button onclick="baSetBlur('smile')" id="ba-bt-smile" style="padding:4px 8px;border-radius:6px;border:1.5px solid #2a3a50;background:#2a3a50;color:#aaa;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">:)</button>
+          <button onclick="baSetBlur('both')" id="ba-bt-both" style="padding:4px 8px;border-radius:6px;border:1.5px solid #2a3a50;background:#2a3a50;color:#aaa;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">両方</button>
+          <button onclick="baSetBlur('none')" id="ba-bt-none" style="padding:4px 8px;border-radius:6px;border:1.5px solid #2a3a50;background:#2a3a50;color:#aaa;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">なし</button>
+        </div>
+      </div>
+      <!-- ビフォー/アフター切替タブ -->
+      <div style="display:flex;gap:4px;margin-bottom:8px;">
+        <button onclick="baSetTarget('before')" id="ba-tgt-before" style="flex:1;padding:4px;border-radius:6px;border:1.5px solid #0a1628;background:#0a1628;color:#c8f5a0;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">ビフォー調整中</button>
+        <button onclick="baSetTarget('after')" id="ba-tgt-after" style="flex:1;padding:4px;border-radius:6px;border:1.5px solid #2a3a50;background:#2a3a50;color:#aaa;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">アフター調整中</button>
+      </div>
+      <!-- スライダー（選択中ターゲットのみ表示） -->
+      <div id="ba-sl-before">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span style="font-size:9px;color:#7a9ab5;width:36px;">横</span>
+          <input type="range" id="ba-bx" min="10" max="90" value="40" oninput="baOnSlider()" style="flex:1;accent-color:#c8f5a0;">
+          <span style="font-size:9px;color:#c8f5a0;font-weight:700;width:28px;text-align:right;" id="ba-vbx">40%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span style="font-size:9px;color:#7a9ab5;width:36px;">縦</span>
+          <input type="range" id="ba-by" min="5" max="65" value="36" oninput="baOnSlider()" style="flex:1;accent-color:#c8f5a0;">
+          <span style="font-size:9px;color:#c8f5a0;font-weight:700;width:28px;text-align:right;" id="ba-vby">36%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:9px;color:#7a9ab5;width:36px;">大きさ</span>
+          <input type="range" id="ba-br" min="4" max="22" value="10" oninput="baOnSlider()" style="flex:1;accent-color:#c8f5a0;">
+          <span style="font-size:9px;color:#c8f5a0;font-weight:700;width:28px;text-align:right;" id="ba-vbr">10%</span>
+        </div>
+      </div>
+      <div id="ba-sl-after" style="display:none;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span style="font-size:9px;color:#7a9ab5;width:36px;">横</span>
+          <input type="range" id="ba-ax" min="10" max="90" value="40" oninput="baOnSlider()" style="flex:1;accent-color:#c8f5a0;">
+          <span style="font-size:9px;color:#c8f5a0;font-weight:700;width:28px;text-align:right;" id="ba-vax">40%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span style="font-size:9px;color:#7a9ab5;width:36px;">縦</span>
+          <input type="range" id="ba-ay" min="5" max="65" value="33" oninput="baOnSlider()" style="flex:1;accent-color:#c8f5a0;">
+          <span style="font-size:9px;color:#c8f5a0;font-weight:700;width:28px;text-align:right;" id="ba-vay">33%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:9px;color:#7a9ab5;width:36px;">大きさ</span>
+          <input type="range" id="ba-ar" min="4" max="22" value="10" oninput="baOnSlider()" style="flex:1;accent-color:#c8f5a0;">
+          <span style="font-size:9px;color:#c8f5a0;font-weight:700;width:28px;text-align:right;" id="ba-var">10%</span>
+        </div>
+      </div>
+      <p style="font-size:9px;color:#4a6a85;text-align:center;margin-top:6px;">💡 画像の顔をタップすると位置が移動します</p>
+    </div>
+
     <div style="display:flex;gap:5px;flex-wrap:wrap;" id="ba-a-tags">
       <span style="background:#112240;border-radius:20px;padding:3px 9px;font-size:9px;color:#c8f5a0;font-weight:700;" id="ba-tag1">✓ 姿勢改善</span>
       <span style="background:#112240;border-radius:20px;padding:3px 9px;font-size:9px;color:#c8f5a0;font-weight:700;" id="ba-tag2">✓ 肩甲骨整列</span>
@@ -707,7 +762,7 @@
     <div style="font-size:7px;color:#bbb;letter-spacing:.05em;">BODY TRANSFORMATION</div>
     <div style="height:1px;background:#e0d8ff;margin:3px 0;"></div>
     <div style="display:flex;flex-direction:column;gap:5px;">
-      <div style="position:relative;border-radius:8px;overflow:hidden;cursor:pointer;" onclick="baTriggerFile('before')">
+      <div style="position:relative;border-radius:8px;overflow:hidden;cursor:pointer;" onclick="baImgTap(event,'before')" id="ba-c-bwrap">
         <div id="ba-c-bzone" style="background:#ede9ff;border-radius:8px;min-height:100px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;">
           <span style="font-size:24px;">🖼</span>
           <span style="font-size:10px;color:#9b7fe8;">タップして選択</span>
@@ -716,7 +771,7 @@
         <div style="position:absolute;top:6px;left:6px;font-size:9px;font-weight:800;padding:2px 8px;border-radius:4px;background:#7c3aed;color:#fff;">BEFORE</div>
       </div>
       <div style="text-align:center;font-size:9px;color:#7c3aed;font-weight:700;letter-spacing:.1em;">▼ CHANGE</div>
-      <div style="position:relative;border-radius:8px;overflow:hidden;cursor:pointer;" onclick="baTriggerFile('after')">
+      <div style="position:relative;border-radius:8px;overflow:hidden;cursor:pointer;" onclick="baImgTap(event,'after')" id="ba-c-awrap">
         <div id="ba-c-azone" style="background:#fff;border:1px solid #ddd5ff;border-radius:8px;min-height:100px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;">
           <span style="font-size:24px;">🖼</span>
           <span style="font-size:10px;color:#9b7fe8;">タップして選択</span>
@@ -762,65 +817,6 @@
       <button class="btn btn-primary" onclick="baUpdatePoints()">✅ 反映</button>
       <button class="btn btn-secondary" onclick="baResetAll()">🔄 リセット</button>
     </div>
-  </div>
-
-  <!-- 顔ぼかし設定 -->
-  <div class="card">
-    <div class="card-title">😊 顔ぼかし設定</div>
-
-    <!-- 種別 -->
-    <div style="margin-bottom:10px;">
-      <label style="font-size:11px;color:var(--text-sub);font-weight:700;display:block;margin-bottom:6px;">種別</label>
-      <div style="display:flex;gap:6px;">
-        <button onclick="baSetBlur('logo')" id="ba-bt-logo" style="flex:1;padding:7px 8px;border-radius:8px;border:2px solid #0a1628;background:#0a1628;color:#c8f5a0;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">院名ロゴ TAK</button>
-        <button onclick="baSetBlur('smile')" id="ba-bt-smile" style="flex:1;padding:7px 8px;border-radius:8px;border:2px solid #ddd;background:#f5f5f5;color:#333;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">スマイル :)</button>
-        <button onclick="baSetBlur('both')" id="ba-bt-both" style="flex:1;padding:7px 8px;border-radius:8px;border:2px solid #ddd;background:#f5f5f5;color:#333;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">両方</button>
-        <button onclick="baSetBlur('none')" id="ba-bt-none" style="flex:1;padding:7px 8px;border-radius:8px;border:2px solid #ddd;background:#f5f5f5;color:#333;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">なし</button>
-      </div>
-    </div>
-
-    <!-- ビフォー調整 -->
-    <div style="background:#f5f5f5;border-radius:8px;padding:10px;margin-bottom:8px;">
-      <div style="font-size:10px;font-weight:700;color:#555;margin-bottom:7px;">ビフォー 位置・サイズ</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
-        <span style="font-size:10px;color:#666;width:48px;">横位置</span>
-        <input type="range" id="ba-bx" min="10" max="90" value="40" oninput="baOnSlider()" style="flex:1;accent-color:#0a1628;">
-        <span style="font-size:10px;font-weight:700;width:30px;text-align:right;" id="ba-vbx">40%</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
-        <span style="font-size:10px;color:#666;width:48px;">縦位置</span>
-        <input type="range" id="ba-by" min="5" max="65" value="36" oninput="baOnSlider()" style="flex:1;accent-color:#0a1628;">
-        <span style="font-size:10px;font-weight:700;width:30px;text-align:right;" id="ba-vby">36%</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:10px;color:#666;width:48px;">大きさ</span>
-        <input type="range" id="ba-br" min="4" max="22" value="10" oninput="baOnSlider()" style="flex:1;accent-color:#0a1628;">
-        <span style="font-size:10px;font-weight:700;width:30px;text-align:right;" id="ba-vbr">10%</span>
-      </div>
-    </div>
-
-    <!-- アフター調整 -->
-    <div style="background:#f5f5f5;border-radius:8px;padding:10px;">
-      <div style="font-size:10px;font-weight:700;color:#555;margin-bottom:7px;">アフター 位置・サイズ</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
-        <span style="font-size:10px;color:#666;width:48px;">横位置</span>
-        <input type="range" id="ba-ax" min="10" max="90" value="40" oninput="baOnSlider()" style="flex:1;accent-color:#0a1628;">
-        <span style="font-size:10px;font-weight:700;width:30px;text-align:right;" id="ba-vax">40%</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
-        <span style="font-size:10px;color:#666;width:48px;">縦位置</span>
-        <input type="range" id="ba-ay" min="5" max="65" value="33" oninput="baOnSlider()" style="flex:1;accent-color:#0a1628;">
-        <span style="font-size:10px;font-weight:700;width:30px;text-align:right;" id="ba-vay">33%</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:10px;color:#666;width:48px;">大きさ</span>
-        <input type="range" id="ba-ar" min="4" max="22" value="10" oninput="baOnSlider()" style="flex:1;accent-color:#0a1628;">
-        <span style="font-size:10px;font-weight:700;width:30px;text-align:right;" id="ba-var">10%</span>
-      </div>
-    </div>
-
-    <!-- 画像タップで位置指定のヒント -->
-    <p style="font-size:10px;color:var(--text-sub);text-align:center;margin-top:8px;">💡 上の画像をタップすると顔の位置に移動します</p>
   </div>
 
   <!-- ダウンロード -->
@@ -1702,6 +1698,16 @@ function baUpdatePoints(){
   var f2=document.getElementById('ba-cf2'); if(f2) f2.textContent=p2;
   var f3=document.getElementById('ba-cf3'); if(f3) f3.textContent=p3;
 }
+function baSetTarget(t){
+  var sb=document.getElementById('ba-sl-before');
+  var sa=document.getElementById('ba-sl-after');
+  var tb=document.getElementById('ba-tgt-before');
+  var ta=document.getElementById('ba-tgt-after');
+  if(sb) sb.style.display=t==='before'?'block':'none';
+  if(sa) sa.style.display=t==='after'?'block':'none';
+  if(tb){tb.style.background=t==='before'?'#0a1628':'#2a3a50';tb.style.color=t==='before'?'#c8f5a0':'#aaa';tb.style.borderColor=t==='before'?'#0a1628':'#2a3a50';}
+  if(ta){ta.style.background=t==='after'?'#0a1628':'#2a3a50';ta.style.color=t==='after'?'#c8f5a0':'#aaa';ta.style.borderColor=t==='after'?'#0a1628':'#2a3a50';}
+}
 function baSetBlur(type){
   baBlurType=type;
   ['logo','smile','both','none'].forEach(function(t){
@@ -1729,6 +1735,30 @@ function baOnSlider(){
   document.getElementById('ba-vax').textContent=baCfg.after.x+'%';
   document.getElementById('ba-vay').textContent=baCfg.after.y+'%';
   document.getElementById('ba-var').textContent=baCfg.after.r+'%';
+  baDrawAll();
+}
+function baImgTap(e, side){
+  // 画像が読み込まれていない → ファイル選択
+  if(!baImgs[side]){ baTriggerFile(side); return; }
+  // 画像あり → タップ位置をぼかし位置に反映 + ターゲット切替
+  baSetTarget(side);
+  var rect = e.currentTarget.getBoundingClientRect();
+  var pct_x = Math.round((e.clientX - rect.left) / rect.width * 100);
+  var pct_y = Math.round((e.clientY - rect.top)  / rect.height * 100);
+  baCfg[side].x = Math.min(90, Math.max(10, pct_x));
+  baCfg[side].y = Math.min(65, Math.max(5,  pct_y));
+  // スライダーも同期
+  if(side==='before'){
+    document.getElementById('ba-bx').value = baCfg.before.x;
+    document.getElementById('ba-by').value = baCfg.before.y;
+    document.getElementById('ba-vbx').textContent = baCfg.before.x+'%';
+    document.getElementById('ba-vby').textContent = baCfg.before.y+'%';
+  } else {
+    document.getElementById('ba-ax').value = baCfg.after.x;
+    document.getElementById('ba-ay').value = baCfg.after.y;
+    document.getElementById('ba-vax').textContent = baCfg.after.x+'%';
+    document.getElementById('ba-vay').textContent = baCfg.after.y+'%';
+  }
   baDrawAll();
 }
 function baDrawAll(){
