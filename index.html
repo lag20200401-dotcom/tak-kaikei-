@@ -654,40 +654,184 @@
 
 <!-- BEFORE/AFTER -->
 <div id="panel-ba" class="panel">
+
+  <!-- デザイン切替 -->
+  <div style="display:flex;gap:6px;justify-content:center;margin-bottom:0;">
+    <button onclick="baShowDesign('a')" id="ba-dt-a" style="flex:1;max-width:160px;padding:7px 10px;border-radius:8px 8px 0 0;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;background:#0a1628;color:#c8f5a0;opacity:1;">A — モノトーン</button>
+    <button onclick="baShowDesign('c')" id="ba-dt-c" style="flex:1;max-width:160px;padding:7px 10px;border-radius:8px 8px 0 0;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;background:#7c3aed;color:#fff;opacity:.45;">C — エディトリアル</button>
+  </div>
+
+  <!-- DESIGN A: モノトーン -->
+  <div id="ba-panel-a" style="background:#0a1628;border-radius:0 0 12px 12px;padding:14px;display:flex;flex-direction:column;gap:10px;margin-bottom:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:11px;font-weight:800;color:#c8f5a0;letter-spacing:.12em;">整体院 TAK</span>
+      <span style="font-size:9px;color:#444;">施術後の変化</span>
+    </div>
+    <div style="display:flex;gap:5px;">
+      <div style="flex:1;display:flex;flex-direction:column;">
+        <div style="position:relative;border-radius:8px;overflow:hidden;cursor:pointer;" onclick="baTriggerFile('before')" id="ba-a-bwrap">
+          <div id="ba-a-bzone" style="background:#1a1a2e;border-radius:8px;min-height:120px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;">
+            <span style="font-size:28px;">🖼</span>
+            <span style="font-size:11px;color:#555;">タップして選択</span>
+          </div>
+          <canvas id="ba-a-bc" style="position:absolute;top:0;left:0;pointer-events:none;z-index:5;"></canvas>
+        </div>
+        <div style="text-align:center;padding:5px 0;font-size:10px;font-weight:800;letter-spacing:.08em;background:rgba(0,0,0,.85);color:#c8f5a0;">BEFORE</div>
+      </div>
+      <div style="width:2px;background:#c8f5a0;flex-shrink:0;border-radius:1px;"></div>
+      <div style="flex:1;display:flex;flex-direction:column;">
+        <div style="position:relative;border-radius:8px;overflow:hidden;cursor:pointer;" onclick="baTriggerFile('after')" id="ba-a-awrap">
+          <div id="ba-a-azone" style="background:#1a1a2e;border-radius:8px;min-height:120px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;">
+            <span style="font-size:28px;">🖼</span>
+            <span style="font-size:11px;color:#555;">タップして選択</span>
+          </div>
+          <canvas id="ba-a-ac" style="position:absolute;top:0;left:0;pointer-events:none;z-index:5;"></canvas>
+        </div>
+        <div style="text-align:center;padding:5px 0;font-size:10px;font-weight:800;letter-spacing:.08em;background:#c8f5a0;color:#0a1628;">AFTER</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;" id="ba-a-tags">
+      <span style="background:#112240;border-radius:20px;padding:3px 9px;font-size:9px;color:#c8f5a0;font-weight:700;" id="ba-tag1">✓ 姿勢改善</span>
+      <span style="background:#112240;border-radius:20px;padding:3px 9px;font-size:9px;color:#c8f5a0;font-weight:700;" id="ba-tag2">✓ 肩甲骨整列</span>
+      <span style="background:#112240;border-radius:20px;padding:3px 9px;font-size:9px;color:#c8f5a0;font-weight:700;" id="ba-tag3">✓ 体幹整正</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;border-top:1px solid #162d4e;padding-top:6px;">
+      <span style="font-size:8px;color:#444;">@seitai_tak</span>
+      <span style="font-size:8px;color:#444;">#整体 #腰痛 #坐骨神経痛 #姿勢改善 #袋井</span>
+    </div>
+  </div>
+
+  <!-- DESIGN C: エディトリアル -->
+  <div id="ba-panel-c" style="display:none;background:#f8f6ff;border:1px solid #ddd5ff;border-top:none;border-radius:0 0 12px 12px;padding:14px;flex-direction:column;gap:8px;margin-bottom:12px;">
+    <div style="font-size:9px;font-weight:800;color:#7c3aed;letter-spacing:.18em;">整体院 TAK</div>
+    <div style="font-size:7px;color:#bbb;letter-spacing:.05em;">BODY TRANSFORMATION</div>
+    <div style="height:1px;background:#e0d8ff;margin:3px 0;"></div>
+    <div style="display:flex;flex-direction:column;gap:5px;">
+      <div style="position:relative;border-radius:8px;overflow:hidden;cursor:pointer;" onclick="baTriggerFile('before')">
+        <div id="ba-c-bzone" style="background:#ede9ff;border-radius:8px;min-height:100px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;">
+          <span style="font-size:24px;">🖼</span>
+          <span style="font-size:10px;color:#9b7fe8;">タップして選択</span>
+        </div>
+        <canvas id="ba-c-bc" style="position:absolute;top:0;left:0;pointer-events:none;z-index:5;"></canvas>
+        <div style="position:absolute;top:6px;left:6px;font-size:9px;font-weight:800;padding:2px 8px;border-radius:4px;background:#7c3aed;color:#fff;">BEFORE</div>
+      </div>
+      <div style="text-align:center;font-size:9px;color:#7c3aed;font-weight:700;letter-spacing:.1em;">▼ CHANGE</div>
+      <div style="position:relative;border-radius:8px;overflow:hidden;cursor:pointer;" onclick="baTriggerFile('after')">
+        <div id="ba-c-azone" style="background:#fff;border:1px solid #ddd5ff;border-radius:8px;min-height:100px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;">
+          <span style="font-size:24px;">🖼</span>
+          <span style="font-size:10px;color:#9b7fe8;">タップして選択</span>
+        </div>
+        <canvas id="ba-c-ac" style="position:absolute;top:0;left:0;pointer-events:none;z-index:5;"></canvas>
+        <div style="position:absolute;top:6px;left:6px;font-size:9px;font-weight:800;padding:2px 8px;border-radius:4px;background:#fbbf24;color:#1a0a00;">AFTER</div>
+      </div>
+    </div>
+    <div style="border-top:1px solid #e0d8ff;padding-top:7px;display:flex;">
+      <div style="flex:1;font-size:8px;color:#7c3aed;font-weight:700;text-align:center;line-height:1.6;border-right:1px solid #e0d8ff;" id="ba-cf1">姿勢<br>改善</div>
+      <div style="flex:1;font-size:8px;color:#7c3aed;font-weight:700;text-align:center;line-height:1.6;border-right:1px solid #e0d8ff;" id="ba-cf2">肩甲骨<br>整列</div>
+      <div style="flex:1;font-size:8px;color:#7c3aed;font-weight:700;text-align:center;line-height:1.6;" id="ba-cf3">可動域<br>拡大</div>
+    </div>
+  </div>
+
+  <!-- 共通コントロール -->
   <div class="card">
-    <div class="card-title">📸 ビフォーアフター画像合成</div>
-    <div class="ba-settings">
-      <div class="form-group"><label>出力サイズ</label><select id="ba-width"><option value="1080">1080px</option><option value="1200">1200px</option><option value="800">800px</option></select></div>
-      <div class="form-group"><label>ラベル</label><select id="ba-label-style"><option value="ja">日本語</option><option value="en">英語</option><option value="none">なし</option></select></div>
-      <div class="form-group"><label>区切り線色</label><input type="color" id="ba-divider-color" value="#2e7d52" style="height:38px;padding:4px 8px;"></div>
-      <div class="form-group"><label>背景色</label><input type="color" id="ba-bg-color" value="#ffffff" style="height:38px;padding:4px 8px;"></div>
-    </div>
-    <div class="ba-grid">
+    <div class="card-title">📷 写真選択</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
       <div>
-        <div class="ba-label-tag">📷 ビフォー</div>
-        <div class="ba-drop-zone" id="ba-before-zone" onclick="document.getElementById('ba-before-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleBaDrop(event,'before')">
-          <span style="font-size:32px">🖼</span><span style="font-size:13px;color:var(--text-sub)">クリックまたはドラッグ</span>
-        </div>
-        <input type="file" id="ba-before-input" accept="image/*" style="display:none" onchange="loadBaImage(event,'before')">
+        <label style="font-size:11px;color:var(--text-sub);font-weight:700;display:block;margin-bottom:4px;">ビフォー写真</label>
+        <button class="btn btn-secondary btn-sm" onclick="baTriggerFile('before')" style="width:100%;">📷 選択</button>
+        <input type="file" id="ba-before-input" accept="image/*" style="display:none" onchange="baLoadImage(event,'before')">
       </div>
       <div>
-        <div class="ba-label-tag">✨ アフター</div>
-        <div class="ba-drop-zone" id="ba-after-zone" onclick="document.getElementById('ba-after-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleBaDrop(event,'after')">
-          <span style="font-size:32px">🖼</span><span style="font-size:13px;color:var(--text-sub)">クリックまたはドラッグ</span>
-        </div>
-        <input type="file" id="ba-after-input" accept="image/*" style="display:none" onchange="loadBaImage(event,'after')">
+        <label style="font-size:11px;color:var(--text-sub);font-weight:700;display:block;margin-bottom:4px;">アフター写真</label>
+        <button class="btn btn-secondary btn-sm" onclick="baTriggerFile('after')" style="width:100%;">📷 選択</button>
+        <input type="file" id="ba-after-input" accept="image/*" style="display:none" onchange="baLoadImage(event,'after')">
       </div>
     </div>
+
+    <!-- 変化ポイント入力 -->
+    <div style="margin-bottom:10px;">
+      <label style="font-size:11px;color:var(--text-sub);font-weight:700;display:block;margin-bottom:4px;">変化ポイント（3項目）</label>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <input type="text" id="ba-point1" placeholder="例: 頭部前方位改善" value="姿勢改善">
+        <input type="text" id="ba-point2" placeholder="例: 肩甲骨整列" value="肩甲骨整列">
+        <input type="text" id="ba-point3" placeholder="例: 体幹整正" value="体幹整正">
+      </div>
+    </div>
+
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="composeBaImage()" id="ba-compose-btn" disabled>🎨 合成する</button>
-      <button class="btn btn-secondary" onclick="resetBa()">🔄 リセット</button>
+      <button class="btn btn-primary" onclick="baUpdatePoints()">✅ 反映</button>
+      <button class="btn btn-secondary" onclick="baResetAll()">🔄 リセット</button>
     </div>
   </div>
-  <div class="card" id="ba-result-card" style="display:none">
-    <div class="card-title">🖼 合成プレビュー</div>
-    <div id="ba-canvas-wrap"><canvas id="ba-canvas"></canvas></div>
-    <div class="btn-row" style="justify-content:center;margin-top:14px"><button class="btn btn-primary" onclick="downloadBaImage()">⬇ ダウンロード</button></div>
+
+  <!-- 顔ぼかし設定 -->
+  <div class="card">
+    <div class="card-title">😊 顔ぼかし設定</div>
+
+    <!-- 種別 -->
+    <div style="margin-bottom:10px;">
+      <label style="font-size:11px;color:var(--text-sub);font-weight:700;display:block;margin-bottom:6px;">種別</label>
+      <div style="display:flex;gap:6px;">
+        <button onclick="baSetBlur('logo')" id="ba-bt-logo" style="flex:1;padding:7px 8px;border-radius:8px;border:2px solid #0a1628;background:#0a1628;color:#c8f5a0;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">院名ロゴ TAK</button>
+        <button onclick="baSetBlur('smile')" id="ba-bt-smile" style="flex:1;padding:7px 8px;border-radius:8px;border:2px solid #ddd;background:#f5f5f5;color:#333;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">スマイル :)</button>
+        <button onclick="baSetBlur('both')" id="ba-bt-both" style="flex:1;padding:7px 8px;border-radius:8px;border:2px solid #ddd;background:#f5f5f5;color:#333;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">両方</button>
+        <button onclick="baSetBlur('none')" id="ba-bt-none" style="flex:1;padding:7px 8px;border-radius:8px;border:2px solid #ddd;background:#f5f5f5;color:#333;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">なし</button>
+      </div>
+    </div>
+
+    <!-- ビフォー調整 -->
+    <div style="background:#f5f5f5;border-radius:8px;padding:10px;margin-bottom:8px;">
+      <div style="font-size:10px;font-weight:700;color:#555;margin-bottom:7px;">ビフォー 位置・サイズ</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+        <span style="font-size:10px;color:#666;width:48px;">横位置</span>
+        <input type="range" id="ba-bx" min="10" max="90" value="40" oninput="baOnSlider()" style="flex:1;accent-color:#0a1628;">
+        <span style="font-size:10px;font-weight:700;width:30px;text-align:right;" id="ba-vbx">40%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+        <span style="font-size:10px;color:#666;width:48px;">縦位置</span>
+        <input type="range" id="ba-by" min="5" max="65" value="36" oninput="baOnSlider()" style="flex:1;accent-color:#0a1628;">
+        <span style="font-size:10px;font-weight:700;width:30px;text-align:right;" id="ba-vby">36%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:10px;color:#666;width:48px;">大きさ</span>
+        <input type="range" id="ba-br" min="4" max="22" value="10" oninput="baOnSlider()" style="flex:1;accent-color:#0a1628;">
+        <span style="font-size:10px;font-weight:700;width:30px;text-align:right;" id="ba-vbr">10%</span>
+      </div>
+    </div>
+
+    <!-- アフター調整 -->
+    <div style="background:#f5f5f5;border-radius:8px;padding:10px;">
+      <div style="font-size:10px;font-weight:700;color:#555;margin-bottom:7px;">アフター 位置・サイズ</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+        <span style="font-size:10px;color:#666;width:48px;">横位置</span>
+        <input type="range" id="ba-ax" min="10" max="90" value="40" oninput="baOnSlider()" style="flex:1;accent-color:#0a1628;">
+        <span style="font-size:10px;font-weight:700;width:30px;text-align:right;" id="ba-vax">40%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+        <span style="font-size:10px;color:#666;width:48px;">縦位置</span>
+        <input type="range" id="ba-ay" min="5" max="65" value="33" oninput="baOnSlider()" style="flex:1;accent-color:#0a1628;">
+        <span style="font-size:10px;font-weight:700;width:30px;text-align:right;" id="ba-vay">33%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:10px;color:#666;width:48px;">大きさ</span>
+        <input type="range" id="ba-ar" min="4" max="22" value="10" oninput="baOnSlider()" style="flex:1;accent-color:#0a1628;">
+        <span style="font-size:10px;font-weight:700;width:30px;text-align:right;" id="ba-var">10%</span>
+      </div>
+    </div>
+
+    <!-- 画像タップで位置指定のヒント -->
+    <p style="font-size:10px;color:var(--text-sub);text-align:center;margin-top:8px;">💡 上の画像をタップすると顔の位置に移動します</p>
   </div>
+
+  <!-- ダウンロード -->
+  <div class="card">
+    <div class="card-title">⬇ ダウンロード</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="baDownload('a')" id="ba-dl-a">⬇ モノトーン保存</button>
+      <button class="btn btn-secondary" onclick="baDownload('c')" id="ba-dl-c">⬇ エディトリアル保存</button>
+    </div>
+  </div>
+
 </div>
 
 <!-- 問診票取込 -->
@@ -924,7 +1068,7 @@ function showPanel(id){
   if(id==='checkout') populateCustomerSelect();
   if(id==='line'){ populateLineCustomerSelect(); restoreDraft('line'); }
   if(id==='monshin') loadMonshinList();
-  if(id==='ba') restoreDraft('ba');
+  if(id==='ba'){ baShowDesign('a'); restoreDraft('ba'); }
   if(id==='bussan') renderBussanPanel();
   if(id==='subscriptions'){ populateSubCustomerSelect(); renderSubSummary(); renderSubscriptions(); }
   if(id==='tickets'){ populateTicketCustomerSelect(); renderTicketList(); renderTicketSummary(); }
@@ -1508,48 +1652,168 @@ function copyLineMsg(){
   });
 }
 
-// BEFORE/AFTER
-const baImages={before:null,after:null};
-function handleBaDrop(e,side){e.preventDefault();document.getElementById('ba-'+side+'-zone').classList.remove('drag');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadBaImageFile(f,side);}
-function loadBaImage(e,side){const f=e.target.files[0];if(f)loadBaImageFile(f,side);e.target.value='';}
-function loadBaImageFile(file,side){
-  const reader=new FileReader();
-  reader.onload=ev=>{const img=new Image();img.onload=()=>{baImages[side]=img;document.getElementById('ba-'+side+'-zone').innerHTML=`<img src="${ev.target.result}" alt="${side}">`;document.getElementById('ba-compose-btn').disabled=!(baImages.before&&baImages.after);};img.src=ev.target.result;};
-  reader.readAsDataURL(file);
+// ===== BEFORE/AFTER 新デザイン =====
+var baImgs={before:null,after:null};
+var baCfg={before:{x:40,y:36,r:10,blur:'logo'},after:{x:40,y:33,r:10,blur:'logo'}};
+var baBlurType='logo';
+var baCurDesign='a';
+function baShowDesign(d){
+  baCurDesign=d;
+  var pa=document.getElementById('ba-panel-a');
+  var pc=document.getElementById('ba-panel-c');
+  if(pa) pa.style.display=d==='a'?'flex':'none';
+  if(pc) pc.style.display=d==='c'?'flex':'none';
+  var da=document.getElementById('ba-dt-a');
+  var dc=document.getElementById('ba-dt-c');
+  if(da) da.style.opacity=d==='a'?'1':'.45';
+  if(dc) dc.style.opacity=d==='c'?'1':'.45';
+  setTimeout(baDrawAll,50);
 }
-function composeBaImage(){
-  if(!baImages.before||!baImages.after)return;
-  const outW=parseInt(document.getElementById('ba-width').value)||1080;
-  const ls=document.getElementById('ba-label-style').value;
-  const dc=document.getElementById('ba-divider-color').value;
-  const bc=document.getElementById('ba-bg-color').value;
-  const half=Math.floor(outW/2);const dw=4;const lh=ls==='none'?0:44;
-  const bH=Math.round(half*baImages.before.naturalHeight/baImages.before.naturalWidth);
-  const aH=Math.round(half*baImages.after.naturalHeight/baImages.after.naturalWidth);
-  const imgH=Math.max(bH,aH);const canvas=document.getElementById('ba-canvas');
-  canvas.width=outW;canvas.height=imgH+lh;const ctx=canvas.getContext('2d');
-  ctx.fillStyle=bc;ctx.fillRect(0,0,outW,imgH+lh);
-  ctx.drawImage(baImages.before,0,lh+Math.round((imgH-bH)/2),half,bH);
-  ctx.drawImage(baImages.after,half+dw,lh+Math.round((imgH-aH)/2),half-dw,aH);
-  ctx.fillStyle=dc;ctx.fillRect(half,0,dw,imgH+lh);
-  if(ls!=='none'){
-    ctx.fillStyle=dc;ctx.fillRect(0,0,half,lh);ctx.fillRect(half+dw,0,half-dw,lh);
-    ctx.fillStyle='#fff';ctx.font=`bold ${Math.round(lh*.52)}px 'Hiragino Kaku Gothic ProN','Meiryo',sans-serif`;
-    ctx.textAlign='center';ctx.textBaseline='middle';
-    const lb=ls==='ja'?['ビフォー','アフター']:['BEFORE','AFTER'];
-    ctx.fillText(lb[0],half/2,lh/2);ctx.fillText(lb[1],half+dw+(half-dw)/2,lh/2);
+function baTriggerFile(side){
+  var el=document.getElementById('ba-'+side+'-input');
+  if(el) el.click();
+}
+function baLoadImage(e,side){
+  var f=e.target.files[0]; if(!f) return; e.target.value='';
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var img=new Image();
+    img.onload=function(){
+      baImgs[side]=img;
+      var zones=['ba-a-'+( side==='before'?'b':'a')+'zone','ba-c-'+(side==='before'?'b':'a')+'zone'];
+      zones.forEach(function(id){
+        var z=document.getElementById(id);
+        if(z) z.innerHTML='<img src="'+ev.target.result+'" alt="'+side+'" style="width:100%;display:block;border-radius:6px;">';
+      });
+      setTimeout(baDrawAll,100);
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(f);
+}
+function baUpdatePoints(){
+  var p1=document.getElementById('ba-point1').value||'姿勢改善';
+  var p2=document.getElementById('ba-point2').value||'肩甲骨整列';
+  var p3=document.getElementById('ba-point3').value||'体幹整正';
+  var t1=document.getElementById('ba-tag1'); if(t1) t1.textContent='✓ '+p1;
+  var t2=document.getElementById('ba-tag2'); if(t2) t2.textContent='✓ '+p2;
+  var t3=document.getElementById('ba-tag3'); if(t3) t3.textContent='✓ '+p3;
+  var f1=document.getElementById('ba-cf1'); if(f1) f1.textContent=p1;
+  var f2=document.getElementById('ba-cf2'); if(f2) f2.textContent=p2;
+  var f3=document.getElementById('ba-cf3'); if(f3) f3.textContent=p3;
+}
+function baSetBlur(type){
+  baBlurType=type;
+  ['logo','smile','both','none'].forEach(function(t){
+    var btn=document.getElementById('ba-bt-'+t); if(!btn) return;
+    var on=t===type;
+    btn.style.background=on?'#0a1628':'#f5f5f5';
+    btn.style.color=on?'#c8f5a0':'#333';
+    btn.style.borderColor=on?'#0a1628':'#ddd';
+  });
+  if(type==='both'){baCfg.before.blur='logo';baCfg.after.blur='smile';}
+  else if(type==='none'){baCfg.before.blur='none';baCfg.after.blur='none';}
+  else{baCfg.before.blur=type;baCfg.after.blur=type;}
+  baDrawAll();
+}
+function baOnSlider(){
+  baCfg.before.x=parseInt(document.getElementById('ba-bx').value);
+  baCfg.before.y=parseInt(document.getElementById('ba-by').value);
+  baCfg.before.r=parseInt(document.getElementById('ba-br').value);
+  baCfg.after.x =parseInt(document.getElementById('ba-ax').value);
+  baCfg.after.y =parseInt(document.getElementById('ba-ay').value);
+  baCfg.after.r =parseInt(document.getElementById('ba-ar').value);
+  document.getElementById('ba-vbx').textContent=baCfg.before.x+'%';
+  document.getElementById('ba-vby').textContent=baCfg.before.y+'%';
+  document.getElementById('ba-vbr').textContent=baCfg.before.r+'%';
+  document.getElementById('ba-vax').textContent=baCfg.after.x+'%';
+  document.getElementById('ba-vay').textContent=baCfg.after.y+'%';
+  document.getElementById('ba-var').textContent=baCfg.after.r+'%';
+  baDrawAll();
+}
+function baDrawAll(){
+  baDrawFace('ba-a-bc','ba-a-bzone',baCfg.before);
+  baDrawFace('ba-a-ac','ba-a-azone',baCfg.after);
+  baDrawFace('ba-c-bc','ba-c-bzone',baCfg.before);
+  baDrawFace('ba-c-ac','ba-c-azone',baCfg.after);
+}
+function baDrawFace(cvId,zoneId,c){
+  var cv=document.getElementById(cvId);
+  var zone=document.getElementById(zoneId); if(!cv||!zone) return;
+  var img=zone.querySelector('img'); if(!img) return;
+  var w=img.offsetWidth,h=img.offsetHeight; if(!w||!h) return;
+  cv.width=w;cv.height=h;cv.style.width=w+'px';cv.style.height=h+'px';
+  var cx=c.x/100*w,cy=c.y/100*h,r=c.r/100*Math.min(w,h);
+  var ctx=cv.getContext('2d'); ctx.clearRect(0,0,w,h);
+  var type=c.blur||baBlurType; if(type==='none') return;
+  if(type==='logo'){
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle='#0a1628';ctx.fill();
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='#c8f5a0';ctx.lineWidth=Math.max(1.5,r*.1);ctx.stroke();
+    ctx.fillStyle='#c8f5a0';ctx.font='bold '+(r*.52)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('TAK',cx,cy);
+  } else {
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle='#4db8d4';ctx.fill();
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='#e0f7ff';ctx.lineWidth=Math.max(1.5,r*.1);ctx.stroke();
+    ctx.fillStyle='#e0f7ff';ctx.font='bold '+(r*.55)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(':)',cx,cy);
   }
-  document.getElementById('ba-result-card').style.display='block';
-  document.getElementById('ba-result-card').scrollIntoView({behavior:'smooth',block:'start'});
 }
-function downloadBaImage(){
-  const canvas=document.getElementById('ba-canvas');const a=document.createElement('a');a.download='before_after_'+today()+'.jpg';
-  canvas.toBlob(blob=>{a.href=URL.createObjectURL(blob);a.click();},'image/jpeg',0.92);
+function baDownload(design){
+  var bZone=document.getElementById(design==='a'?'ba-a-bzone':'ba-c-bzone');
+  var aZone=document.getElementById(design==='a'?'ba-a-azone':'ba-c-azone');
+  var bImg=bZone?bZone.querySelector('img'):null;
+  var aImg=aZone?aZone.querySelector('img'):null;
+  if(!bImg||!aImg){alert('ビフォー・アフター両方の写真を選択してください');return;}
+  var W=1080,half=540,labelH=44;
+  var bH=Math.round(half*bImg.naturalHeight/bImg.naturalWidth);
+  var aH=Math.round(half*aImg.naturalHeight/aImg.naturalWidth);
+  var imgH=Math.max(bH,aH),totalH=imgH+labelH;
+  var cv=document.createElement('canvas');cv.width=W;cv.height=totalH;
+  var ctx=cv.getContext('2d');
+  if(design==='a'){
+    ctx.fillStyle='#0a1628';ctx.fillRect(0,0,W,totalH);
+    ctx.fillStyle='rgba(0,0,0,0.85)';ctx.fillRect(0,0,half,labelH);
+    ctx.fillStyle='#c8f5a0';ctx.fillRect(half+2,0,half-2,labelH);
+    ctx.fillStyle='#c8f5a0';ctx.font='bold 18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('BEFORE',half/2,labelH/2);
+    ctx.fillStyle='#0a1628';ctx.fillText('AFTER',half+2+(half-2)/2,labelH/2);
+  } else {
+    ctx.fillStyle='#f8f6ff';ctx.fillRect(0,0,W,totalH);
+    ctx.fillStyle='#7c3aed';ctx.fillRect(0,0,half,labelH);
+    ctx.fillStyle='#fbbf24';ctx.fillRect(half+2,0,half-2,labelH);
+    ctx.fillStyle='#fff';ctx.font='bold 18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('BEFORE',half/2,labelH/2);
+    ctx.fillStyle='#1a0a00';ctx.fillText('AFTER',half+2+(half-2)/2,labelH/2);
+  }
+  ctx.fillStyle=design==='a'?'#c8f5a0':'#ddd5ff';ctx.fillRect(half,0,2,totalH);
+  ctx.drawImage(bImg,0,labelH,half,bH);
+  ctx.drawImage(aImg,half+2,labelH,half-2,aH);
+  [{side:'before',cfg:baCfg.before,ox:0,oy:labelH,iw:half,ih:bH},
+   {side:'after', cfg:baCfg.after, ox:half+2,oy:labelH,iw:half-2,ih:aH}
+  ].forEach(function(d){
+    var type=d.cfg.blur||baBlurType; if(type==='none') return;
+    var cx=d.ox+d.cfg.x/100*d.iw,cy=d.oy+d.cfg.y/100*d.ih,r=d.cfg.r/100*Math.min(d.iw,d.ih);
+    var drawLogo=(type==='logo')||(type==='both'&&d.side==='before');
+    if(drawLogo){
+      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle='#0a1628';ctx.fill();
+      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='#c8f5a0';ctx.lineWidth=Math.max(2,r*.08);ctx.stroke();
+      ctx.fillStyle='#c8f5a0';ctx.font='bold '+(r*.52)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('TAK',cx,cy);
+    } else {
+      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle='#4db8d4';ctx.fill();
+      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='#e0f7ff';ctx.lineWidth=Math.max(2,r*.08);ctx.stroke();
+      ctx.fillStyle='#e0f7ff';ctx.font='bold '+(r*.55)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(':)',cx,cy);
+    }
+  });
+  var a=document.createElement('a');a.download='TAK_BA_'+design+'_'+today()+'.jpg';
+  cv.toBlob(function(blob){a.href=URL.createObjectURL(blob);a.click();},'image/jpeg',0.93);
 }
-function resetBa(){
-  baImages.before=null;baImages.after=null;
-  ['before','after'].forEach(s=>{document.getElementById('ba-'+s+'-zone').innerHTML='<span style="font-size:32px">🖼</span><span style="font-size:13px;color:var(--text-sub)">クリックまたはドラッグ</span>';});
-  document.getElementById('ba-compose-btn').disabled=true;document.getElementById('ba-result-card').style.display='none';
+function baResetAll(){
+  baImgs.before=null;baImgs.after=null;
+  ['ba-a-bzone','ba-a-azone','ba-c-bzone','ba-c-azone'].forEach(function(id){
+    var z=document.getElementById(id);if(!z)return;
+    z.innerHTML='<span style="font-size:24px;">🖼</span><span style="font-size:11px;color:#555;">タップして選択</span>';
+  });
+  ['ba-a-bc','ba-a-ac','ba-c-bc','ba-c-ac'].forEach(function(id){
+    var cv=document.getElementById(id);if(cv){cv.getContext('2d').clearRect(0,0,cv.width,cv.height);}
+  });
 }
 
 // 問診票
