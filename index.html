@@ -6,168 +6,128 @@
 <title>整体院TAK 会計アプリ</title>
 <style>
   :root {
-    --green: #2e7d52;
-    --green-light: #e8f5ee;
-    --green-mid: #4caf50;
-    --text: #1a1a1a;
-    --text-sub: #555;
-    --border: #ccc;
-    --bg: #f8f9fa;
-    --white: #fff;
-    --red: #c62828;
-    --orange: #e65100;
-    --blue: #1565c0;
+    --green: #2e7d52; --green-light: #e8f5ee; --text: #1a1a1a; --text-sub: #555;
+    --border: #ccc; --bg: #f8f9fa; --white: #fff;
+    --red: #c62828; --orange: #e65100; --blue: #1565c0;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
-
-  /* ===== HEADER ===== */
-  header { background: var(--green); color: #fff; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
-  header h1 { font-size: 18px; font-weight: 700; }
-  header span { font-size: 12px; opacity: 0.8; }
-
-  /* ===== TABS ===== */
-  .tabs { display: flex; background: #fff; border-bottom: 2px solid var(--green); overflow-x: auto; }
-  .tab { padding: 10px 18px; cursor: pointer; font-size: 13px; white-space: nowrap; border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--text-sub); }
-  .tab.active { color: var(--green); border-bottom-color: var(--green); font-weight: 700; }
-
-  /* ===== MAIN ===== */
-  main { padding: 16px; max-width: 900px; margin: 0 auto; }
-  .panel { display: none; }
-  .panel.active { display: block; }
-
-  /* ===== CARDS ===== */
-  .card { background: var(--white); border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.1); padding: 16px; margin-bottom: 16px; }
-  .card-title { font-size: 15px; font-weight: 700; color: var(--green); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-
-  /* ===== FORMS ===== */
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .form-grid.triple { grid-template-columns: 1fr 1fr 1fr; }
-  .form-grid.full { grid-template-columns: 1fr; }
-  .form-group { display: flex; flex-direction: column; gap: 4px; }
-  .form-group.span2 { grid-column: span 2; }
-  label { font-size: 12px; color: var(--text-sub); font-weight: 600; }
-  input, select, textarea {
-    border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px;
-    font-size: 14px; font-family: inherit; width: 100%;
-    transition: border-color .2s;
-  }
-  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--green); }
-  textarea { resize: vertical; min-height: 60px; }
-
-  /* ===== BUTTONS ===== */
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; transition: opacity .15s; }
-  .btn:hover { opacity: .85; }
-  .btn-primary { background: var(--green); color: #fff; }
-  .btn-secondary { background: #eee; color: var(--text); }
-  .btn-danger { background: var(--red); color: #fff; }
-  .btn-orange { background: var(--orange); color: #fff; }
-  .btn-blue { background: var(--blue); color: #fff; }
-  .btn-sm { padding: 5px 10px; font-size: 12px; }
-  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-
-  /* ===== TABLE ===== */
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { background: var(--green-light); color: var(--green); padding: 8px 10px; text-align: left; font-weight: 700; white-space: nowrap; }
-  td { padding: 8px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
-  tr:hover td { background: #fafff8; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-  .badge-green { background: var(--green-light); color: var(--green); }
-  .badge-orange { background: #fff3e0; color: var(--orange); }
-  .badge-blue { background: #e3f2fd; color: var(--blue); }
-
-  /* ===== RECEIPT ===== */
-  .receipt-preview { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 20px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.8; max-width: 320px; margin: 0 auto; }
-  .receipt-preview h2 { text-align: center; font-size: 16px; margin-bottom: 4px; }
-  .receipt-preview .sub { text-align: center; font-size: 11px; color: var(--text-sub); margin-bottom: 12px; }
-  .receipt-line { display: flex; justify-content: space-between; }
-  .receipt-line.total { border-top: 1px solid #333; margin-top: 6px; padding-top: 6px; font-weight: 700; font-size: 15px; }
-  .receipt-line.tax { font-size: 11px; color: var(--text-sub); }
-
-  /* ===== IMPORT ===== */
-  .import-zone { border: 2px dashed var(--border); border-radius: 8px; padding: 32px; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; }
-  .import-zone:hover, .import-zone.drag { border-color: var(--green); background: var(--green-light); }
-  .import-zone p { color: var(--text-sub); margin-top: 8px; font-size: 13px; }
-  .import-icon { font-size: 40px; }
-  #importFileInput { display: none; }
-  .import-result { margin-top: 12px; padding: 10px 14px; border-radius: 6px; font-size: 13px; }
-  .import-result.success { background: var(--green-light); color: var(--green); }
-  .import-result.error { background: #ffebee; color: var(--red); }
-  .import-result.info { background: #e3f2fd; color: var(--blue); }
-
-  /* ===== DASHBOARD ===== */
-  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
-  .stat-card { background: var(--white); border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,.08); text-align: center; }
-  .stat-label { font-size: 11px; color: var(--text-sub); margin-bottom: 4px; }
-  .stat-value { font-size: 22px; font-weight: 700; color: var(--green); }
-  .stat-sub { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
-
-  /* ===== SEARCH ===== */
-  .search-bar { display: flex; gap: 8px; margin-bottom: 12px; }
-  .search-bar input { flex: 1; }
-
-  /* ===== MODAL ===== */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; align-items: center; justify-content: center; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: #fff; border-radius: 10px; padding: 20px; max-width: 480px; width: 90%; max-height: 80vh; overflow-y: auto; }
-  .modal-title { font-size: 16px; font-weight: 700; color: var(--green); margin-bottom: 14px; }
-  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
-
-  /* ===== MISC ===== */
-  .section-label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: .05em; margin: 14px 0 8px; }
-  .empty-state { text-align: center; padding: 32px; color: var(--text-sub); }
-  .empty-state .emoji { font-size: 36px; margin-bottom: 8px; }
-  /* ===== LINE MESSAGE ===== */
-  .line-msg-box { background: #06C755; color: #fff; border-radius: 10px; padding: 14px 16px; font-size: 14px; line-height: 1.8; white-space: pre-wrap; word-break: break-all; min-height: 80px; }
-  .line-msg-wrap { background: #DFF2E1; border-radius: 8px; padding: 16px; margin-top: 12px; }
-  .line-char-count { font-size: 12px; color: var(--text-sub); margin-top: 6px; text-align: right; }
-  .template-btn { background: #e8f5ee; border: 1px solid var(--green); color: var(--green); border-radius: 20px; padding: 5px 12px; font-size: 12px; cursor: pointer; font-family: inherit; transition: background .15s; }
-  .template-btn:hover { background: var(--green); color: #fff; }
-  .template-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-  .generating { opacity: .6; pointer-events: none; }
-
-  /* ===== BEFORE/AFTER ===== */
-  .ba-drop-zone { border: 2px dashed var(--border); border-radius: 8px; padding: 24px 16px; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
-  .ba-drop-zone:hover, .ba-drop-zone.drag { border-color: var(--green); background: var(--green-light); }
-  .ba-drop-zone img { max-width: 100%; max-height: 160px; border-radius: 6px; object-fit: contain; }
-  .ba-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-  .ba-label-tag { font-size: 11px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .05em; }
-  #ba-canvas-wrap { text-align: center; margin-top: 8px; }
-  #ba-canvas { max-width: 100%; border-radius: 8px; border: 1px solid var(--border); }
-  .ba-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-
-  @media (max-width: 600px) {
-    .form-grid { grid-template-columns: 1fr; }
-    .form-grid.triple { grid-template-columns: 1fr 1fr; }
-    .stats-grid { grid-template-columns: 1fr 1fr; }
-    .form-group.span2 { grid-column: span 1; }
-    .ba-grid { grid-template-columns: 1fr; }
-    .ba-settings { grid-template-columns: 1fr; }
+  body { font-family: 'Hiragino Kaku Gothic ProN','Meiryo',sans-serif; background:var(--bg); color:var(--text); font-size:14px; }
+  header { background:var(--green); color:#fff; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; }
+  header h1 { font-size:18px; font-weight:700; }
+  header span { font-size:12px; opacity:.8; }
+  .tabs { display:flex; background:#fff; border-bottom:2px solid var(--green); overflow-x:auto; }
+  .tab { padding:10px 18px; cursor:pointer; font-size:13px; white-space:nowrap; border-bottom:3px solid transparent; margin-bottom:-2px; color:var(--text-sub); }
+  .tab.active { color:var(--green); border-bottom-color:var(--green); font-weight:700; }
+  main { padding:16px; max-width:900px; margin:0 auto; }
+  .panel { display:none; } .panel.active { display:block; }
+  .card { background:var(--white); border-radius:8px; box-shadow:0 1px 4px rgba(0,0,0,.1); padding:16px; margin-bottom:16px; }
+  .card-title { font-size:15px; font-weight:700; color:var(--green); margin-bottom:12px; display:flex; align-items:center; gap:6px; }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .form-grid.triple { grid-template-columns:1fr 1fr 1fr; }
+  .form-group { display:flex; flex-direction:column; gap:4px; }
+  .form-group.span2 { grid-column:span 2; }
+  label { font-size:12px; color:var(--text-sub); font-weight:600; }
+  input,select,textarea { border:1px solid var(--border); border-radius:6px; padding:8px 10px; font-size:14px; font-family:inherit; width:100%; transition:border-color .2s; }
+  input:focus,select:focus,textarea:focus { outline:none; border-color:var(--green); }
+  textarea { resize:vertical; min-height:60px; }
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border:none; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600; font-family:inherit; transition:opacity .15s; }
+  .btn:hover { opacity:.85; }
+  .btn-primary { background:var(--green); color:#fff; }
+  .btn-secondary { background:#eee; color:var(--text); }
+  .btn-danger { background:var(--red); color:#fff; }
+  .btn-orange { background:var(--orange); color:#fff; }
+  .btn-blue { background:var(--blue); color:#fff; }
+  .btn-sm { padding:5px 10px; font-size:12px; }
+  .btn-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { background:var(--green-light); color:var(--green); padding:8px 10px; text-align:left; font-weight:700; white-space:nowrap; }
+  td { padding:8px 10px; border-bottom:1px solid #eee; vertical-align:middle; }
+  tr:hover td { background:#fafff8; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600; }
+  .badge-green { background:var(--green-light); color:var(--green); }
+  .badge-orange { background:#fff3e0; color:var(--orange); }
+  .badge-blue { background:#e3f2fd; color:var(--blue); }
+  .receipt-preview { background:#fff; border:1px solid var(--border); border-radius:8px; padding:20px; font-family:'Courier New',monospace; font-size:13px; line-height:1.8; max-width:320px; margin:0 auto; }
+  .receipt-preview h2 { text-align:center; font-size:16px; margin-bottom:4px; }
+  .receipt-preview .sub { text-align:center; font-size:11px; color:var(--text-sub); margin-bottom:12px; }
+  .receipt-line { display:flex; justify-content:space-between; }
+  .receipt-line.total { border-top:1px solid #333; margin-top:6px; padding-top:6px; font-weight:700; font-size:15px; }
+  .receipt-line.tax { font-size:11px; color:var(--text-sub); }
+  .import-zone { border:2px dashed var(--border); border-radius:8px; padding:32px; text-align:center; cursor:pointer; transition:border-color .2s,background .2s; }
+  .import-zone:hover,.import-zone.drag { border-color:var(--green); background:var(--green-light); }
+  .import-zone p { color:var(--text-sub); margin-top:8px; font-size:13px; }
+  .import-icon { font-size:40px; }
+  #importFileInput { display:none; }
+  .import-result { margin-top:12px; padding:10px 14px; border-radius:6px; font-size:13px; }
+  .import-result.success { background:var(--green-light); color:var(--green); }
+  .import-result.error { background:#ffebee; color:var(--red); }
+  .import-result.info { background:#e3f2fd; color:var(--blue); }
+  .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
+  .stat-card { background:var(--white); border-radius:8px; padding:14px 16px; box-shadow:0 1px 4px rgba(0,0,0,.08); text-align:center; }
+  .stat-label { font-size:11px; color:var(--text-sub); margin-bottom:4px; }
+  .stat-value { font-size:22px; font-weight:700; color:var(--green); }
+  .stat-sub { font-size:11px; color:var(--text-sub); margin-top:2px; }
+  .search-bar { display:flex; gap:8px; margin-bottom:12px; }
+  .search-bar input { flex:1; }
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:#fff; border-radius:10px; padding:20px; max-width:480px; width:90%; max-height:80vh; overflow-y:auto; }
+  .modal-title { font-size:16px; font-weight:700; color:var(--green); margin-bottom:14px; }
+  .modal-btns { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
+  .section-label { font-size:12px; font-weight:700; color:var(--text-sub); text-transform:uppercase; letter-spacing:.05em; margin:14px 0 8px; }
+  .empty-state { text-align:center; padding:32px; color:var(--text-sub); }
+  .line-msg-box { background:#06C755; color:#fff; border-radius:10px; padding:14px 16px; font-size:14px; line-height:1.8; white-space:pre-wrap; word-break:break-all; min-height:80px; }
+  .line-msg-wrap { background:#DFF2E1; border-radius:8px; padding:16px; margin-top:12px; }
+  .line-char-count { font-size:12px; color:var(--text-sub); margin-top:6px; text-align:right; }
+  .template-btn { background:#e8f5ee; border:1px solid var(--green); color:var(--green); border-radius:20px; padding:5px 12px; font-size:12px; cursor:pointer; font-family:inherit; transition:background .15s; }
+  .template-btn:hover { background:var(--green); color:#fff; }
+  .template-grid { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  .generating { opacity:.6; pointer-events:none; }
+  .ba-drop-zone { border:2px dashed var(--border); border-radius:8px; padding:24px 16px; text-align:center; cursor:pointer; transition:border-color .2s,background .2s; min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; }
+  .ba-drop-zone:hover,.ba-drop-zone.drag { border-color:var(--green); background:var(--green-light); }
+  .ba-drop-zone img { max-width:100%; max-height:160px; border-radius:6px; object-fit:contain; }
+  .ba-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .ba-label-tag { font-size:11px; font-weight:700; color:var(--text-sub); margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em; }
+  #ba-canvas-wrap { text-align:center; margin-top:8px; }
+  #ba-canvas { max-width:100%; border-radius:8px; border:1px solid var(--border); }
+  .ba-settings { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+  /* 物販 */
+  .bussan-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+  .bussan-stat { background:var(--white); border-radius:8px; padding:12px 14px; box-shadow:0 1px 4px rgba(0,0,0,.08); text-align:center; }
+  .bussan-stat .blabel { font-size:11px; color:var(--text-sub); margin-bottom:4px; }
+  .bussan-stat .bvalue { font-size:20px; font-weight:700; color:var(--green); }
+  @media(max-width:600px){
+    .form-grid{grid-template-columns:1fr;} .form-grid.triple{grid-template-columns:1fr 1fr;}
+    .stats-grid{grid-template-columns:1fr 1fr;} .form-group.span2{grid-column:span 1;}
+    .ba-grid{grid-template-columns:1fr;} .ba-settings{grid-template-columns:1fr;}
+    .bussan-summary{grid-template-columns:1fr 1fr;}
   }
 </style>
 </head>
 <body>
-
 <header>
   <h1>🌿 整体院TAK 会計アプリ</h1>
   <span id="headerDate"></span>
 </header>
-
 <div class="tabs">
   <div class="tab active" onclick="showPanel('dash')">📊 ダッシュボード</div>
   <div class="tab" onclick="showPanel('checkout')">💴 会計</div>
   <div class="tab" onclick="showPanel('customers')">👤 顧客管理</div>
   <div class="tab" onclick="showPanel('history')">📋 来院履歴</div>
+  <div class="tab" onclick="showPanel('bussan')">🛒 物販</div>
+  <div class="tab" onclick="showPanel('subscriptions')">💳 サブスク管理</div>
+  <div class="tab" onclick="showPanel('tickets')">🎟 回数券管理</div>
+  <div class="tab" onclick="showPanel('adcost')">📣 広告費</div>
   <div class="tab" onclick="showPanel('import')">📥 CSVインポート</div>
   <div class="tab" onclick="showPanel('line')">💬 LINEメッセージ</div>
   <div class="tab" onclick="showPanel('ba')">📸 ビフォーアフター</div>
   <div class="tab" onclick="showPanel('monshin')">📋 問診票取込</div>
 </div>
-
+<div id="alert-banner" style="display:none;padding:10px 16px;font-size:13px;font-weight:600;text-align:center;cursor:pointer" onclick="document.getElementById('alert-banner').style.display='none'"></div>
 <main>
 
-<!-- ========== DASHBOARD ========== -->
+<!-- DASHBOARD -->
 <div id="panel-dash" class="panel active">
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-label">今月売上</div><div class="stat-value" id="stat-month">¥0</div><div class="stat-sub" id="stat-month-count">0件</div></div>
@@ -176,43 +136,46 @@
   </div>
   <div class="card" id="ticket-alert-card" style="border-left:4px solid #1565c0;display:none;margin-bottom:12px">
     <div class="card-title" style="color:#1565c0">🎟 回数券残数わずかな顧客</div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>顧客名</th><th>残数</th><th>最終来院</th><th>アクション</th></tr></thead>
-      <tbody id="ticket-alert-tbody"></tbody>
-    </table></div>
+    <div class="table-wrap"><table><thead><tr><th>顧客名</th><th>残数</th><th>最終来院</th><th>アクション</th></tr></thead><tbody id="ticket-alert-tbody"></tbody></table></div>
   </div>
   <div class="card" id="alert-card" style="border-left:4px solid #e65100;display:none">
     <div class="card-title" style="color:#e65100">⚠️ 次回予約が未設定の顧客</div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>顧客名</th><th>最終来院</th><th>経過日数</th><th>アクション</th></tr></thead>
-      <tbody id="alert-tbody"></tbody>
-    </table></div>
+    <div class="table-wrap"><table><thead><tr><th>顧客名</th><th>最終来院</th><th>経過日数</th><th>アクション</th></tr></thead><tbody id="alert-tbody"></tbody></table></div>
   </div>
   <div class="card">
     <div class="card-title">📅 直近の会計履歴</div>
-    <div class="table-wrap"><table id="recent-table">
-      <thead><tr><th>日時</th><th>顧客名</th><th>メニュー</th><th>金額</th></tr></thead>
-      <tbody id="recent-tbody"></tbody>
-    </table></div>
+    <div class="table-wrap"><table><thead><tr><th>日時</th><th>顧客名</th><th>メニュー</th><th>金額</th></tr></thead><tbody id="recent-tbody"></tbody></table></div>
   </div>
 </div>
 
-<!-- ========== CHECKOUT ========== -->
+<!-- CHECKOUT -->
 <div id="panel-checkout" class="panel">
   <div class="card">
     <div class="card-title">💴 会計入力</div>
     <div class="form-grid">
-     <div class="form-group">
-            <label>顧客選択</label>
-            <input type="text" id="co-customer-search" placeholder="名前で検索…" oninput="filterCoCustomers()" style="margin-bottom:4px">
-            <select id="co-customer" size="1">
-              <option value="">-- 顧客を選択 --</option>
-            </select>
-          </div>
       <div class="form-group">
-        <label>来院日</label>
-        <input type="date" id="co-date">
+        <label>顧客選択</label>
+        <input type="text" id="co-customer-search" placeholder="名前で検索…" oninput="filterCoCustomers()" style="margin-bottom:4px">
+        <select id="co-customer" size="1"><option value="">-- 顧客を選択 --</option></select>
       </div>
+      <div class="form-group"><label>来院日</label><input type="date" id="co-date"></div>
+    </div>
+    <div class="form-group" style="margin-top:10px">
+      <label>担当スタッフ</label>
+      <select id="co-staff">
+        <option value="Tak（桑原毅郎）">Tak（桑原毅郎）</option>
+        <option value="日向訓子">日向訓子</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-top:10px">
+      <label>種別</label>
+      <select id="co-type" onchange="coTypeChanged()">
+        <option value="normal">通常会計</option>
+        <option value="refund">返金（マイナス処理）</option>
+      </select>
+    </div>
+    <div id="co-refund-note" style="display:none;margin-top:6px;padding:8px 12px;background:#fff3e0;border-radius:6px;font-size:12px;color:#e65100">
+      ⚠️ 返金処理です。金額はマイナスで記録されます。
     </div>
     <div class="section-label">施術メニュー</div>
     <div class="form-grid triple">
@@ -226,143 +189,84 @@
           <option value="回数券10回" data-price="104500">回数券10回 ¥104,500</option>
           <option value="回数券20回" data-price="198000">回数券20回 ¥198,000</option>
           <option value="回数券30回" data-price="280500">回数券30回 ¥280,500</option>
+          <option value="メンテナンス回数券5回" data-price="44000">メンテナンス回数券5回 ¥44,000</option>
+          <option value="インディバ60分" data-price="11000">インディバ 60分 ¥11,000</option>
+          <option value="月イチインディバ" data-price="8800">月イチインディバ ¥8,800</option>
           <option value="回数券利用" data-price="0">No.4 回数券ご利用</option>
           <option value="カスタム" data-price="0">カスタム入力</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>金額（税込）</label>
-        <input type="number" id="co-price" placeholder="例: 11000" min="0">
-      </div>
+      <div class="form-group"><label>金額（税込）</label><input type="number" id="co-price" placeholder="例: 11000" min="0"></div>
       <div class="form-group">
         <label>支払方法</label>
         <select id="co-pay">
-          <option value="現金">現金</option>
-          <option value="スクエアサブスク">スクエアサブスク</option>
-          <option value="ライフ">ライフ</option>
-          <option value="PayPay">PayPay</option>
+          <option value="現金">現金</option><option value="スクエアサブスク">スクエアサブスク</option>
+          <option value="ライフ">ライフ</option><option value="PayPay">PayPay</option>
         </select>
       </div>
     </div>
-    <div class="form-group" style="margin-top:10px">
-      <label>メモ（領収書・記録用）</label>
-      <textarea id="co-memo" rows="2" placeholder="特記事項など"></textarea>
-    </div>
-    <div class="form-group" style="margin-top:10px">
-      <label>🔍 今日気になったこと（LINEフォローに自動反映）</label>
-      <textarea id="co-note" rows="3" placeholder="例: 左の腰が特に張っていた。立ち仕事が続いているとのこと。施術後は可動域が改善。次回は股関節も診る予定。"></textarea>
-    </div>
-    <div class="form-group" style="margin-top:10px">
-          <label>📅 次回予約日（未予約の場合は空欄）</label>
-          <input type="date" id="co-next-date">
-        </div>
+    <div class="form-group" style="margin-top:10px"><label>メモ</label><textarea id="co-memo" rows="2"></textarea></div>
+    <div class="form-group" style="margin-top:10px"><label>🔍 今日気になったこと（LINEフォローに自動反映）</label><textarea id="co-note" rows="3" placeholder="例: 左の腰が特に張っていた…"></textarea></div>
+    <div class="form-group" style="margin-top:10px"><label>📅 次回予約日</label><input type="date" id="co-next-date"></div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="addCheckout()">✅ 会計を登録</button>
       <button class="btn btn-secondary" onclick="previewReceipt()">🧾 領収書プレビュー</button>
     </div>
   </div>
-
   <div class="card" id="receipt-card" style="display:none">
     <div class="card-title">🧾 領収書プレビュー</div>
     <div id="receipt-content"></div>
-    <div class="btn-row">
-      <button class="btn btn-secondary" onclick="window.print()">🖨 印刷</button>
-    </div>
+    <div class="btn-row"><button class="btn btn-secondary" onclick="window.print()">🖨 印刷</button></div>
   </div>
 </div>
 
-<!-- ========== CUSTOMERS ========== -->
+<!-- CUSTOMERS -->
 <div id="panel-customers" class="panel">
   <div class="card">
     <div class="card-title">👤 顧客登録・編集</div>
     <input type="hidden" id="cu-id">
     <div class="form-grid triple">
-      <div class="form-group">
-        <label>顧客No（任意）</label>
-        <input type="text" id="cu-no" placeholder="例: 001">
-      </div>
-      <div class="form-group">
-        <label>氏名 *</label>
-        <input type="text" id="cu-name" placeholder="山田 花子">
-      </div>
-      <div class="form-group">
-        <label>ふりがな</label>
-        <input type="text" id="cu-kana" placeholder="やまだ はなこ">
-      </div>
+      <div class="form-group"><label>顧客No（任意）</label><input type="text" id="cu-no" placeholder="例: 001"></div>
+      <div class="form-group"><label>氏名 *</label><input type="text" id="cu-name" placeholder="山田 花子"></div>
+      <div class="form-group"><label>ふりがな</label><input type="text" id="cu-kana" placeholder="やまだ はなこ"></div>
     </div>
     <div class="form-grid triple">
-      <div class="form-group">
-        <label>性別</label>
-        <select id="cu-gender">
-          <option value="">未設定</option>
-          <option value="女性">女性</option>
-          <option value="男性">男性</option>
-          <option value="その他">その他</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>生年月日</label>
-        <input type="date" id="cu-birth">
-      </div>
-      <div class="form-group">
-        <label>職業</label>
-        <input type="text" id="cu-job" placeholder="例: 看護師">
-      </div>
+      <div class="form-group"><label>性別</label><select id="cu-gender"><option value="">未設定</option><option value="女性">女性</option><option value="男性">男性</option><option value="その他">その他</option></select></div>
+      <div class="form-group"><label>生年月日</label><input type="date" id="cu-birth"></div>
+      <div class="form-group"><label>職業</label><input type="text" id="cu-job" placeholder="例: 看護師"></div>
     </div>
     <div class="form-grid triple">
-      <div class="form-group">
-        <label>電話番号</label>
-        <input type="tel" id="cu-tel" placeholder="080-0000-0000">
-      </div>
-      <div class="form-group">
-        <label>メールアドレス</label>
-        <input type="email" id="cu-email" placeholder="example@email.com">
-      </div>
-      <div class="form-group">
-        <label>郵便番号</label>
-        <input type="text" id="cu-zip" placeholder="000-0000" maxlength="8">
-      </div>
+      <div class="form-group"><label>電話番号</label><input type="tel" id="cu-tel" placeholder="080-0000-0000"></div>
+      <div class="form-group"><label>メールアドレス</label><input type="email" id="cu-email"></div>
+      <div class="form-group"><label>郵便番号</label><input type="text" id="cu-zip" placeholder="000-0000" maxlength="8"></div>
     </div>
-    <div class="form-group" style="margin-top:10px">
-      <label>住所</label>
-      <input type="text" id="cu-address" placeholder="静岡県袋井市旭町1-1-1">
-    </div>
+    <div class="form-group" style="margin-top:10px"><label>住所</label><input type="text" id="cu-address" placeholder="静岡県袋井市旭町1-1-1"></div>
     <div class="form-group" style="margin-top:10px">
       <label>来院動機</label>
-   <select id="cu-motive">
-                  <option value="">-- 選択してください --</option>
-                  <option value="紹介">紹介</option>
-                  <option value="Instagram広告">Instagram広告</option>
-                  <option value="折込チラシ">折込チラシ</option>
-                  <option value="LINEリッチメニュー">LINEリッチメニュー</option>
-                  <option value="GoogleMap">GoogleMap</option>
-                  <option value="ポスティング">ポスティング</option>
-                </select>
+      <select id="cu-motive">
+        <option value="">-- 選択してください --</option>
+        <option value="紹介">紹介</option><option value="Instagram広告">Instagram広告</option>
+        <option value="折込チラシ">折込チラシ</option><option value="LINEリッチメニュー">LINEリッチメニュー</option>
+        <option value="GoogleMap">GoogleMap</option><option value="ポスティング">ポスティング</option>
+      </select>
     </div>
-    <div class="form-group" style="margin-top:10px">
-      <label>メモ</label>
-      <textarea id="cu-memo" rows="2" placeholder="特記事項など"></textarea>
-    </div>
+    <div class="form-group" style="margin-top:10px"><label>メモ</label><textarea id="cu-memo" rows="2"></textarea></div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="saveCustomer()">💾 保存</button>
       <button class="btn btn-secondary" onclick="clearCustomerForm()">🔄 クリア</button>
     </div>
   </div>
-
   <div class="card">
     <div class="card-title">📋 顧客一覧</div>
     <div class="search-bar">
       <input type="text" id="cu-search" placeholder="氏名・ふりがな・電話で検索…" oninput="renderCustomerList()">
       <button class="btn btn-secondary btn-sm" onclick="exportCustomersCSV()">⬇ CSVエクスポート</button>
     </div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>No</th><th>氏名</th><th>電話</th><th>来院回数</th><th>最終来院</th><th>操作</th></tr></thead>
-      <tbody id="customer-tbody"></tbody>
-    </table></div>
+    <div class="table-wrap"><table><thead><tr><th>No</th><th>氏名</th><th>電話</th><th>来院回数</th><th>最終来院</th><th>操作</th></tr></thead><tbody id="customer-tbody"></tbody></table></div>
   </div>
 </div>
 
-<!-- ========== HISTORY ========== -->
+<!-- HISTORY -->
 <div id="panel-history" class="panel">
   <div class="card">
     <div class="card-title">📋 来院・会計履歴</div>
@@ -371,114 +275,359 @@
       <input type="month" id="hi-month" onchange="renderHistory()" style="max-width:150px">
       <button class="btn btn-secondary btn-sm" onclick="exportHistoryCSV()">⬇ CSV</button>
       <button class="btn btn-primary btn-sm" onclick="exportMonthlyStats()">📊 月次統計をSheetsに送信</button>
-        <button class="btn btn-secondary btn-sm" onclick="downloadStatsCSV()">⬇ 統計CSV保存</button>
+      <button class="btn btn-secondary btn-sm" onclick="downloadStatsCSV()">⬇ 統計CSV保存</button>
     </div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>日付</th><th>顧客名</th><th>メニュー</th><th>金額</th><th>支払</th><th>メモ</th><th>削除</th></tr></thead>
-      <tbody id="history-tbody"></tbody>
-    </table></div>
+    <div class="table-wrap"><table><thead><tr><th>日付</th><th>顧客名</th><th>種別</th><th>メニュー</th><th>金額</th><th>支払</th><th>担当</th><th>メモ</th><th>操作</th></tr></thead><tbody id="history-tbody"></tbody></table></div>
   </div>
 </div>
 
-<!-- ========== CSV IMPORT ========== -->
+<!-- 物販 -->
+<div id="panel-bussan" class="panel">
+  <div class="bussan-summary" id="bussan-summary"></div>
+  <div class="card">
+    <div class="card-title">🛒 物販販売記録</div>
+    <div class="form-grid triple">
+      <div class="form-group"><label>販売日</label><input type="date" id="bs-date"></div>
+      <div class="form-group"><label>顧客（任意）</label><select id="bs-customer"><option value="">-- 選択 --</option></select></div>
+      <div class="form-group"><label>商品</label><select id="bs-product" onchange="bsProductChanged()"><option value="">-- 商品を選択 --</option></select></div>
+    </div>
+    <div class="form-grid triple" style="margin-top:10px">
+      <div class="form-group"><label>数量</label><input type="number" id="bs-qty" value="1" min="1" oninput="bsCalc()"></div>
+      <div class="form-group"><label>売上金額（自動）</label><input type="number" id="bs-price" readonly style="background:#f5f5f5"></div>
+      <div class="form-group"><label>利益（自動）</label><input type="number" id="bs-profit" readonly style="background:#f5f5f5"></div>
+    </div>
+    <div class="form-group" style="margin-top:10px"><label>メモ</label><input type="text" id="bs-memo" placeholder="任意メモ"></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="addBussanSale()">✅ 販売記録を登録</button></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📋 物販販売履歴</div>
+    <div class="search-bar">
+      <input type="month" id="bs-month" onchange="renderBussanPanel()" style="max-width:150px">
+      <button class="btn btn-secondary btn-sm" onclick="exportBussanCSV()">⬇ CSV出力</button>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>日付</th><th>顧客</th><th>商品</th><th>数量</th><th>売上</th><th>利益</th><th>削除</th></tr></thead><tbody id="bussan-history-tbody"></tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📦 商品マスター管理</div>
+    <div class="btn-row" style="margin-bottom:12px"><button class="btn btn-primary btn-sm" onclick="openProductModal()">＋ 新規商品追加</button></div>
+    <div class="table-wrap"><table><thead><tr><th>商品名</th><th>売価</th><th>仕入値</th><th>利益</th><th>操作</th></tr></thead><tbody id="product-master-tbody"></tbody></table></div>
+  </div>
+</div>
+
+
+<!-- SUBSCRIPTIONS -->
+<div id="panel-subscriptions" class="panel">
+
+  <!-- サマリー -->
+  <div class="bussan-summary" id="sub-summary"></div>
+
+  <!-- 新規契約登録 -->
+  <div class="card">
+    <div class="card-title">💳 サブスク新規登録</div>
+    <div class="form-grid triple">
+      <div class="form-group">
+        <label>顧客</label>
+        <input type="text" id="sub-customer-search" placeholder="名前で検索…" oninput="filterSubCustomers()" style="margin-bottom:4px">
+        <select id="sub-customer"><option value="">-- 顧客を選択 --</option></select>
+      </div>
+      <div class="form-group">
+        <label>メニュー</label>
+        <select id="sub-menu" onchange="subCalc()">
+          <option value="月イチ整体" data-price="8800">月イチ整体 ¥8,800/回</option>
+          <option value="月イチインディバ" data-price="8800">月イチインディバ ¥8,800/回</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>月あたり回数</label>
+        <select id="sub-qty" onchange="subCalc()">
+          <option value="1">1回</option>
+          <option value="2">2回</option>
+          <option value="3">3回</option>
+          <option value="4">4回</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid triple" style="margin-top:10px">
+      <div class="form-group">
+        <label>月額（自動計算）</label>
+        <input type="number" id="sub-monthly" readonly style="background:#f5f5f5">
+      </div>
+      <div class="form-group">
+        <label>初回決済日</label>
+        <input type="date" id="sub-start-date">
+      </div>
+      <div class="form-group">
+        <label>担当スタッフ</label>
+        <select id="sub-staff">
+          <option value="Tak（桑原毅郎）">Tak（桑原毅郎）</option>
+          <option value="日向訓子">日向訓子</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:10px">
+      <label>メモ</label>
+      <input type="text" id="sub-memo" placeholder="特記事項など">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="addSubscription()">✅ サブスク登録</button>
+    </div>
+  </div>
+
+  <!-- フィルター -->
+  <div class="card">
+    <div class="card-title">📋 サブスク契約一覧</div>
+    <div class="search-bar" style="margin-bottom:12px">
+      <input type="text" id="sub-search" placeholder="顧客名で検索…" oninput="renderSubscriptions()" style="flex:1">
+      <select id="sub-filter-status" onchange="renderSubscriptions()">
+        <option value="all">すべて</option>
+        <option value="active">契約中のみ</option>
+        <option value="paused">一時停止のみ</option>
+        <option value="cancelled">解約済のみ</option>
+      </select>
+      <select id="sub-filter-menu" onchange="renderSubscriptions()">
+        <option value="all">全メニュー</option>
+        <option value="月イチ整体">月イチ整体</option>
+        <option value="月イチインディバ">月イチインディバ</option>
+      </select>
+      <button class="btn btn-secondary btn-sm" onclick="exportSubCSV()">⬇ CSV</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>顧客名</th>
+            <th>メニュー</th>
+            <th>回数</th>
+            <th>月額</th>
+            <th>初回決済日</th>
+            <th>次回決済日</th>
+            <th>担当</th>
+            <th>ステータス</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="sub-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 複数契約まとめ表示 -->
+  <div class="card">
+    <div class="card-title">👥 顧客別サブスクまとめ</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>顧客名</th><th>契約内容</th><th>月額合計</th><th>次回決済</th><th>ステータス</th></tr></thead>
+        <tbody id="sub-by-customer-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- 回数券管理 -->
+<div id="panel-tickets" class="panel">
+
+  <!-- サマリー -->
+  <div class="bussan-summary" id="ticket-summary"></div>
+
+  <!-- 回数券登録・残数初期設定 -->
+  <div class="card">
+    <div class="card-title">🎟 回数券登録 / 残数初期設定</div>
+    <p style="font-size:12px;color:var(--text-sub);margin-bottom:12px">
+      途中から管理を始める顧客は「現在の残回数」を直接入力してください。会計で「回数券利用」を登録すると自動で-1されます。
+    </p>
+    <input type="hidden" id="tk-id">
+    <div class="form-grid triple">
+      <div class="form-group">
+        <label>顧客</label>
+        <input type="text" id="tk-customer-search" placeholder="名前で検索…" oninput="filterTicketCustomers()" style="margin-bottom:4px">
+        <select id="tk-customer"><option value="">-- 顧客を選択 --</option></select>
+      </div>
+      <div class="form-group">
+        <label>回数券種別</label>
+        <select id="tk-type">
+          <option value="回数券10回">回数券10回（¥104,500）</option>
+          <option value="回数券20回">回数券20回（¥198,000）</option>
+          <option value="回数券30回">回数券30回（¥280,500）</option>
+          <option value="メンテナンス回数券5回">メンテナンス回数券5回（¥44,000）</option>
+          <option value="カスタム">カスタム</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>購入日</label>
+        <input type="date" id="tk-purchase-date">
+      </div>
+    </div>
+    <div class="form-grid triple" style="margin-top:10px">
+      <div class="form-group">
+        <label>総回数（購入時）</label>
+        <input type="number" id="tk-total" min="1" placeholder="例: 10" oninput="tkCalc()">
+      </div>
+      <div class="form-group">
+        <label>現在の残回数 *</label>
+        <input type="number" id="tk-remaining" min="0" placeholder="例: 7">
+      </div>
+      <div class="form-group">
+        <label>購入金額（税込）</label>
+        <input type="number" id="tk-paid" min="0" placeholder="例: 104500" oninput="tkCalc()">
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:10px">
+      <label>メモ</label>
+      <input type="text" id="tk-memo" placeholder="任意メモ">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveTicket()">💾 保存</button>
+      <button class="btn btn-secondary" onclick="clearTicketForm()">🔄 クリア</button>
+    </div>
+  </div>
+
+  <!-- 残数一覧 -->
+  <div class="card">
+    <div class="card-title">📋 回数券残数一覧</div>
+    <div class="search-bar">
+      <input type="text" id="tk-search" placeholder="顧客名で検索…" oninput="renderTicketList()" style="flex:1">
+      <select id="tk-filter" onchange="renderTicketList()">
+        <option value="active">有効のみ</option>
+        <option value="all">すべて</option>
+        <option value="low">残2回以下</option>
+        <option value="zero">使い切り</option>
+      </select>
+      <button class="btn btn-secondary btn-sm" onclick="exportTicketCSV()">⬇ CSV</button>
+      <button class="btn btn-primary btn-sm" onclick="exportTicketFinalCSV()">📄 期末精算CSV</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>顧客名</th><th>種別</th><th>購入日</th><th>総回数</th>
+          <th>消化回数</th><th>残回数</th><th>購入金額</th><th>1回単価</th><th>残金額</th><th>操作</th>
+        </tr></thead>
+        <tbody id="ticket-tbody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px;padding:10px 12px;background:#e8f5ee;border-radius:6px;font-size:12px;color:var(--green)">
+      📌 期末精算（2027年3月）時は「期末精算CSV」ボタンで顧客名・残回数・残金額を一括出力できます。
+    </div>
+  </div>
+
+  <!-- 消化履歴 -->
+  <div class="card">
+    <div class="card-title">📅 消化履歴（直近30件）</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>日付</th><th>顧客名</th><th>種別</th><th>種類</th><th>残回数</th></tr></thead>
+        <tbody id="ticket-log-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- 広告費管理 -->
+<div id="panel-adcost" class="panel">
+
+  <!-- 月選択 -->
+  <div class="card">
+    <div class="card-title">📣 広告費・経費入力</div>
+    <div class="form-grid" style="margin-bottom:14px">
+      <div class="form-group">
+        <label>対象月</label>
+        <input type="month" id="ad-month" style="max-width:180px">
+      </div>
+    </div>
+
+    <!-- 固定項目 + カスタム項目 -->
+    <div id="ad-items-area"></div>
+
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn btn-secondary btn-sm" onclick="addAdItem()">＋ 項目を追加</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveAdCost()">💾 保存</button>
+    </div>
+  </div>
+
+  <!-- 月別履歴 -->
+  <div class="card">
+    <div class="card-title">📊 広告費履歴一覧</div>
+    <div class="btn-row" style="margin-bottom:10px">
+      <button class="btn btn-secondary btn-sm" onclick="exportAdCostCSV()">⬇ CSV出力</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>月</th><th>項目</th><th>金額</th><th>操作</th></tr></thead>
+        <tbody id="ad-history-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- CSV IMPORT -->
 <div id="panel-import" class="panel">
   <div class="card">
     <div class="card-title">📥 囲い込み職人 CSVインポート</div>
-    <p style="font-size:13px; color:var(--text-sub); margin-bottom:14px;">
-      囲い込み職人からエクスポートしたCSVファイル（Shift-JIS）を読み込みます。<br>
-      既存顧客と顧客Noが一致する場合は上書き確認します。
-    </p>
-
-    <div class="import-zone" id="importZone" onclick="document.getElementById('importFileInput').click()"
-         ondragover="event.preventDefault(); this.classList.add('drag')"
-         ondragleave="this.classList.remove('drag')"
-         ondrop="handleDrop(event)">
+    <p style="font-size:13px;color:var(--text-sub);margin-bottom:14px;">囲い込み職人からエクスポートしたCSVファイル（Shift-JIS）を読み込みます。</p>
+    <div class="import-zone" id="importZone" onclick="document.getElementById('importFileInput').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
       <div class="import-icon">📂</div>
       <p>クリックまたはCSVファイルをドラッグ＆ドロップ</p>
-      <p style="font-size:11px; margin-top:4px;">対応形式: .csv（Shift-JIS / UTF-8）</p>
+      <p style="font-size:11px;margin-top:4px;">対応形式: .csv（Shift-JIS / UTF-8）</p>
     </div>
     <input type="file" id="importFileInput" accept=".csv,text/csv,text/plain,*/*" onchange="handleFileSelect(event)">
-
     <div id="importResult"></div>
   </div>
-
   <div class="card" id="importPreviewCard" style="display:none">
     <div class="card-title">📋 インポートプレビュー</div>
-    <p id="importPreviewCount" style="font-size:13px; margin-bottom:10px; color:var(--text-sub);"></p>
-    <div class="table-wrap"><table>
-      <thead><tr><th>顧客No</th><th>氏名</th><th>ふりがな</th><th>電話</th><th>郵便番号</th><th>住所</th><th>メール</th><th>職業</th><th>状態</th></tr></thead>
-      <tbody id="importPreviewBody"></tbody>
-    </table></div>
+    <p id="importPreviewCount" style="font-size:13px;margin-bottom:10px;color:var(--text-sub);"></p>
+    <div class="table-wrap"><table><thead><tr><th>顧客No</th><th>氏名</th><th>ふりがな</th><th>電話</th><th>郵便番号</th><th>住所</th><th>メール</th><th>職業</th><th>状態</th></tr></thead><tbody id="importPreviewBody"></tbody></table></div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="confirmImport()">✅ インポート実行</button>
       <button class="btn btn-secondary" onclick="cancelImport()">キャンセル</button>
     </div>
   </div>
-
-  <div class="card">
-    <div class="card-title">📌 囲い込み職人 CSVフォーマット</div>
-    <p style="font-size:12px; color:var(--text-sub); line-height:1.8;">
-      対応列：顧客No, 顧客名, ふりがな, 性別, <strong>郵便番号, 住所１, 住所２</strong>, 電話-1, 電話-2, <strong>メールアドレス</strong>, 生年月日, 年齢, 年代, 職業, 動機, 最終来店日, 来店回数<br>
-      文字コード: <strong>Shift-JIS</strong>（自動検出）
-    </p>
-  </div>
 </div>
 
-<!-- ========== LINE MESSAGE ========== -->
+<!-- LINE MESSAGE -->
 <div id="panel-line" class="panel">
   <div class="card">
     <div class="card-title">💬 LINEメッセージ生成</div>
     <div class="form-grid">
-     <div class="form-group">
-            <label>顧客選択</label>
-            <input type="text" id="line-customer-search" placeholder="名前で検索…" oninput="filterLineCustomers()" style="margin-bottom:4px">
-            <select id="line-customer" onchange="onLineCustomerChange()" size="1">
-              <option value="">-- 顧客を選択（任意）--</option>
-            </select>
-          </div>
+      <div class="form-group">
+        <label>顧客選択</label>
+        <input type="text" id="line-customer-search" placeholder="名前で検索…" oninput="filterLineCustomers()" style="margin-bottom:4px">
+        <select id="line-customer" onchange="onLineCustomerChange()" size="1"><option value="">-- 顧客を選択（任意）--</option></select>
+      </div>
       <div class="form-group">
         <label>メッセージ用途</label>
         <select id="line-purpose">
-          <option value="followup">施術後フォローアップ</option>
-          <option value="remind">次回来院リマインド</option>
-          <option value="reactivate">久しぶり再来院促進</option>
-          <option value="diet">ダイエットプログラム案内</option>
-          <option value="birthday">誕生日メッセージ</option>
-          <option value="thanks">ご来院お礼</option>
-          <option value="custom">カスタム（自由入力）</option>
+          <option value="followup">施術後フォローアップ</option><option value="remind">次回来院リマインド</option>
+          <option value="reactivate">久しぶり再来院促進</option><option value="diet">ダイエットプログラム案内</option>
+          <option value="birthday">誕生日メッセージ</option><option value="thanks">ご来院お礼</option>
+          <option value="custom">カスタム</option>
         </select>
       </div>
     </div>
-
     <div class="form-grid" style="margin-top:10px">
       <div class="form-group">
-        <label>最終施術メニュー（参考）</label>
+        <label>最終施術メニュー</label>
         <select id="line-last-menu">
-          <option value="">未選択</option>
-          <option value="初回体験コース">初回体験コース</option>
-          <option value="深層リリース整体">深層リリース整体</option>
-          <option value="月イチ整体">月イチ整体</option>
-          <option value="鍼灸治療">鍼灸治療</option>
-          <option value="Indiba施術">Indiba施術</option>
+          <option value="">未選択</option><option value="初回体験コース">初回体験コース</option>
+          <option value="深層リリース整体">深層リリース整体</option><option value="月イチ整体">月イチ整体</option>
+          <option value="鍼灸治療">鍼灸治療</option><option value="Indiba施術">Indiba施術</option>
         </select>
       </div>
       <div class="form-group">
         <label>トーン</label>
         <select id="line-tone">
-          <option value="warm">温かみがある・親しみやすい</option>
-          <option value="professional">丁寧・プロフェッショナル</option>
+          <option value="warm">温かみがある・親しみやすい</option><option value="professional">丁寧・プロフェッショナル</option>
           <option value="casual">カジュアル・フレンドリー</option>
         </select>
       </div>
     </div>
-
-    <div class="form-group" style="margin-top:10px">
-      <label>追加の指示・状況メモ（任意）</label>
-      <textarea id="line-extra" rows="2" placeholder="例: 肩こりが強い、次回は来月がいい、など"></textarea>
-    </div>
-
+    <div class="form-group" style="margin-top:10px"><label>追加の指示・状況メモ</label><textarea id="line-extra" rows="2"></textarea></div>
     <div class="section-label">テンプレート選択</div>
-    <div class="template-grid" id="template-btns">
+    <div class="template-grid">
       <button class="template-btn" onclick="setTemplate('施術後の体調確認')">施術後体調確認</button>
       <button class="template-btn" onclick="setTemplate('2週間後の来院提案')">2週間後来院提案</button>
       <button class="template-btn" onclick="setTemplate('1か月以上空いた再来院の促進')">久しぶり再来院</button>
@@ -486,24 +635,16 @@
       <button class="template-btn" onclick="setTemplate('誕生日のお祝いと来院特典案内')">誕生日特典</button>
       <button class="template-btn" onclick="setTemplate('新メニューIndiba施術のご案内')">Indiba案内</button>
     </div>
-
     <div class="btn-row">
       <button class="btn btn-primary" id="line-gen-btn" onclick="generateLineMessage()">✨ AIでメッセージ生成</button>
       <button class="btn btn-secondary" onclick="clearLinePanel()">🔄 クリア</button>
     </div>
   </div>
-
   <div class="card" id="line-result-card" style="display:none">
     <div class="card-title">📨 生成メッセージ</div>
-    <div id="line-msg-count" class="line-char-count" style="margin-bottom:8px"></div>
-    <div class="line-msg-wrap">
-      <div class="line-msg-box" id="line-msg-box">　</div>
-    </div>
+    <div class="line-msg-wrap"><div class="line-msg-box" id="line-msg-box">　</div></div>
     <div class="line-char-count" id="line-char-count"></div>
-    <div class="form-group" style="margin-top:12px">
-      <label>編集エリア（自由に修正できます）</label>
-      <textarea id="line-edit-area" rows="8" oninput="updateLineCharCount()"></textarea>
-    </div>
+    <div class="form-group" style="margin-top:12px"><label>編集エリア</label><textarea id="line-edit-area" rows="8" oninput="updateLineCharCount()"></textarea></div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="copyLineMsg()">📋 コピー</button>
       <button class="btn btn-orange" onclick="generateLineMessage()">🔄 再生成</button>
@@ -511,123 +652,212 @@
   </div>
 </div>
 
-<!-- ========== BEFORE / AFTER ========== -->
+<!-- BEFORE/AFTER -->
 <div id="panel-ba" class="panel">
   <div class="card">
     <div class="card-title">📸 ビフォーアフター画像合成</div>
-    <p style="font-size:13px;color:var(--text-sub);margin-bottom:14px;">
-      ビフォー・アフターの画像を選択すると、横並び1枚に合成してダウンロードできます。SNS投稿・LINE送信用にどうぞ。
-    </p>
-
     <div class="ba-settings">
-      <div class="form-group">
-        <label>出力サイズ（横幅px）</label>
-        <select id="ba-width">
-          <option value="1080">1080px（Instagram正方形）</option>
-          <option value="1200">1200px（横長）</option>
-          <option value="800">800px（小さめ）</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>ラベル表示</label>
-        <select id="ba-label-style">
-          <option value="ja">日本語（ビフォー / アフター）</option>
-          <option value="en">英語（BEFORE / AFTER）</option>
-          <option value="none">ラベルなし</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>区切り線の色</label>
-        <input type="color" id="ba-divider-color" value="#2e7d52" style="height:38px; padding:4px 8px;">
-      </div>
-      <div class="form-group">
-        <label>背景色</label>
-        <input type="color" id="ba-bg-color" value="#ffffff" style="height:38px; padding:4px 8px;">
-      </div>
+      <div class="form-group"><label>出力サイズ</label><select id="ba-width"><option value="1080">1080px</option><option value="1200">1200px</option><option value="800">800px</option></select></div>
+      <div class="form-group"><label>ラベル</label><select id="ba-label-style"><option value="ja">日本語</option><option value="en">英語</option><option value="none">なし</option></select></div>
+      <div class="form-group"><label>区切り線色</label><input type="color" id="ba-divider-color" value="#2e7d52" style="height:38px;padding:4px 8px;"></div>
+      <div class="form-group"><label>背景色</label><input type="color" id="ba-bg-color" value="#ffffff" style="height:38px;padding:4px 8px;"></div>
     </div>
-
     <div class="ba-grid">
       <div>
         <div class="ba-label-tag">📷 ビフォー</div>
-        <div class="ba-drop-zone" id="ba-before-zone"
-             onclick="document.getElementById('ba-before-input').click()"
-             ondragover="event.preventDefault(); this.classList.add('drag')"
-             ondragleave="this.classList.remove('drag')"
-             ondrop="handleBaDrop(event,'before')">
-          <span style="font-size:32px">🖼</span>
-          <span style="font-size:13px;color:var(--text-sub)">クリックまたはドラッグ</span>
+        <div class="ba-drop-zone" id="ba-before-zone" onclick="document.getElementById('ba-before-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleBaDrop(event,'before')">
+          <span style="font-size:32px">🖼</span><span style="font-size:13px;color:var(--text-sub)">クリックまたはドラッグ</span>
         </div>
         <input type="file" id="ba-before-input" accept="image/*" style="display:none" onchange="loadBaImage(event,'before')">
       </div>
       <div>
         <div class="ba-label-tag">✨ アフター</div>
-        <div class="ba-drop-zone" id="ba-after-zone"
-             onclick="document.getElementById('ba-after-input').click()"
-             ondragover="event.preventDefault(); this.classList.add('drag')"
-             ondragleave="this.classList.remove('drag')"
-             ondrop="handleBaDrop(event,'after')">
-          <span style="font-size:32px">🖼</span>
-          <span style="font-size:13px;color:var(--text-sub)">クリックまたはドラッグ</span>
+        <div class="ba-drop-zone" id="ba-after-zone" onclick="document.getElementById('ba-after-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleBaDrop(event,'after')">
+          <span style="font-size:32px">🖼</span><span style="font-size:13px;color:var(--text-sub)">クリックまたはドラッグ</span>
         </div>
         <input type="file" id="ba-after-input" accept="image/*" style="display:none" onchange="loadBaImage(event,'after')">
       </div>
     </div>
-
     <div class="btn-row">
       <button class="btn btn-primary" onclick="composeBaImage()" id="ba-compose-btn" disabled>🎨 合成する</button>
       <button class="btn btn-secondary" onclick="resetBa()">🔄 リセット</button>
     </div>
   </div>
-
   <div class="card" id="ba-result-card" style="display:none">
     <div class="card-title">🖼 合成プレビュー</div>
-    <div id="ba-canvas-wrap">
-      <canvas id="ba-canvas"></canvas>
-    </div>
-    <div class="btn-row" style="justify-content:center; margin-top:14px">
-      <button class="btn btn-primary" onclick="downloadBaImage()">⬇ ダウンロード</button>
-    </div>
+    <div id="ba-canvas-wrap"><canvas id="ba-canvas"></canvas></div>
+    <div class="btn-row" style="justify-content:center;margin-top:14px"><button class="btn btn-primary" onclick="downloadBaImage()">⬇ ダウンロード</button></div>
   </div>
 </div>
 
-<!-- ========== 問診票取込 ========== -->
+<!-- 問診票取込 -->
 <div id="panel-monshin" class="panel">
   <div class="card">
     <div class="card-title">📋 問診票取込（未取込一覧）</div>
-    <p style="font-size:13px;color:var(--text-sub);margin-bottom:14px;">
-      顧客が送信した問診票データの一覧です。「顧客登録」を押すと顧客管理に自動登録されます。
-    </p>
-    <div class="btn-row" style="margin-bottom:12px">
-      <button class="btn btn-primary btn-sm" onclick="loadMonshinList()">🔄 最新データを取得</button>
-    </div>
+    <div class="btn-row" style="margin-bottom:12px"><button class="btn btn-primary btn-sm" onclick="loadMonshinList()">🔄 最新データを取得</button></div>
     <div id="monshin-status" style="font-size:13px;color:var(--text-sub);margin-bottom:8px;"></div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>受信日時</th><th>氏名</th><th>電話番号</th><th>症状</th><th>いつから</th><th>本日の期待</th><th>操作</th>
-          </tr>
-        </thead>
-        <tbody id="monshin-tbody"></tbody>
-      </table>
-    </div>
+    <div class="table-wrap"><table><thead><tr><th>受信日時</th><th>氏名</th><th>電話番号</th><th>症状</th><th>いつから</th><th>本日の期待</th><th>操作</th></tr></thead><tbody id="monshin-tbody"></tbody></table></div>
   </div>
-
-  <!-- 詳細モーダル用データ保持 -->
   <div id="monshin-detail-card" class="card" style="display:none">
     <div class="card-title">📄 問診票詳細</div>
     <div id="monshin-detail-body"></div>
     <div class="btn-row">
-      <button class="btn btn-primary" id="monshin-reg-btn" onclick="registerFromMonshin()">👤 顧客登録する</button>
+      <button class="btn btn-primary" onclick="registerFromMonshin()">👤 顧客登録する</button>
       <button class="btn btn-secondary" onclick="document.getElementById('monshin-detail-card').style.display='none'">閉じる</button>
     </div>
   </div>
 </div>
 
-
 </main>
 
-<!-- Modal -->
+<!-- 商品モーダル -->
+<div class="modal-overlay" id="productModalOverlay">
+  <div class="modal">
+    <div class="modal-title" id="productModalTitle">商品を追加</div>
+    <input type="hidden" id="pm-id">
+    <div class="form-group" style="margin-bottom:10px"><label>商品名 *</label><input type="text" id="pm-name" placeholder="例: テラヴィータ"></div>
+    <div class="form-grid triple">
+      <div class="form-group"><label>売価（円）*</label><input type="number" id="pm-price" placeholder="0" oninput="pmCalc()"></div>
+      <div class="form-group"><label>仕入値（円）</label><input type="number" id="pm-cost" placeholder="0" oninput="pmCalc()"></div>
+      <div class="form-group"><label>利益（自動）</label><input type="number" id="pm-profit" readonly style="background:#f5f5f5"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeProductModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveProduct()">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- サブスク編集モーダル -->
+<div class="modal-overlay" id="subEditModalOverlay">
+  <div class="modal">
+    <div class="modal-title">✏️ サブスク契約を編集</div>
+    <input type="hidden" id="se-id">
+    <div class="form-grid" style="margin-bottom:10px">
+      <div class="form-group">
+        <label>メニュー</label>
+        <select id="se-menu" onchange="seCalc()">
+          <option value="月イチ整体">月イチ整体 ¥8,800/回</option>
+          <option value="月イチインディバ">月イチインディバ ¥8,800/回</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>月あたり回数</label>
+        <select id="se-qty" onchange="seCalc()">
+          <option value="1">1回</option>
+          <option value="2">2回</option>
+          <option value="3">3回</option>
+          <option value="4">4回</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid" style="margin-bottom:10px">
+      <div class="form-group">
+        <label>月額（自動）</label>
+        <input type="number" id="se-monthly" readonly style="background:#f5f5f5">
+      </div>
+      <div class="form-group">
+        <label>ステータス</label>
+        <select id="se-status">
+          <option value="active">契約中</option>
+          <option value="paused">一時停止</option>
+          <option value="cancelled">解約</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid" style="margin-bottom:10px">
+      <div class="form-group">
+        <label>担当スタッフ</label>
+        <select id="se-staff">
+          <option value="Tak（桑原毅郎）">Tak（桑原毅郎）</option>
+          <option value="日向訓子">日向訓子</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>解約日（解約時のみ）</label>
+        <input type="date" id="se-cancel-date">
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label>メモ</label>
+      <input type="text" id="se-memo">
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeSubEditModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveSubEdit()">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 会計履歴編集モーダル -->
+<div class="modal-overlay" id="historyEditModalOverlay">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-title">✏️ 会計履歴を編集</div>
+    <input type="hidden" id="he-id">
+    <div class="form-grid" style="margin-bottom:10px">
+      <div class="form-group"><label>日付</label><input type="date" id="he-date"></div>
+      <div class="form-group"><label>顧客名</label><input type="text" id="he-customer-name"></div>
+    </div>
+    <div class="form-grid" style="margin-bottom:10px">
+      <div class="form-group">
+        <label>種別</label>
+        <select id="he-type" onchange="heTypeChanged()">
+          <option value="normal">通常会計</option>
+          <option value="refund">返金（マイナス処理）</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>メニュー</label>
+        <select id="he-menu">
+          <option value="初回体験コース">初回体験コース</option>
+          <option value="TAK式組織再生プログラム">TAK式組織再生プログラム</option>
+          <option value="月イチ整体">月イチ整体</option>
+          <option value="メンテナンス回数券5回">メンテナンス回数券5回</option>
+          <option value="回数券10回">回数券10回</option>
+          <option value="回数券20回">回数券20回</option>
+          <option value="回数券30回">回数券30回</option>
+          <option value="インディバ60分">インディバ60分</option>
+          <option value="月イチインディバ">月イチインディバ</option>
+          <option value="回数券利用">回数券利用</option>
+          <option value="カスタム">カスタム</option>
+        </select>
+      </div>
+    </div>
+    <div id="he-refund-note" style="display:none;margin-bottom:8px;padding:8px 12px;background:#fff3e0;border-radius:6px;font-size:12px;color:#e65100">
+      ⚠️ 返金処理です。金額はマイナスで記録されます。
+    </div>
+    <div class="form-grid triple" style="margin-bottom:10px">
+      <div class="form-group"><label>金額（円）</label><input type="number" id="he-price" min="0"></div>
+      <div class="form-group">
+        <label>支払方法</label>
+        <select id="he-pay">
+          <option value="現金">現金</option>
+          <option value="スクエアサブスク">スクエアサブスク</option>
+          <option value="ライフ">ライフ</option>
+          <option value="PayPay">PayPay</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>担当スタッフ</label>
+        <select id="he-staff">
+          <option value="Tak（桑原毅郎）">Tak（桑原毅郎）</option>
+          <option value="日向訓子">日向訓子</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px"><label>メモ</label><textarea id="he-memo" rows="2"></textarea></div>
+    <div class="form-group" style="margin-bottom:10px"><label>施術メモ（LINE連携）</label><textarea id="he-note" rows="2"></textarea></div>
+    <div class="form-group" style="margin-bottom:10px"><label>次回予約日</label><input type="date" id="he-next-date"></div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="document.getElementById('historyEditModalOverlay').classList.remove('open')">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveHistoryEdit()">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 汎用モーダル -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-title" id="modalTitle">確認</div>
@@ -637,78 +867,909 @@
 </div>
 
 <script>
-// ===== STATE =====
-let customers = JSON.parse(localStorage.getItem('tak_customers') || '[]');
-let history = JSON.parse(localStorage.getItem('tak_history') || '[]');
+// STATE
+let customers = JSON.parse(localStorage.getItem('tak_customers')||'[]');
+let history   = JSON.parse(localStorage.getItem('tak_history')||'[]');
 let pendingImport = [];
 
-function save() {
-  localStorage.setItem('tak_customers', JSON.stringify(customers));
-  localStorage.setItem('tak_history', JSON.stringify(history));
+let products = JSON.parse(localStorage.getItem('tak_products')||'null');
+if(!products){
+  products=[
+    {id:'p1', name:'テラヴィータ',          price:7560,  cost:3780, profit:3780},
+    {id:'p2', name:'プロテインナチュレ',     price:7776,  cost:4666, profit:3110},
+    {id:'p3', name:'NMNハイドロ',           price:17600, cost:8800, profit:8800},
+    {id:'p4', name:'グリーンモンスター',     price:6480,  cost:4860, profit:1620},
+    {id:'p5', name:'スーパーオメガ3',        price:3456,  cost:2074, profit:1382},
+    {id:'p6', name:'ヒマラヤマグマソルト 30g',price:594,  cost:445,  profit:149},
+    {id:'p7', name:'MANA酵素',              price:9155,  cost:4944, profit:4211},
+    {id:'p8', name:'ヘンププロテイン',       price:3970,  cost:2160, profit:1510},
+    {id:'p9', name:'ルイボスティー pono',    price:2100,  cost:1296, profit:804},
+    {id:'p10',name:'タウリン',              price:6804,  cost:4082, profit:2722},
+    {id:'p11',name:'グレートMg',            price:3100,  cost:1908, profit:1192},
+    {id:'p12',name:'アミノマキア',           price:9072,  cost:4989, profit:4083},
+  ];
+  localStorage.setItem('tak_products',JSON.stringify(products));
+}
+let bussanSales=JSON.parse(localStorage.getItem('tak_bussan_sales')||'[]');
+
+function save(){
+  localStorage.setItem('tak_customers',JSON.stringify(customers));
+  localStorage.setItem('tak_history',JSON.stringify(history));
+  localStorage.setItem('tak_products',JSON.stringify(products));
+  localStorage.setItem('tak_bussan_sales',JSON.stringify(bussanSales));
 }
 
-// ===== UTILS =====
-function fmt(n) { return '¥' + Number(n).toLocaleString('ja-JP'); }
-function today() { return new Date().toISOString().slice(0,10); }
-function nowStr() { return new Date().toISOString(); }
-function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+// UTILS
+function fmt(n){return '¥'+Number(n).toLocaleString('ja-JP');}
+function today(){return new Date().toISOString().slice(0,10);}
+function nowStr(){return new Date().toISOString();}
+function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
 
-// ===== INIT =====
-document.getElementById('headerDate').textContent = new Date().toLocaleDateString('ja-JP', {year:'numeric',month:'long',day:'numeric',weekday:'short'});
-document.getElementById('co-date').value = today();
-const hiMonth = document.getElementById('hi-month');
-hiMonth.value = today().slice(0,7);
+// INIT
+document.getElementById('headerDate').textContent=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+document.getElementById('co-date').value=today();
+document.getElementById('bs-date').value=today();
+document.getElementById('hi-month').value=today().slice(0,7);
+document.getElementById('bs-month').value=today().slice(0,7);
 
-// ===== TABS =====
-function showPanel(id) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('panel-' + id).classList.add('active');
+// TABS
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
   event.target.classList.add('active');
-  if (id === 'dash') renderDash();
-  if (id === 'customers') { renderCustomerList(); populateCustomerSelect(); }
-  if (id === 'history') renderHistory();
-  if (id === 'checkout') populateCustomerSelect();
-  if (id === 'line') { populateLineCustomerSelect(); }
-  if (id === 'monshin') { loadMonshinList(); }
+  if(id==='dash') renderDash();
+  if(id==='customers'){renderCustomerList();populateCustomerSelect();}
+  if(id==='history') renderHistory();
+  if(id==='checkout') populateCustomerSelect();
+  if(id==='line'){ populateLineCustomerSelect(); restoreDraft('line'); }
+  if(id==='monshin') loadMonshinList();
+  if(id==='ba') restoreDraft('ba');
+  if(id==='bussan') renderBussanPanel();
+  if(id==='subscriptions'){ populateSubCustomerSelect(); renderSubSummary(); renderSubscriptions(); }
+  if(id==='tickets'){ populateTicketCustomerSelect(); renderTicketList(); renderTicketSummary(); }
+  if(id==='adcost'){ renderAdCostList(); }
 }
 
-function populateLineCustomerSelect() {
-  const sel = document.getElementById('line-customer');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">-- 顧客を選択（任意）--</option>';
-  [...customers].sort((a,b) => a.name.localeCompare(b.name, 'ja')).forEach(c => {
-    const o = document.createElement('option');
-    o.value = c.id;
-    o.textContent = (c.no ? `[${c.no}] ` : '') + c.name;
+// 物販
+function renderBussanPanel(){
+  populateBussanCustomerSelect();
+  populateBussanProductSelect();
+  renderBussanSummary();
+  renderBussanHistory();
+  renderProductMaster();
+}
+function populateBussanCustomerSelect(){
+  const sel=document.getElementById('bs-customer');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">-- 選択 --</option>';
+  [...customers].sort((a,b)=>a.name.localeCompare(b.name,'ja')).forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c.id; o.textContent=(c.no?`[${c.no}] `:'')+c.name;
     sel.appendChild(o);
   });
-  sel.value = cur;
+  sel.value=cur;
 }
-function filterCoCustomers() {
-  const q = document.getElementById('co-customer-search').value.toLowerCase();
-  const sel = document.getElementById('co-customer');
+function populateBussanProductSelect(){
+  const sel=document.getElementById('bs-product');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">-- 商品を選択 --</option>';
+  products.forEach(p=>{
+    const o=document.createElement('option');
+    o.value=p.id; o.textContent=p.name+'  '+fmt(p.price);
+    sel.appendChild(o);
+  });
+  sel.value=cur;
+}
+function bsProductChanged(){
+  const pid=document.getElementById('bs-product').value;
+  const p=products.find(x=>x.id===pid);
+  const qty=parseInt(document.getElementById('bs-qty').value)||1;
+  if(p){document.getElementById('bs-price').value=p.price*qty;document.getElementById('bs-profit').value=p.profit*qty;}
+  else{document.getElementById('bs-price').value='';document.getElementById('bs-profit').value='';}
+}
+function bsCalc(){
+  const pid=document.getElementById('bs-product').value;
+  const p=products.find(x=>x.id===pid);
+  const qty=parseInt(document.getElementById('bs-qty').value)||1;
+  if(p){document.getElementById('bs-price').value=p.price*qty;document.getElementById('bs-profit').value=p.profit*qty;}
+}
+function addBussanSale(){
+  const pid=document.getElementById('bs-product').value;
+  if(!pid){alert('商品を選択してください');return;}
+  const p=products.find(x=>x.id===pid);
+  const qty=parseInt(document.getElementById('bs-qty').value)||1;
+  const cid=document.getElementById('bs-customer').value;
+  const c=customers.find(x=>x.id===cid);
+  bussanSales.unshift({
+    id:genId(), date:document.getElementById('bs-date').value,
+    customerId:cid, customerName:c?c.name:'（顧客未選択）',
+    productId:pid, productName:p.name, qty,
+    price:p.price*qty, profit:p.profit*qty,
+    memo:document.getElementById('bs-memo').value, createdAt:nowStr()
+  });
+  save();
+  alert('販売記録を登録しました！');
+  document.getElementById('bs-product').value='';
+  document.getElementById('bs-qty').value='1';
+  document.getElementById('bs-price').value='';
+  document.getElementById('bs-profit').value='';
+  document.getElementById('bs-memo').value='';
+  renderBussanSummary(); renderBussanHistory();
+}
+function renderBussanSummary(){
+  const m=document.getElementById('bs-month').value||today().slice(0,7);
+  const monthly=bussanSales.filter(s=>s.date&&s.date.startsWith(m));
+  const ts=monthly.reduce((s,x)=>s+x.price,0);
+  const tp=monthly.reduce((s,x)=>s+x.profit,0);
+  const tc=monthly.reduce((s,x)=>s+x.qty,0);
+  document.getElementById('bussan-summary').innerHTML=`
+    <div class="bussan-stat"><div class="blabel">今月物販売上</div><div class="bvalue">${fmt(ts)}</div></div>
+    <div class="bussan-stat"><div class="blabel">今月物販利益</div><div class="bvalue">${fmt(tp)}</div></div>
+    <div class="bussan-stat"><div class="blabel">今月販売数</div><div class="bvalue">${tc}個</div></div>`;
+}
+function renderBussanHistory(){
+  const m=document.getElementById('bs-month').value||today().slice(0,7);
+  const list=bussanSales.filter(s=>!m||s.date.startsWith(m));
+  const tbody=document.getElementById('bussan-history-tbody');
+  if(!list.length){tbody.innerHTML='<tr><td colspan="7" class="empty-state">販売履歴がありません</td></tr>';return;}
+  tbody.innerHTML=list.map(s=>`
+    <tr>
+      <td>${s.date}</td><td>${s.customerName}</td><td>${s.productName}</td>
+      <td>${s.qty}個</td><td>${fmt(s.price)}</td>
+      <td style="color:var(--green);font-weight:600">${fmt(s.profit)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteBussanSale('${s.id}')">削除</button></td>
+    </tr>`).join('');
+}
+function deleteBussanSale(id){
+  showModal('削除確認','この販売記録を削除しますか？',[
+    {label:'削除',cls:'btn-danger',cb:()=>{bussanSales=bussanSales.filter(x=>x.id!==id);save();renderBussanHistory();renderBussanSummary();closeModal();}},
+    {label:'キャンセル',cls:'btn-secondary',cb:closeModal}
+  ]);
+}
+function renderProductMaster(){
+  document.getElementById('product-master-tbody').innerHTML=products.map(p=>`
+    <tr>
+      <td><strong>${p.name}</strong></td><td>${fmt(p.price)}</td><td>${fmt(p.cost)}</td>
+      <td style="color:var(--green);font-weight:600">${fmt(p.profit)}</td>
+      <td>
+        <button class="btn btn-secondary btn-sm" onclick="openProductModal('${p.id}')">編集</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">削除</button>
+      </td>
+    </tr>`).join('');
+}
+function openProductModal(id){
+  const overlay=document.getElementById('productModalOverlay');
+  if(id){
+    const p=products.find(x=>x.id===id);
+    document.getElementById('productModalTitle').textContent='商品を編集';
+    document.getElementById('pm-id').value=p.id;
+    document.getElementById('pm-name').value=p.name;
+    document.getElementById('pm-price').value=p.price;
+    document.getElementById('pm-cost').value=p.cost;
+    document.getElementById('pm-profit').value=p.profit;
+  }else{
+    document.getElementById('productModalTitle').textContent='商品を追加';
+    ['pm-id','pm-name','pm-price','pm-cost','pm-profit'].forEach(i=>document.getElementById(i).value='');
+  }
+  overlay.classList.add('open');
+}
+function closeProductModal(){document.getElementById('productModalOverlay').classList.remove('open');}
+function pmCalc(){
+  const price=parseInt(document.getElementById('pm-price').value)||0;
+  const cost=parseInt(document.getElementById('pm-cost').value)||0;
+  document.getElementById('pm-profit').value=price-cost;
+}
+function saveProduct(){
+  const name=document.getElementById('pm-name').value.trim();
+  if(!name){alert('商品名を入力してください');return;}
+  const price=parseInt(document.getElementById('pm-price').value)||0;
+  const cost=parseInt(document.getElementById('pm-cost').value)||0;
+  const profit=price-cost;
+  const id=document.getElementById('pm-id').value;
+  if(id){const idx=products.findIndex(x=>x.id===id);if(idx>=0)products[idx]={id,name,price,cost,profit};}
+  else products.push({id:genId(),name,price,cost,profit});
+  save();closeProductModal();renderProductMaster();populateBussanProductSelect();
+}
+function deleteProduct(id){
+  showModal('削除確認','この商品を削除しますか？',[
+    {label:'削除',cls:'btn-danger',cb:()=>{products=products.filter(x=>x.id!==id);save();renderProductMaster();populateBussanProductSelect();closeModal();}},
+    {label:'キャンセル',cls:'btn-secondary',cb:closeModal}
+  ]);
+}
+function exportBussanCSV(){
+  const m=document.getElementById('bs-month').value||today().slice(0,7);
+  const list=bussanSales.filter(s=>!m||s.date.startsWith(m));
+  if(!list.length){alert('データがありません');return;}
+  const rows=[['日付','顧客名','商品名','数量','売上金額','利益','メモ']];
+  list.forEach(s=>rows.push([s.date,s.customerName,s.productName,s.qty,s.price,s.profit,s.memo||'']));
+  const tp=list.reduce((s,x)=>s+x.price,0);
+  const tpf=list.reduce((s,x)=>s+x.profit,0);
+  const tq=list.reduce((s,x)=>s+x.qty,0);
+  rows.push(['合計','','',tq,tp,tpf,'']);
+  downloadCSV(rows,'物販売上_'+m+'.csv');
+}
+
+// CUSTOMER SELECT
+function populateCustomerSelect(){
+  const sel=document.getElementById('co-customer');const cur=sel.value;
+  sel.innerHTML='<option value="">-- 顧客を選択 --</option>';
+  [...customers].sort((a,b)=>a.name.localeCompare(b.name,'ja')).forEach(c=>{
+    const o=document.createElement('option');o.value=c.id;
+    o.textContent=(c.no?`[${c.no}] `:'')+c.name+(c.kana?` (${c.kana})`:'');sel.appendChild(o);
+  });sel.value=cur;
+}
+function populateLineCustomerSelect(){
+  const sel=document.getElementById('line-customer');const cur=sel.value;
+  sel.innerHTML='<option value="">-- 顧客を選択（任意）--</option>';
+  [...customers].sort((a,b)=>a.name.localeCompare(b.name,'ja')).forEach(c=>{
+    const o=document.createElement('option');o.value=c.id;
+    o.textContent=(c.no?`[${c.no}] `:'')+c.name;sel.appendChild(o);
+  });sel.value=cur;
+}
+function filterCoCustomers(){
+  const q=document.getElementById('co-customer-search').value.toLowerCase();
+  const sel=document.getElementById('co-customer');const cur=sel.value;
+  sel.innerHTML='<option value="">-- 顧客を選択 --</option>';
+  [...customers].filter(c=>!q||c.name.includes(q)||(c.kana||'').includes(q)).sort((a,b)=>a.name.localeCompare(b.name,'ja')).forEach(c=>{
+    const o=document.createElement('option');o.value=c.id;
+    o.textContent=(c.no?`[${c.no}] `:'')+c.name+(c.kana?` (${c.kana})`:'');sel.appendChild(o);
+  });sel.value=cur;
+}
+function filterLineCustomers(){
+  const q=document.getElementById('line-customer-search').value.toLowerCase();
+  const sel=document.getElementById('line-customer');const cur=sel.value;
+  sel.innerHTML='<option value="">-- 顧客を選択（任意）--</option>';
+  [...customers].filter(c=>!q||c.name.includes(q)||(c.kana||'').includes(q)).sort((a,b)=>a.name.localeCompare(b.name,'ja')).forEach(c=>{
+    const o=document.createElement('option');o.value=c.id;o.textContent=(c.no?`[${c.no}] `:'')+c.name;sel.appendChild(o);
+  });sel.value=cur;
+}
+
+// MENU PRICE
+function menuChanged(){
+  const sel=document.getElementById('co-menu');
+  const price=sel.options[sel.selectedIndex].dataset.price;
+  if(price!==undefined&&price!=='0') document.getElementById('co-price').value=price;
+}
+
+// CHECKOUT
+function coTypeChanged(){
+  const t=document.getElementById('co-type').value;
+  document.getElementById('co-refund-note').style.display=t==='refund'?'block':'none';
+}
+function addCheckout(){
+  const cid=document.getElementById('co-customer').value;
+  const date=document.getElementById('co-date').value;
+  const menu=document.getElementById('co-menu').value;
+  const type=document.getElementById('co-type').value;
+  const rawPrice=parseInt(document.getElementById('co-price').value)||0;
+  const price=type==='refund'?-Math.abs(rawPrice):Math.abs(rawPrice);
+  const pay=document.getElementById('co-pay').value;
+  const staff=document.getElementById('co-staff').value;
+  const memo=document.getElementById('co-memo').value;
+  const note=document.getElementById('co-note').value.trim();
+  const nextDate=document.getElementById('co-next-date').value;
+  if(!cid){alert('顧客を選択してください');return;}
+  if(!menu){alert('メニューを選択してください');return;}
+  if(!rawPrice){alert('金額を入力してください');return;}
+  const c=customers.find(x=>x.id===cid);
+  const newRecord={id:genId(),customerId:cid,customerName:c?c.name:'',date,menu,type,price,pay,staff,memo,note,nextDate,createdAt:nowStr()};
+  history.unshift(newRecord);
+  if(c&&type!=='refund'){c.lastVisit=date;c.visitCount=(c.visitCount||0)+1;}
+  // 回数券利用時に自動-1
+  if(menu==='回数券利用'&&cid){
+    const activeTickets=tickets.filter(t=>t.customerId===cid&&t.remaining>0);
+    if(activeTickets.length>0){
+      // 購入日が古い順に消化
+      activeTickets.sort((a,b)=>a.purchaseDate.localeCompare(b.purchaseDate));
+      const t=activeTickets[0];
+      t.remaining=Math.max(0,t.remaining-1);
+      t.consumedLog=t.consumedLog||[];
+      t.consumedLog.push({date,historyId:newRecord.id});
+      saveTickets();
+    }
+  }
+  save();alert(type==='refund'?'返金処理を登録しました！':'会計を登録しました！');
+  document.getElementById('co-type').value='normal';
+  document.getElementById('co-refund-note').style.display='none';
+  document.getElementById('co-menu').value='';document.getElementById('co-price').value='';
+  document.getElementById('co-memo').value='';document.getElementById('co-note').value='';
+  document.getElementById('co-next-date').value='';renderDash();
+}
+
+// RECEIPT
+function previewReceipt(){
+  const cid=document.getElementById('co-customer').value;
+  const menu=document.getElementById('co-menu').value||'施術';
+  const price=parseInt(document.getElementById('co-price').value)||0;
+  const date=document.getElementById('co-date').value;
+  const c=customers.find(x=>x.id===cid);
+  const name=c?c.name:'様';
+  const tax=Math.round(price-price/1.1);
+  document.getElementById('receipt-card').style.display='block';
+  document.getElementById('receipt-content').innerHTML=`
+    <div class="receipt-preview">
+      <h2>領 収 書</h2><div class="sub">整体院TAK 旭町院</div>
+      <div style="margin:8px 0;font-size:12px">${date} 発行</div>
+      <div style="margin:8px 0"><strong>${name} 様</strong></div>
+      <hr style="margin:8px 0">
+      <div class="receipt-line"><span>${menu}</span><span>${fmt(price)}</span></div>
+      <div class="receipt-line total"><span>合 計</span><span>${fmt(price)}</span></div>
+      <div class="receipt-line tax"><span>（内消費税10%）</span><span>${fmt(tax)}</span></div>
+      <hr style="margin:8px 0">
+      <div style="font-size:11px;margin-top:8px;text-align:center">整体院TAK 旭町院<br>Assist24フィットネスジム内<br>静岡県袋井市旭町</div>
+    </div>`;
+}
+
+// CUSTOMER CRUD
+function saveCustomer(){
+  const id=document.getElementById('cu-id').value||genId();
+  const name=document.getElementById('cu-name').value.trim();
+  if(!name){alert('氏名を入力してください');return;}
+  const cu={id,no:document.getElementById('cu-no').value.trim(),name,kana:document.getElementById('cu-kana').value.trim(),gender:document.getElementById('cu-gender').value,birth:document.getElementById('cu-birth').value,job:document.getElementById('cu-job').value.trim(),tel:document.getElementById('cu-tel').value.trim(),email:document.getElementById('cu-email').value.trim(),zip:document.getElementById('cu-zip').value.trim(),address:document.getElementById('cu-address').value.trim(),motive:document.getElementById('cu-motive').value.trim(),memo:document.getElementById('cu-memo').value.trim(),lastVisit:'',visitCount:0,createdAt:nowStr()};
+  const idx=customers.findIndex(x=>x.id===id);
+  if(idx>=0){cu.lastVisit=customers[idx].lastVisit;cu.visitCount=customers[idx].visitCount;cu.createdAt=customers[idx].createdAt;customers[idx]=cu;}
+  else customers.push(cu);
+  save();clearCustomerForm();renderCustomerList();populateCustomerSelect();alert('顧客情報を保存しました');
+}
+function editCustomer(id){
+  const c=customers.find(x=>x.id===id);if(!c)return;
+  document.getElementById('cu-id').value=c.id;document.getElementById('cu-no').value=c.no||'';
+  document.getElementById('cu-name').value=c.name;document.getElementById('cu-kana').value=c.kana||'';
+  document.getElementById('cu-gender').value=c.gender||'';document.getElementById('cu-birth').value=c.birth||'';
+  document.getElementById('cu-job').value=c.job||'';document.getElementById('cu-tel').value=c.tel||'';
+  document.getElementById('cu-email').value=c.email||'';document.getElementById('cu-zip').value=c.zip||'';
+  document.getElementById('cu-address').value=c.address||'';document.getElementById('cu-motive').value=c.motive||'';
+  document.getElementById('cu-memo').value=c.memo||'';
+  document.querySelector('[onclick="showPanel(\'customers\')"]').click();window.scrollTo(0,0);
+}
+function deleteCustomer(id){
+  showModal('削除確認','顧客データを削除しますか？',[
+    {label:'削除',cls:'btn-danger',cb:()=>{customers=customers.filter(x=>x.id!==id);save();renderCustomerList();populateCustomerSelect();closeModal();}},
+    {label:'キャンセル',cls:'btn-secondary',cb:closeModal}
+  ]);
+}
+function clearCustomerForm(){
+  ['cu-id','cu-no','cu-name','cu-kana','cu-gender','cu-birth','cu-job','cu-tel','cu-email','cu-zip','cu-address','cu-motive','cu-memo'].forEach(i=>document.getElementById(i).value='');
+}
+function renderCustomerList(){
+  const q=document.getElementById('cu-search').value.toLowerCase();
+  const tbody=document.getElementById('customer-tbody');
+  const list=customers.filter(c=>!q||c.name.includes(q)||(c.kana||'').includes(q)||(c.tel||'').includes(q)).sort((a,b)=>(a.no||'').localeCompare(b.no||'',undefined,{numeric:true}));
+  if(!list.length){tbody.innerHTML='<tr><td colspan="6" class="empty-state">顧客データがありません</td></tr>';return;}
+  tbody.innerHTML=list.map(c=>`
+    <tr>
+      <td>${c.no||'-'}</td>
+      <td><strong>${c.name}</strong>${c.kana?`<br><span style="font-size:11px;color:var(--text-sub)">${c.kana}</span>`:''}</td>
+      <td>${c.tel||'-'}</td><td>${c.visitCount||0}回</td><td>${c.lastVisit||'-'}</td>
+      <td><button class="btn btn-secondary btn-sm" onclick="editCustomer('${c.id}')">編集</button> <button class="btn btn-danger btn-sm" onclick="deleteCustomer('${c.id}')">削除</button></td>
+    </tr>`).join('');
+}
+
+// HISTORY
+function renderHistory(){
+  const q=document.getElementById('hi-search').value.toLowerCase();
+  const m=document.getElementById('hi-month').value;
+  const tbody=document.getElementById('history-tbody');
+  const list=history.filter(h=>(!q||h.customerName.includes(q)||h.menu.includes(q))&&(!m||h.date.startsWith(m)));
+  if(!list.length){tbody.innerHTML='<tr><td colspan="9" class="empty-state">履歴がありません</td></tr>';return;}
+  tbody.innerHTML=list.map(h=>{
+    const isRefund=h.type==='refund'||h.price<0;
+    const typeBadge=isRefund?'<span class="badge" style="background:#ffebee;color:#c62828">返金</span>':'<span class="badge badge-green">通常</span>';
+    const priceStyle=isRefund?'color:#c62828;font-weight:700':'';
+    return `<tr style="${isRefund?'background:#fff8f8':''}">
+      <td>${h.date}</td><td>${h.customerName}</td>
+      <td>${typeBadge}</td>
+      <td>${h.menu}</td>
+      <td style="${priceStyle}">${fmt(h.price)}</td>
+      <td><span class="badge badge-blue">${h.pay}</span></td>
+      <td>${h.staff||'Tak'}</td><td>${h.memo||'-'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-secondary btn-sm" onclick="openHistoryEditModal('${h.id}')">編集</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteHistory('${h.id}')">削除</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+function deleteHistory(id){
+  showModal('削除確認','この履歴を削除しますか？',[
+    {label:'削除',cls:'btn-danger',cb:()=>{history=history.filter(x=>x.id!==id);save();renderHistory();closeModal();}},
+    {label:'キャンセル',cls:'btn-secondary',cb:closeModal}
+  ]);
+}
+function openHistoryEditModal(id){
+  const h=history.find(x=>x.id===id);if(!h)return;
+  document.getElementById('he-id').value=h.id;
+  document.getElementById('he-date').value=h.date;
+  document.getElementById('he-customer-name').value=h.customerName;
+  document.getElementById('he-type').value=h.type||'normal';
+  heTypeChanged();
+  document.getElementById('he-menu').value=h.menu;
+  document.getElementById('he-price').value=Math.abs(h.price);
+  document.getElementById('he-pay').value=h.pay;
+  document.getElementById('he-staff').value=h.staff||'Tak（桑原毅郎）';
+  document.getElementById('he-memo').value=h.memo||'';
+  document.getElementById('he-note').value=h.note||'';
+  document.getElementById('he-next-date').value=h.nextDate||'';
+  document.getElementById('historyEditModalOverlay').classList.add('open');
+}
+function heTypeChanged(){
+  const t=document.getElementById('he-type').value;
+  document.getElementById('he-refund-note').style.display=t==='refund'?'block':'none';
+}
+function saveHistoryEdit(){
+  const id=document.getElementById('he-id').value;
+  const idx=history.findIndex(x=>x.id===id);if(idx<0)return;
+  const type=document.getElementById('he-type').value;
+  const rawPrice=parseInt(document.getElementById('he-price').value)||0;
+  const price=type==='refund'?-Math.abs(rawPrice):Math.abs(rawPrice);
+  history[idx]={
+    ...history[idx],
+    date:      document.getElementById('he-date').value,
+    customerName: document.getElementById('he-customer-name').value,
+    type,price,
+    menu:      document.getElementById('he-menu').value,
+    pay:       document.getElementById('he-pay').value,
+    staff:     document.getElementById('he-staff').value,
+    memo:      document.getElementById('he-memo').value,
+    note:      document.getElementById('he-note').value,
+    nextDate:  document.getElementById('he-next-date').value,
+  };
+  save();
+  document.getElementById('historyEditModalOverlay').classList.remove('open');
+  renderHistory();renderDash();
+}
+
+// DASHBOARD
+function renderDash(){
+  const td=today();const tm=td.slice(0,7);
+  const todayH=history.filter(h=>h.date===td);
+  const monthH=history.filter(h=>h.date.startsWith(tm));
+  document.getElementById('stat-today').textContent=fmt(todayH.reduce((s,h)=>s+h.price,0));
+  document.getElementById('stat-today-count').textContent=todayH.length+'件';
+  document.getElementById('stat-month').textContent=fmt(monthH.reduce((s,h)=>s+h.price,0));
+  document.getElementById('stat-month-count').textContent=monthH.length+'件';
+  document.getElementById('stat-customers').textContent=customers.length;
+  const rec=history.slice(0,8);
+  document.getElementById('recent-tbody').innerHTML=rec.length?rec.map(h=>`<tr><td>${h.date}</td><td>${h.customerName}</td><td>${h.menu}</td><td>${fmt(h.price)}</td></tr>`).join(''):'<tr><td colspan="4" class="empty-state">履歴なし</td></tr>';
+  // 回数券アラート
+  const isTicket=h=>h.menu&&h.menu.includes('回数券')&&!h.menu.includes('利用');
+  const ticketAlerts=customers.map(c=>{
+    const all=history.filter(h=>h.customerId===c.id);
+    const purchased=all.filter(isTicket).reduce((s,h)=>{const m=h.menu.match(/(\d+)回/);return s+(m?parseInt(m[1]):0);},0);
+    const used=all.filter(h=>h.menu&&h.menu.includes('回数券利用')).length;
+    const remaining=purchased-used;
+    return purchased>0?{name:c.name,remaining,lastVisit:c.lastVisit,id:c.id}:null;
+  }).filter(x=>x&&x.remaining<=2&&x.remaining>0);
+  const ticketCard=document.getElementById('ticket-alert-card');
+  if(ticketAlerts.length>0){
+    ticketCard.style.display='block';
+    document.getElementById('ticket-alert-tbody').innerHTML=ticketAlerts.map(c=>`<tr><td><strong>${c.name}</strong></td><td style="color:#1565c0;font-weight:700">${c.remaining}回</td><td>${c.lastVisit||'-'}</td><td><button class="btn btn-primary btn-sm" onclick="showPanel('line')">💬 LINE生成</button></td></tr>`).join('');
+  }else ticketCard.style.display='none';
+  // 次回予約未設定
+  const noNext=history.filter(h=>{
+    const isNew=h.menu&&(h.menu.includes('初回')||h.menu.includes('体験'));
+    if(!isNew||h.nextDate) return false;
+    return Math.floor((new Date()-new Date(h.date))/86400000)>=7;
+  });
+  const alertCard=document.getElementById('alert-card');
+  if(noNext.length>0){
+    alertCard.style.display='block';
+    document.getElementById('alert-tbody').innerHTML=noNext.map(h=>{
+      const diff=Math.floor((new Date()-new Date(h.date))/86400000);
+      return `<tr><td><strong>${h.customerName}</strong></td><td>${h.date}</td><td style="color:#e65100;font-weight:700">${diff}日経過</td><td><button class="btn btn-primary btn-sm" onclick="showPanel('line')">💬 LINE生成</button></td></tr>`;
+    }).join('');
+  }else alertCard.style.display='none';
+}
+
+// CSV EXPORT
+function exportCustomersCSV(){
+  const rows=[['顧客No','氏名','ふりがな','性別','郵便番号','住所','メールアドレス','電話番号','生年月日','職業','動機','来院回数','最終来院']];
+  customers.forEach(c=>rows.push([c.no||'',c.name,c.kana||'',c.gender||'',c.zip||'',c.address||'',c.email||'',c.tel||'',c.birth||'',c.job||'',c.motive||'',c.visitCount||0,c.lastVisit||'']));
+  downloadCSV(rows,'顧客リスト_'+today()+'.csv');
+}
+function exportHistoryCSV(){
+  const m=document.getElementById('hi-month').value;
+  const list=m?history.filter(h=>h.date&&h.date.startsWith(m)):history;
+  const rows=[['日付','顧客名','種別','メニュー','金額','支払方法','担当','メモ','次回予約日']];
+  list.forEach(h=>rows.push([
+    h.date, h.customerName,
+    (h.type==='refund'||h.price<0)?'返金':'通常',
+    h.menu, h.price, h.pay, h.staff||'Tak（桑原毅郎）',
+    h.memo||'', h.nextDate||''
+  ]));
+  const totalNormal=list.filter(h=>!(h.type==='refund'||h.price<0)).reduce((s,h)=>s+h.price,0);
+  const totalRefund=list.filter(h=>(h.type==='refund'||h.price<0)).reduce((s,h)=>s+h.price,0);
+  rows.push([]);
+  rows.push(['通常会計合計','','','',totalNormal,'','','','']);
+  rows.push(['返金合計','','','',totalRefund,'','','','']);
+  rows.push(['差引合計','','','',totalNormal+totalRefund,'','','','']);
+  downloadCSV(rows,'来院履歴_'+(m||today())+'.csv');
+}
+function downloadCSV(rows,filename){
+  const bom='\uFEFF';
+  const csv=bom+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();
+}
+
+// CSV IMPORT
+function handleDrop(e){e.preventDefault();document.getElementById('importZone').classList.remove('drag');const f=e.dataTransfer.files[0];if(f)processCSVFile(f);}
+function handleFileSelect(e){const f=e.target.files[0];if(f)processCSVFile(f);e.target.value='';}
+function processCSVFile(file){
+  const res=document.getElementById('importResult');
+  if(!file.name.endsWith('.csv')){res.innerHTML='<div class="import-result error">❌ CSVファイルを選択してください</div>';return;}
+  res.innerHTML='<div class="import-result info">⏳ 読み込み中...</div>';
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const buf=e.target.result;
+    try{
+      let text;
+      try{text=new TextDecoder('utf-8',{fatal:true}).decode(new Uint8Array(buf));}
+      catch(e){text=new TextDecoder('shift-jis').decode(new Uint8Array(buf));}
+      parseAndPreviewCSV(text);
+    }catch(err){parseAndPreviewCSV(new TextDecoder('utf-8').decode(new Uint8Array(buf)));}
+  };
+  reader.readAsArrayBuffer(file);
+}
+function parseCSVLine(line){
+  const r=[];let cur='';let inQ=false;
+  for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}else if(ch===','&&!inQ){r.push(cur);cur='';}else cur+=ch;}
+  r.push(cur);return r;
+}
+function parseAndPreviewCSV(text){
+  const res=document.getElementById('importResult');
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2){res.innerHTML='<div class="import-result error">❌ データが見つかりません</div>';return;}
+  const header=parseCSVLine(lines[0]).map(h=>h.trim().replace(/[\s\u3000\ufeff]/g,''));
+  const colMap={no:header.findIndex(h=>h.includes('顧客No')||h.includes('顧客no')),name:header.findIndex(h=>h.includes('顧客名')&&!h.includes('ふりがな')),kana:header.findIndex(h=>h.includes('ふりがな')),gender:header.findIndex(h=>h.includes('性別')),zip:header.findIndex(h=>h.includes('郵便番号')),addr1:header.findIndex(h=>h.includes('住所１')||h.includes('住所1')),addr2:header.findIndex(h=>h.includes('住所２')||h.includes('住所2')),tel1:header.findIndex(h=>h.includes('電話-1')||h.includes('電話1')||(h.includes('電話')&&!h.includes('-2')&&!h.includes('2'))),email:header.findIndex(h=>h.includes('メール')),birth:header.findIndex(h=>h.includes('生年月日')),job:header.findIndex(h=>h.includes('職業')),motive:header.findIndex(h=>h.includes('動機')),lastVisit:header.findIndex(h=>h.includes('最終来店')||h.includes('最終来院')),visitCount:header.findIndex(h=>h.includes('来店回数')||h.includes('来院回数'))};
+  if(colMap.name<0){res.innerHTML='<div class="import-result error">❌ 「顧客名」列が見つかりません</div>';return;}
+  const parsed=[];
+  for(let i=1;i<lines.length;i++){
+    const cols=parseCSVLine(lines[i]);if(!cols[colMap.name]?.trim())continue;
+    const get=idx=>idx>=0?(cols[idx]||'').trim():'';
+    const addr=[get(colMap.addr1),get(colMap.addr2)].filter(Boolean).join(' ');
+    let birth=get(colMap.birth);if(birth)birth=birth.replace(/\//g,'-').replace(/(\d{4})-(\d{1,2})-(\d{1,2})/,(_,y,m,d)=>`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
+    parsed.push({no:get(colMap.no),name:get(colMap.name),kana:get(colMap.kana),gender:get(colMap.gender),zip:get(colMap.zip),address:addr,tel:get(colMap.tel1),email:get(colMap.email),birth,job:get(colMap.job),motive:get(colMap.motive),lastVisit:get(colMap.lastVisit).replace(/\//g,'-'),visitCount:parseInt(get(colMap.visitCount))||0});
+  }
+  if(!parsed.length){res.innerHTML='<div class="import-result error">❌ 有効なデータが見つかりません</div>';return;}
+  parsed.forEach(p=>{if(p.no&&customers.find(c=>c.no===p.no))p._status='update';else p._status='new';});
+  pendingImport=parsed;
+  const card=document.getElementById('importPreviewCard');card.style.display='block';
+  const nc=parsed.filter(p=>p._status==='new').length;const uc=parsed.filter(p=>p._status==='update').length;
+  document.getElementById('importPreviewCount').textContent=`新規追加: ${nc}件  /  上書き更新: ${uc}件`;
+  document.getElementById('importPreviewBody').innerHTML=parsed.map(p=>`<tr><td>${p.no||'-'}</td><td><strong>${p.name}</strong></td><td>${p.kana||'-'}</td><td>${p.tel||'-'}</td><td>${p.zip||'-'}</td><td style="max-width:160px;font-size:12px">${p.address||'-'}</td><td style="max-width:160px;font-size:12px">${p.email||'-'}</td><td>${p.job||'-'}</td><td><span class="badge ${p._status==='new'?'badge-green':'badge-orange'}">${p._status==='new'?'新規':'更新'}</span></td></tr>`).join('');
+  res.innerHTML=`<div class="import-result success">✅ ${parsed.length}件を読み込みました。</div>`;
+}
+function confirmImport(){
+  if(!pendingImport.length)return;let added=0,updated=0;
+  pendingImport.forEach(p=>{
+    const ex=p.no?customers.find(c=>c.no===p.no):null;
+    if(ex){Object.assign(ex,{name:p.name,kana:p.kana,gender:p.gender,zip:p.zip,address:p.address,tel:p.tel,email:p.email,birth:p.birth,job:p.job,motive:p.motive,lastVisit:p.lastVisit||ex.lastVisit,visitCount:p.visitCount||ex.visitCount});updated++;}
+    else{customers.push({id:genId(),visitCount:p.visitCount||0,createdAt:nowStr(),...p});added++;}
+  });
+  save();pendingImport=[];document.getElementById('importPreviewCard').style.display='none';
+  document.getElementById('importResult').innerHTML=`<div class="import-result success">✅ 完了！新規: ${added}件 / 更新: ${updated}件</div>`;
+  populateCustomerSelect();
+}
+function cancelImport(){pendingImport=[];document.getElementById('importPreviewCard').style.display='none';document.getElementById('importResult').innerHTML='';}
+
+// MODAL
+function showModal(title,body,btns){
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalBody').innerHTML=`<p style="font-size:14px">${body}</p>`;
+  document.getElementById('modalBtns').innerHTML='';
+  btns.forEach(b=>{const btn=document.createElement('button');btn.className='btn '+b.cls;btn.textContent=b.label;btn.onclick=b.cb;document.getElementById('modalBtns').appendChild(btn);});
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
+document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target.id==='modalOverlay')closeModal();});
+document.getElementById('productModalOverlay').addEventListener('click',e=>{if(e.target.id==='productModalOverlay')closeProductModal();});
+
+// LINE
+function onLineCustomerChange(){
+  const cid=document.getElementById('line-customer').value;if(!cid)return;
+  const c=customers.find(x=>x.id===cid);if(!c)return;
+  const last=history.find(h=>h.customerId===cid);
+  if(last){for(let o of document.getElementById('line-last-menu').options){if(o.value===last.menu){document.getElementById('line-last-menu').value=last.menu;break;}}if(last.note)document.getElementById('line-extra').value=last.note;}
+}
+function setTemplate(hint){document.getElementById('line-extra').value=hint;}
+function clearLinePanel(){document.getElementById('line-customer').value='';document.getElementById('line-purpose').value='followup';document.getElementById('line-last-menu').value='';document.getElementById('line-tone').value='warm';document.getElementById('line-extra').value='';document.getElementById('line-result-card').style.display='none';clearDraft('line');}
+async function generateLineMessage(){
+  const cid=document.getElementById('line-customer').value;
+  const purpose=document.getElementById('line-purpose').value;
+  const menu=document.getElementById('line-last-menu').value;
+  const tone=document.getElementById('line-tone').value;
+  const extra=document.getElementById('line-extra').value.trim();
+  const c=cid?customers.find(x=>x.id===cid):null;
+  const pm={followup:'施術後フォローアップ',remind:'次回来院リマインド',reactivate:'久しぶり再来院促進',diet:'ダイエットプログラムモニター募集',birthday:'誕生日メッセージ',thanks:'ご来院お礼',custom:'カスタム'};
+  const tm={warm:'温かみがあり親しみやすい',professional:'丁寧でプロフェッショナル',casual:'カジュアルでフレンドリー'};
+  const ci=c?`\n- 氏名: ${c.name}${c.kana?`（${c.kana}）`:''}\n- 性別: ${c.gender||'不明'}\n- 職業: ${c.job||'不明'}\n- 来院回数: ${c.visitCount||0}回\n- 最終来院: ${c.lastVisit||'不明'}`:'（顧客未選択）';
+  const prompt=`あなたは「整体院TAK」（静岡県袋井市）の院長Tak（桑原毅郎）として、患者さんへLINEメッセージを書いてください。\n\n【院の特徴】\n- Assist24フィットネスジム内の整体・鍼灸院\n- 40〜60代女性（看護師・公務員が多い）をメインターゲット\n- 完全予約制・一対一施術\n\n【顧客情報】${ci}\n\n【メッセージ用途】${pm[purpose]||purpose}\n【最終施術メニュー】${menu||'不明'}\n【トーン】${tm[tone]}\n${extra?`【施術メモ】${extra}`:''}\n\n【ルール】\n- 施術メモがある場合は必ずその内容に触れた個別感のある文章にする\n- LINEのテキストとして自然な文体\n- 院長のファーストネーム「Tak」で締める\n- 絵文字を適度に使う\n- 200〜300文字程度\n- 予約URLは必要な場合のみ: https://1cs.jp/seitaitak/r\n- メッセージ本文のみ返す`;
+  const btn=document.getElementById('line-gen-btn');btn.textContent='⏳ 生成中...';btn.classList.add('generating');
+  try{
+    const GAS_URL='https://script.google.com/macros/s/AKfycbxqsyCHPCjzNRNnmTP64xUIdxn9The5U6hX2kXv4CFGzt5704AX_v20TazKNummEWQ3XQ/exec';
+    const payload=JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]});
+    const form=new FormData();form.append('payload',payload);
+    const res=await fetch(GAS_URL,{method:'POST',body:form});
+    const data=await res.json();
+    const msg=data.content?.[0]?.text||'エラーが発生しました';
+    document.getElementById('line-result-card').style.display='block';
+    document.getElementById('line-msg-box').textContent=msg;
+    document.getElementById('line-edit-area').value=msg;updateLineCharCount();
+    document.getElementById('line-result-card').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){alert('メッセージ生成に失敗しました: '+e.message);}
+  finally{btn.textContent='✨ AIでメッセージ生成';btn.classList.remove('generating');}
+}
+function updateLineCharCount(){const txt=document.getElementById('line-edit-area').value;document.getElementById('line-char-count').textContent=`${txt.length}文字`;document.getElementById('line-msg-box').textContent=txt;}
+function copyLineMsg(){
+  navigator.clipboard.writeText(document.getElementById('line-edit-area').value).then(()=>{
+    const btn=event.target;btn.textContent='✅ コピーしました';setTimeout(()=>{btn.textContent='📋 コピー';},2000);
+  });
+}
+
+// BEFORE/AFTER
+const baImages={before:null,after:null};
+function handleBaDrop(e,side){e.preventDefault();document.getElementById('ba-'+side+'-zone').classList.remove('drag');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadBaImageFile(f,side);}
+function loadBaImage(e,side){const f=e.target.files[0];if(f)loadBaImageFile(f,side);e.target.value='';}
+function loadBaImageFile(file,side){
+  const reader=new FileReader();
+  reader.onload=ev=>{const img=new Image();img.onload=()=>{baImages[side]=img;document.getElementById('ba-'+side+'-zone').innerHTML=`<img src="${ev.target.result}" alt="${side}">`;document.getElementById('ba-compose-btn').disabled=!(baImages.before&&baImages.after);};img.src=ev.target.result;};
+  reader.readAsDataURL(file);
+}
+function composeBaImage(){
+  if(!baImages.before||!baImages.after)return;
+  const outW=parseInt(document.getElementById('ba-width').value)||1080;
+  const ls=document.getElementById('ba-label-style').value;
+  const dc=document.getElementById('ba-divider-color').value;
+  const bc=document.getElementById('ba-bg-color').value;
+  const half=Math.floor(outW/2);const dw=4;const lh=ls==='none'?0:44;
+  const bH=Math.round(half*baImages.before.naturalHeight/baImages.before.naturalWidth);
+  const aH=Math.round(half*baImages.after.naturalHeight/baImages.after.naturalWidth);
+  const imgH=Math.max(bH,aH);const canvas=document.getElementById('ba-canvas');
+  canvas.width=outW;canvas.height=imgH+lh;const ctx=canvas.getContext('2d');
+  ctx.fillStyle=bc;ctx.fillRect(0,0,outW,imgH+lh);
+  ctx.drawImage(baImages.before,0,lh+Math.round((imgH-bH)/2),half,bH);
+  ctx.drawImage(baImages.after,half+dw,lh+Math.round((imgH-aH)/2),half-dw,aH);
+  ctx.fillStyle=dc;ctx.fillRect(half,0,dw,imgH+lh);
+  if(ls!=='none'){
+    ctx.fillStyle=dc;ctx.fillRect(0,0,half,lh);ctx.fillRect(half+dw,0,half-dw,lh);
+    ctx.fillStyle='#fff';ctx.font=`bold ${Math.round(lh*.52)}px 'Hiragino Kaku Gothic ProN','Meiryo',sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    const lb=ls==='ja'?['ビフォー','アフター']:['BEFORE','AFTER'];
+    ctx.fillText(lb[0],half/2,lh/2);ctx.fillText(lb[1],half+dw+(half-dw)/2,lh/2);
+  }
+  document.getElementById('ba-result-card').style.display='block';
+  document.getElementById('ba-result-card').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function downloadBaImage(){
+  const canvas=document.getElementById('ba-canvas');const a=document.createElement('a');a.download='before_after_'+today()+'.jpg';
+  canvas.toBlob(blob=>{a.href=URL.createObjectURL(blob);a.click();},'image/jpeg',0.92);
+}
+function resetBa(){
+  baImages.before=null;baImages.after=null;
+  ['before','after'].forEach(s=>{document.getElementById('ba-'+s+'-zone').innerHTML='<span style="font-size:32px">🖼</span><span style="font-size:13px;color:var(--text-sub)">クリックまたはドラッグ</span>';});
+  document.getElementById('ba-compose-btn').disabled=true;document.getElementById('ba-result-card').style.display='none';
+}
+
+// 問診票
+const MONSHIN_GAS='https://script.google.com/macros/s/AKfycbyPXyFn9Wuh5taEbEJWtjp0LI5u7Ke4sYYT7vtgnpC-X0fbee59u8qttA5w_qK7xGdD6g/exec';
+let monshinList=[];let selectedMonshin=null;
+async function loadMonshinList(){
+  const status=document.getElementById('monshin-status');const tbody=document.getElementById('monshin-tbody');
+  status.textContent='⏳ 取得中...';tbody.innerHTML='';
+  try{
+    const res=await fetch(MONSHIN_GAS+'?type=list&t='+Date.now());monshinList=await res.json();
+    if(!monshinList.length){status.textContent='未取込の問診票はありません';tbody.innerHTML='<tr><td colspan="7" class="empty-state">データなし</td></tr>';return;}
+    status.textContent=`未取込: ${monshinList.length}件`;
+    tbody.innerHTML=monshinList.map((m,i)=>`<tr><td style="font-size:12px">${m['受信日時']||'-'}</td><td><strong>${m['氏名']||'-'}</strong></td><td>${m['電話番号']||'-'}</td><td style="font-size:12px">${(m['症状']||'-').slice(0,20)}</td><td style="font-size:12px">${m['いつから']||'-'}</td><td style="font-size:12px">${m['本日の期待']||'-'}</td><td><button class="btn btn-blue btn-sm" onclick="showMonshinDetail(${i})">詳細</button></td></tr>`).join('');
+  }catch(e){status.textContent='取得エラー: '+e.message;}
+}
+function showMonshinDetail(i){
+  selectedMonshin={...monshinList[i],_listIndex:i};const m=selectedMonshin;
+  const card=document.getElementById('monshin-detail-card');
+  document.getElementById('monshin-detail-body').innerHTML=`<div class="form-grid" style="margin-bottom:12px"><div class="form-group"><label>氏名</label><div style="padding:8px;background:#f5f5f5;border-radius:6px">${m['氏名']||'-'}</div></div><div class="form-group"><label>電話番号</label><div style="padding:8px;background:#f5f5f5;border-radius:6px">${m['電話番号']||'-'}</div></div></div><table style="width:100%;font-size:13px;border-collapse:collapse">${[['①症状',m['症状']],['②いつから',m['いつから']],['③日常への影響',m['日常への影響']],['⑥本日の期待',m['本日の期待']],['メモ',m['メモ']]].map(([k,v])=>`<tr style="border-bottom:1px solid #eee"><td style="padding:6px 8px;color:var(--text-sub);width:140px;font-weight:600">${k}</td><td style="padding:6px 8px">${v||'-'}</td></tr>`).join('')}</table>`;
+  card.style.display='block';card.scrollIntoView({behavior:'smooth',block:'start'});
+}
+async function registerFromMonshin(){
+  if(!selectedMonshin)return;const m=selectedMonshin;
+  const cu={id:genId(),no:'',name:m['氏名']||'',kana:m['ふりがな']||'',gender:'',birth:m['生年月日']||'',job:'',tel:m['電話番号']||'',email:'',zip:'',address:'',motive:m['症状']||'',memo:'',lastVisit:'',visitCount:0,createdAt:nowStr()};
+  customers.push(cu);save();populateCustomerSelect();
+  try{await fetch(`${MONSHIN_GAS}?type=markDone&row=${m._rowIndex}&t=${Date.now()}`);}catch(e){}
+  monshinList.splice(m._listIndex,1);document.getElementById('monshin-detail-card').style.display='none';selectedMonshin=null;loadMonshinList();
+  showModal('登録完了',`${cu.name} さんを顧客登録しました！`,[{label:'顧客管理を開く',cls:'btn-primary',cb:()=>{closeModal();document.querySelector('[onclick="showPanel(\'customers\')"]').click();}},{label:'閉じる',cls:'btn-secondary',cb:closeModal}]);
+}
+
+// GAS 月次統計
+const STATS_GAS_URL='https://script.google.com/macros/s/AKfycbzcKt5IISrdIP3hGOvBiktIRpSg3Z6lOvEkn98Ua8CUJ-jwqUfEAYqim96IXdQXun2i/exec';
+async function exportMonthlyStats(){
+  const month=document.getElementById('hi-month').value||today().slice(0,7);
+  const mh=history.filter(h=>h.date&&h.date.startsWith(month));
+  if(!mh.length){alert(month+' の履歴がありません');return;}
+  if(!confirm(month+' のデータ '+mh.length+'件をスプレッドシートに送信しますか？'))return;
+  const btn=event.target;btn.textContent='⏳ 送信中...';btn.disabled=true;
+  try{
+    const form=new FormData();form.append('action','writeStats');form.append('month',month);form.append('history',JSON.stringify(mh));form.append('customers',JSON.stringify(customers));
+    const res=await fetch(STATS_GAS_URL,{method:'POST',body:form});const data=await res.json();
+    if(data.ok)alert('✅ 完了！\nシート名: '+data.sheetName+'\n売上: ¥'+Number(data.totalSales).toLocaleString('ja-JP')+'\n件数: '+data.totalCount+'件');
+    else alert('❌ エラー: '+data.error);
+  }catch(err){alert('❌ 通信エラー: '+err.message);}
+  finally{btn.textContent='📊 月次統計をSheetsに送信';btn.disabled=false;}
+}
+function downloadStatsCSV(){
+  const month=document.getElementById('hi-month').value||today().slice(0,7);
+  const mh=history.filter(h=>h.date&&h.date.startsWith(month));
+  if(!mh.length){alert(month+' の履歴がありません');return;}
+
+  const isNew    = h=>h.menu&&(h.menu.includes('初回')||h.menu.includes('体験'));
+  const isTicket = h=>h.menu&&h.menu.includes('回数券')&&!h.menu.includes('利用');
+  const isSub    = h=>h.pay&&h.pay.includes('サブスク');
+  const norm     = m=>{if(!m)return 'その他';if(m.includes('紹介'))return '紹介';if(m.includes('Meta')||m.includes('Instagram'))return 'Meta広告';if(m.includes('GoogleMap'))return 'GoogleMap';return 'その他';};
+  const mb = bussanSales.filter(s=>s.date&&s.date.startsWith(month));
+
+  // スタッフ一覧を動的に取得
+  const staffList = [...new Set(mh.map(h=>h.staff||'Tak（桑原毅郎）'))].sort();
+  const staffSummary = staffList.map(st=>{
+    const sh = mh.filter(h=>(h.staff||'Tak（桑原毅郎）')===st);
+    const sb = bussanSales.filter(s=>s.date&&s.date.startsWith(month)&&(s.staff||'Tak（桑原毅郎）')===st);
+    return [
+      [st+' 担当'],
+      ['　施術売上',      sh.reduce((s,h)=>s+(h.price||0),0), '件数', sh.length+'件'],
+      ['　　うち新規',    sh.filter(isNew).reduce((s,h)=>s+h.price,0), '', sh.filter(isNew).length+'件'],
+      ['　　うち回数券',  sh.filter(isTicket).reduce((s,h)=>s+h.price,0), '', sh.filter(isTicket).length+'件'],
+      ['　　うちサブスク',sh.filter(isSub).reduce((s,h)=>s+h.price,0), '', sh.filter(isSub).length+'件'],
+      ['　物販売上',      sb.reduce((s,x)=>s+x.price,0), '個数', sb.reduce((s,x)=>s+x.qty,0)+'個'],
+      ['　物販利益',      sb.reduce((s,x)=>s+x.profit,0)],
+    ];
+  }).flat();
+
+  // 物販：商品別集計
+  const productSummary = (() => {
+    const map = {};
+    mb.forEach(s=>{
+      if(!map[s.productName]) map[s.productName]={qty:0,price:0,profit:0};
+      map[s.productName].qty    += s.qty;
+      map[s.productName].price  += s.price;
+      map[s.productName].profit += s.profit;
+    });
+    return Object.entries(map).map(([name,v])=>[name, v.qty+'個', v.price, v.profit]);
+  })();
+
+  // 物販：スタッフ別集計（販売記録にstaffが記録されている場合）
+  const bussanByStaff = (() => {
+    const staffInBussan = [...new Set(mb.map(s=>s.staff||'（未記録）'))].sort();
+    return staffInBussan.map(st=>{
+      const sb=mb.filter(s=>(s.staff||'（未記録）')===st);
+      return [st, sb.reduce((s,x)=>s+x.qty,0)+'個', sb.reduce((s,x)=>s+x.price,0), sb.reduce((s,x)=>s+x.profit,0)];
+    });
+  })();
+
+  const rows=[
+    [month+' 月次統計　整体院TAK'],[],
+
+    // ===== A. 売上サマリー =====
+    ['A. 売上サマリー（全体）'],
+    ['施術売上合計', mh.reduce((s,h)=>s+(h.price||0),0), '件数', mh.length+'件'],
+    ['　うち新規',   mh.filter(isNew).reduce((s,h)=>s+h.price,0), '', mh.filter(isNew).length+'件'],
+    ['　うち回数券', mh.filter(isTicket).reduce((s,h)=>s+h.price,0), '', mh.filter(isTicket).length+'件'],
+    ['　うちサブスク',mh.filter(isSub).reduce((s,h)=>s+h.price,0), '', mh.filter(isSub).length+'件'],
+    ['物販売上合計', mb.reduce((s,x)=>s+x.price,0), '個数', mb.reduce((s,x)=>s+x.qty,0)+'個'],
+    ['物販利益合計', mb.reduce((s,x)=>s+x.profit,0)],
+    ['月間総売上',   mh.reduce((s,h)=>s+(h.price||0),0)+mb.reduce((s,x)=>s+x.price,0)],
+    [],
+
+    // ===== B. スタッフ別集計 =====
+    ['B. スタッフ別集計'],
+    ['担当', '施術売上', '件数', '新規', '回数券', 'サブスク', '物販売上', '物販利益'],
+    ...staffList.map(st=>{
+      const sh=mh.filter(h=>(h.staff||'Tak（桑原毅郎）')===st);
+      const sb=mb.filter(s=>(s.staff||'（未記録）')===st);
+      return [
+        st,
+        sh.reduce((s,h)=>s+(h.price||0),0),
+        sh.length+'件',
+        sh.filter(isNew).reduce((s,h)=>s+h.price,0),
+        sh.filter(isTicket).reduce((s,h)=>s+h.price,0),
+        sh.filter(isSub).reduce((s,h)=>s+h.price,0),
+        sb.reduce((s,x)=>s+x.price,0),
+        sb.reduce((s,x)=>s+x.profit,0),
+      ];
+    }),
+    [],
+
+    // ===== C. スタッフ別詳細 =====
+    ['C. スタッフ別詳細'],
+    ...staffSummary,
+    [],
+
+    // ===== D. 新規管理明細 =====
+    ['D. 新規管理明細'],
+    ['氏名','担当','媒体','初回金額','来院日'],
+    ...mh.filter(isNew).map(h=>{
+      const c=customers.find(cu=>cu.id===h.customerId);
+      return[h.customerName, h.staff||'Tak（桑原毅郎）', c?norm(c.motive||''):'-', h.price, h.date];
+    }),
+    [],
+
+    // ===== E. 物販明細 =====
+    ['E. 物販明細'],
+    ['日付','顧客名','商品名','数量','売上','利益'],
+    ...mb.map(s=>[s.date, s.customerName, s.productName, s.qty, s.price, s.profit]),
+    [],
+
+    // ===== F. 物販商品別集計 =====
+    ['F. 物販商品別集計'],
+    ['商品名','販売数','売上合計','利益合計'],
+    ...productSummary,
+    ['合計', mb.reduce((s,x)=>s+x.qty,0)+'個', mb.reduce((s,x)=>s+x.price,0), mb.reduce((s,x)=>s+x.profit,0)],
+    [],
+
+    // ===== G. 全履歴 =====
+    ['G. 全履歴（施術）'],
+    ['日付','顧客名','種別','メニュー','金額','支払','担当'],
+    ...mh.map(h=>[h.date,h.customerName,(h.type==='refund'||h.price<0)?'返金':'通常',h.menu,h.price,h.pay,h.staff||'Tak（桑原毅郎）']),
+    [],
+
+    // ===== H. 広告費 =====
+    ['H. 広告費（'+month+'）'],
+    ['項目','金額'],
+    ...adCosts.filter(a=>a.month===month).map(a=>[a.item, a.amount]),
+    ['広告費合計', adCosts.filter(a=>a.month===month).reduce((s,a)=>s+a.amount,0)],
+    [],
+
+    // ===== I. 回数券残高 =====
+    ['I. 回数券残高（有効分・全期間）'],
+    ['顧客名','種別','購入日','総回数','残回数','購入金額','1回単価','残金額'],
+    ...tickets.filter(t=>t.remaining>0)
+      .sort((a,b)=>a.customerName.localeCompare(b.customerName,'ja'))
+      .map(t=>[t.customerName,t.type,t.purchaseDate||'',t.total,t.remaining,t.paid,getTicketUnitPrice(t),getTicketResidualValue(t)]),
+    ['合計','','','',
+      tickets.filter(t=>t.remaining>0).reduce((s,t)=>s+t.remaining,0),'','',
+      tickets.filter(t=>t.remaining>0).reduce((s,t)=>s+getTicketResidualValue(t),0)]
+  ];
+
+  downloadCSV(rows,'TAK月次統計_'+month+'.csv');
+}
+
+
+// ===== サブスク管理 =====
+let subscriptions = JSON.parse(localStorage.getItem('tak_subscriptions') || '[]');
+
+function saveSubscriptions() {
+  localStorage.setItem('tak_subscriptions', JSON.stringify(subscriptions));
+}
+
+function subMenuPrice(menu) {
+  return menu === '月イチインディバ' ? 8800 : 8800;
+}
+
+function subCalc() {
+  const menu = document.getElementById('sub-menu').value;
+  const qty  = parseInt(document.getElementById('sub-qty').value) || 1;
+  document.getElementById('sub-monthly').value = subMenuPrice(menu) * qty;
+}
+
+function seCalc() {
+  const menu = document.getElementById('se-menu').value;
+  const qty  = parseInt(document.getElementById('se-qty').value) || 1;
+  document.getElementById('se-monthly').value = subMenuPrice(menu) * qty;
+}
+
+function nextPaymentDate(startDate) {
+  // 初回は任意日、翌月以降は1日
+  const now = new Date();
+  const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  return next.toISOString().slice(0, 10);
+}
+
+function filterSubCustomers() {
+  const q = document.getElementById('sub-customer-search').value.toLowerCase();
+  const sel = document.getElementById('sub-customer');
   const cur = sel.value;
   sel.innerHTML = '<option value="">-- 顧客を選択 --</option>';
   [...customers]
-    .filter(c => !q || c.name.includes(q) || (c.kana || '').includes(q))
-    .sort((a, b) => a.name.localeCompare(b.name, 'ja'))
-    .forEach(c => {
-      const o = document.createElement('option');
-      o.value = c.id;
-      o.textContent = (c.no ? `[${c.no}] ` : '') + c.name + (c.kana ? ` (${c.kana})` : '');
-      sel.appendChild(o);
-    });
-  sel.value = cur;
-}
-  function filterLineCustomers() {
-  const q = document.getElementById('line-customer-search').value.toLowerCase();
-  const sel = document.getElementById('line-customer');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">-- 顧客を選択（任意）--</option>';
-  [...customers]
-    .filter(c => !q || c.name.includes(q) || (c.kana || '').includes(q))
-    .sort((a, b) => a.name.localeCompare(b.name, 'ja'))
+    .filter(c => !q || c.name.includes(q) || (c.kana||'').includes(q))
+    .sort((a,b) => a.name.localeCompare(b.name,'ja'))
     .forEach(c => {
       const o = document.createElement('option');
       o.value = c.id;
@@ -717,926 +1778,675 @@ function filterCoCustomers() {
     });
   sel.value = cur;
 }
-// ===== CUSTOMER SELECT =====
-function populateCustomerSelect() {
-  const sel = document.getElementById('co-customer');
-  const cur = sel.value;
+
+function populateSubCustomerSelect() {
+  const sel = document.getElementById('sub-customer');
   sel.innerHTML = '<option value="">-- 顧客を選択 --</option>';
-  [...customers].sort((a,b) => a.name.localeCompare(b.name, 'ja')).forEach(c => {
+  [...customers].sort((a,b) => a.name.localeCompare(b.name,'ja')).forEach(c => {
     const o = document.createElement('option');
     o.value = c.id;
-    o.textContent = (c.no ? `[${c.no}] ` : '') + c.name + (c.kana ? ` (${c.kana})` : '');
+    o.textContent = (c.no ? `[${c.no}] ` : '') + c.name;
     sel.appendChild(o);
   });
-  sel.value = cur;
+  subCalc();
 }
 
-// ===== MENU PRICE =====
-function menuChanged() {
-  const sel = document.getElementById('co-menu');
-  const opt = sel.options[sel.selectedIndex];
-  const price = opt.dataset.price;
-  if (price !== undefined && price !== '0') {
-    document.getElementById('co-price').value = price;
-  }
-}
-
-// ===== CHECKOUT =====
-function addCheckout() {
-  const cid = document.getElementById('co-customer').value;
-  const date = document.getElementById('co-date').value;
-  const menu = document.getElementById('co-menu').value;
-  const price = parseInt(document.getElementById('co-price').value) || 0;
-  const pay = document.getElementById('co-pay').value;
-  const memo = document.getElementById('co-memo').value;
-  const note = document.getElementById('co-note').value.trim();
-  const nextDate = document.getElementById('co-next-date').value;
+function addSubscription() {
+  const cid = document.getElementById('sub-customer').value;
   if (!cid) { alert('顧客を選択してください'); return; }
-  if (!menu) { alert('メニューを選択してください'); return; }
-  if (!price) { alert('金額を入力してください'); return; }
   const c = customers.find(x => x.id === cid);
-  history.unshift({ id: genId(), customerId: cid, customerName: c ? c.name : '', date, menu, price, pay, memo, note, nextDate, createdAt: nowStr() });
-  if (c) { c.lastVisit = date; c.visitCount = (c.visitCount || 0) + 1; }
-  save();
-  alert('会計を登録しました！');
-  document.getElementById('co-menu').value = '';
-  document.getElementById('co-price').value = '';
-  document.getElementById('co-memo').value = '';
-  document.getElementById('co-note').value = '';
-  document.getElementById('co-next-date').value = '';
-  renderDash();
+  const menu  = document.getElementById('sub-menu').value;
+  const qty   = parseInt(document.getElementById('sub-qty').value) || 1;
+  const monthly = subMenuPrice(menu) * qty;
+  const startDate = document.getElementById('sub-start-date').value;
+  if (!startDate) { alert('初回決済日を入力してください'); return; }
+  const staff = document.getElementById('sub-staff').value;
+  const memo  = document.getElementById('sub-memo').value;
+
+  subscriptions.push({
+    id: genId(),
+    customerId: cid,
+    customerName: c.name,
+    menu,
+    qty,
+    monthly,
+    startDate,
+    staff,
+    memo,
+    status: 'active',
+    cancelDate: '',
+    createdAt: nowStr()
+  });
+  saveSubscriptions();
+  alert(`${c.name} さんのサブスクを登録しました！`);
+  document.getElementById('sub-customer').value = '';
+  document.getElementById('sub-menu').value = '月イチ整体';
+  document.getElementById('sub-qty').value = '1';
+  document.getElementById('sub-memo').value = '';
+  document.getElementById('sub-start-date').value = '';
+  subCalc();
+  renderSubscriptions();
+  renderSubSummary();
 }
 
-// ===== RECEIPT PREVIEW =====
-function previewReceipt() {
-  const cid = document.getElementById('co-customer').value;
-  const menu = document.getElementById('co-menu').value || '施術';
-  const price = parseInt(document.getElementById('co-price').value) || 0;
-  const date = document.getElementById('co-date').value;
-  const c = customers.find(x => x.id === cid);
-  const name = c ? c.name : '様';
-  const tax = Math.round(price - price / 1.1);
-  const card = document.getElementById('receipt-card');
-  card.style.display = 'block';
-  document.getElementById('receipt-content').innerHTML = `
-    <div class="receipt-preview">
-      <h2>領 収 書</h2>
-      <div class="sub">整体院TAK 旭町院</div>
-      <div style="margin:8px 0;font-size:12px">${date} 発行</div>
-      <div style="margin:8px 0"><strong>${name} 様</strong></div>
-      <hr style="margin:8px 0">
-      <div class="receipt-line"><span>${menu}</span><span>${fmt(price)}</span></div>
-      <div class="receipt-line total"><span>合 計</span><span>${fmt(price)}</span></div>
-      <div class="receipt-line tax"><span>（内消費税10%）</span><span>${fmt(tax)}</span></div>
-      <hr style="margin:8px 0">
-      <div style="font-size:11px;margin-top:8px;text-align:center">
-        整体院TAK 旭町院<br>
-        Assist24フィットネスジム内<br>
-        静岡県袋井市旭町
-      </div>
-    </div>`;
+function getNextPayment(sub) {
+  // 今月1日と比較して、今月まだなら今月1日、過ぎていれば翌月1日
+  const now = new Date();
+  const thisFirst = new Date(now.getFullYear(), now.getMonth(), 1);
+  const nextFirst = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  // 初回決済日が今月1日以降ならそれを優先
+  const start = new Date(sub.startDate);
+  if (start > now) return sub.startDate; // 未来の初回
+  return now.getDate() >= 1 ? nextFirst.toISOString().slice(0,10) : thisFirst.toISOString().slice(0,10);
 }
 
-// ===== CUSTOMER CRUD =====
-function saveCustomer() {
-  const id = document.getElementById('cu-id').value || genId();
-  const name = document.getElementById('cu-name').value.trim();
-  if (!name) { alert('氏名を入力してください'); return; }
-  const cu = {
-    id,
-    no: document.getElementById('cu-no').value.trim(),
-    name,
-    kana: document.getElementById('cu-kana').value.trim(),
-    gender: document.getElementById('cu-gender').value,
-    birth: document.getElementById('cu-birth').value,
-    job: document.getElementById('cu-job').value.trim(),
-    tel: document.getElementById('cu-tel').value.trim(),
-    email: document.getElementById('cu-email').value.trim(),
-    zip: document.getElementById('cu-zip').value.trim(),
-    address: document.getElementById('cu-address').value.trim(),
-    motive: document.getElementById('cu-motive').value.trim(),
-    memo: document.getElementById('cu-memo').value.trim(),
-    lastVisit: '', visitCount: 0, createdAt: nowStr()
-  };
-  const idx = customers.findIndex(x => x.id === id);
-  if (idx >= 0) {
-    cu.lastVisit = customers[idx].lastVisit;
-    cu.visitCount = customers[idx].visitCount;
-    cu.createdAt = customers[idx].createdAt;
-    customers[idx] = cu;
+function statusBadge(status) {
+  if (status === 'active')    return '<span class="badge badge-green">契約中</span>';
+  if (status === 'paused')    return '<span class="badge badge-orange">一時停止</span>';
+  if (status === 'cancelled') return '<span class="badge" style="background:#ffebee;color:#c62828">解約済</span>';
+  return status;
+}
+
+function renderSubSummary() {
+  const active = subscriptions.filter(s => s.status === 'active');
+  const monthlyTotal = active.reduce((s,x) => s + x.monthly, 0);
+  const pausedCount  = subscriptions.filter(s => s.status === 'paused').length;
+  document.getElementById('sub-summary').innerHTML = `
+    <div class="bussan-stat"><div class="blabel">契約中</div><div class="bvalue">${active.length}件</div></div>
+    <div class="bussan-stat"><div class="blabel">月額合計（契約中）</div><div class="bvalue">${fmt(monthlyTotal)}</div></div>
+    <div class="bussan-stat"><div class="blabel">一時停止中</div><div class="bvalue">${pausedCount}件</div></div>`;
+}
+
+function renderSubscriptions() {
+  const q = (document.getElementById('sub-search').value || '').toLowerCase();
+  const filterStatus = document.getElementById('sub-filter-status').value;
+  const filterMenu   = document.getElementById('sub-filter-menu').value;
+
+  let list = subscriptions.filter(s => {
+    if (q && !s.customerName.includes(q)) return false;
+    if (filterStatus !== 'all' && s.status !== filterStatus) return false;
+    if (filterMenu   !== 'all' && s.menu   !== filterMenu)   return false;
+    return true;
+  }).sort((a,b) => a.customerName.localeCompare(b.customerName,'ja'));
+
+  const tbody = document.getElementById('sub-tbody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">該当するサブスク契約がありません</td></tr>';
   } else {
-    customers.push(cu);
+    tbody.innerHTML = list.map(s => {
+      const nextPay = s.status === 'active' ? getNextPayment(s) : '-';
+      return `<tr>
+        <td><strong>${s.customerName}</strong></td>
+        <td>${s.menu}</td>
+        <td>${s.qty}回</td>
+        <td>${fmt(s.monthly)}</td>
+        <td>${s.startDate}</td>
+        <td>${nextPay}</td>
+        <td>${s.staff||'-'}</td>
+        <td>${statusBadge(s.status)}</td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-secondary btn-sm" onclick="openSubEditModal('${s.id}')">編集</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteSubscription('${s.id}')">削除</button>
+        </td>
+      </tr>`;
+    }).join('');
   }
-  save();
-  clearCustomerForm();
-  renderCustomerList();
-  populateCustomerSelect();
-  alert('顧客情報を保存しました');
+
+  // 顧客別まとめ
+  const byCustomer = {};
+  subscriptions.filter(s => s.status !== 'cancelled').forEach(s => {
+    if (!byCustomer[s.customerId]) byCustomer[s.customerId] = { name: s.customerName, subs: [] };
+    byCustomer[s.customerId].subs.push(s);
+  });
+  const ctbody = document.getElementById('sub-by-customer-tbody');
+  const entries = Object.values(byCustomer).sort((a,b) => a.name.localeCompare(b.name,'ja'));
+  if (!entries.length) {
+    ctbody.innerHTML = '<tr><td colspan="5" class="empty-state">データなし</td></tr>';
+  } else {
+    ctbody.innerHTML = entries.map(e => {
+      const active = e.subs.filter(s => s.status === 'active');
+      const total  = active.reduce((s,x) => s + x.monthly, 0);
+      const nextPay = active.length ? getNextPayment(active[0]) : '-';
+      const detail = e.subs.map(s => `${s.menu}×${s.qty}回 ${statusBadge(s.status)}`).join('<br>');
+      const overallStatus = e.subs.every(s => s.status === 'paused') ? statusBadge('paused') : statusBadge('active');
+      return `<tr>
+        <td><strong>${e.name}</strong></td>
+        <td style="font-size:12px;line-height:1.8">${detail}</td>
+        <td>${fmt(total)}</td>
+        <td>${nextPay}</td>
+        <td>${overallStatus}</td>
+      </tr>`;
+    }).join('');
+  }
 }
 
-function editCustomer(id) {
-  const c = customers.find(x => x.id === id);
-  if (!c) return;
-  document.getElementById('cu-id').value = c.id;
-  document.getElementById('cu-no').value = c.no || '';
-  document.getElementById('cu-name').value = c.name;
-  document.getElementById('cu-kana').value = c.kana || '';
-  document.getElementById('cu-gender').value = c.gender || '';
-  document.getElementById('cu-birth').value = c.birth || '';
-  document.getElementById('cu-job').value = c.job || '';
-  document.getElementById('cu-tel').value = c.tel || '';
-  document.getElementById('cu-email').value = c.email || '';
-  document.getElementById('cu-zip').value = c.zip || '';
-  document.getElementById('cu-address').value = c.address || '';
-  document.getElementById('cu-motive').value = c.motive || '';
-  document.getElementById('cu-memo').value = c.memo || '';
-  document.querySelector('[onclick="showPanel(\'customers\')"]').click();
-  window.scrollTo(0,0);
+function openSubEditModal(id) {
+  const s = subscriptions.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('se-id').value = s.id;
+  document.getElementById('se-menu').value   = s.menu;
+  document.getElementById('se-qty').value    = s.qty;
+  document.getElementById('se-monthly').value = s.monthly;
+  document.getElementById('se-status').value = s.status;
+  document.getElementById('se-staff').value  = s.staff || 'Tak（桑原毅郎）';
+  document.getElementById('se-cancel-date').value = s.cancelDate || '';
+  document.getElementById('se-memo').value   = s.memo || '';
+  document.getElementById('subEditModalOverlay').classList.add('open');
 }
 
-function deleteCustomer(id) {
-  showModal('削除確認', '顧客データを削除しますか？', [
+function closeSubEditModal() {
+  document.getElementById('subEditModalOverlay').classList.remove('open');
+}
+
+function saveSubEdit() {
+  const id = document.getElementById('se-id').value;
+  const idx = subscriptions.findIndex(x => x.id === id);
+  if (idx < 0) return;
+  const menu = document.getElementById('se-menu').value;
+  const qty  = parseInt(document.getElementById('se-qty').value) || 1;
+  subscriptions[idx] = {
+    ...subscriptions[idx],
+    menu,
+    qty,
+    monthly:    subMenuPrice(menu) * qty,
+    status:     document.getElementById('se-status').value,
+    staff:      document.getElementById('se-staff').value,
+    cancelDate: document.getElementById('se-cancel-date').value,
+    memo:       document.getElementById('se-memo').value,
+  };
+  saveSubscriptions();
+  closeSubEditModal();
+  renderSubscriptions();
+  renderSubSummary();
+}
+
+function deleteSubscription(id) {
+  showModal('削除確認', 'このサブスク契約を完全に削除しますか？（解約の場合は「編集」から解約ステータスに変更することをお勧めします）', [
     { label: '削除', cls: 'btn-danger', cb: () => {
-      customers = customers.filter(x => x.id !== id);
-      save(); renderCustomerList(); populateCustomerSelect(); closeModal();
+      subscriptions = subscriptions.filter(x => x.id !== id);
+      saveSubscriptions(); renderSubscriptions(); renderSubSummary(); closeModal();
     }},
     { label: 'キャンセル', cls: 'btn-secondary', cb: closeModal }
   ]);
 }
 
-function clearCustomerForm() {
-  ['cu-id','cu-no','cu-name','cu-kana','cu-gender','cu-birth','cu-job','cu-tel','cu-email','cu-zip','cu-address','cu-motive','cu-memo']
-    .forEach(id => { document.getElementById(id).value = ''; });
+function exportSubCSV() {
+  const rows = [['顧客名','メニュー','月回数','月額','初回決済日','次回決済日','担当','ステータス','解約日','メモ']];
+  subscriptions.forEach(s => {
+    rows.push([
+      s.customerName, s.menu, s.qty+'回', s.monthly,
+      s.startDate, s.status === 'active' ? getNextPayment(s) : '-',
+      s.staff||'', s.status === 'active' ? '契約中' : s.status === 'paused' ? '一時停止' : '解約済',
+      s.cancelDate||'', s.memo||''
+    ]);
+  });
+  downloadCSV(rows, 'サブスク一覧_' + today() + '.csv');
 }
 
-function renderCustomerList() {
-  const q = document.getElementById('cu-search').value.toLowerCase();
-  const tbody = document.getElementById('customer-tbody');
-  const list = customers.filter(c =>
-    !q || c.name.includes(q) || (c.kana||'').includes(q) || (c.tel||'').includes(q)
-  ).sort((a,b) => (a.no||'').localeCompare(b.no||'', undefined, {numeric:true}));
-  if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">顧客データがありません</td></tr>'; return; }
-  tbody.innerHTML = list.map(c => `
-    <tr>
-      <td>${c.no || '-'}</td>
-      <td><strong>${c.name}</strong>${c.kana ? `<br><span style="font-size:11px;color:var(--text-sub)">${c.kana}</span>` : ''}</td>
-      <td>${c.tel || '-'}</td>
-      <td>${c.visitCount || 0}回</td>
-      <td>${c.lastVisit || '-'}</td>
-      <td>
-        <button class="btn btn-secondary btn-sm" onclick="editCustomer('${c.id}')">編集</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteCustomer('${c.id}')">削除</button>
-      </td>
-    </tr>`).join('');
+document.getElementById('subEditModalOverlay').addEventListener('click', e => {
+  if (e.target.id === 'subEditModalOverlay') closeSubEditModal();
+});
+document.getElementById('historyEditModalOverlay').addEventListener('click', e => {
+  if (e.target.id === 'historyEditModalOverlay') document.getElementById('historyEditModalOverlay').classList.remove('open');
+});
+
+
+// ===== 回数券管理 =====
+let tickets = JSON.parse(localStorage.getItem('tak_tickets') || '[]');
+function saveTickets(){ localStorage.setItem('tak_tickets', JSON.stringify(tickets)); }
+
+// 回数券種別ごとの標準設定
+const TICKET_PRESETS = {
+  '回数券10回':         { total:10, paid:104500 },
+  '回数券20回':         { total:20, paid:198000 },
+  '回数券30回':         { total:30, paid:280500 },
+  'メンテナンス回数券5回': { total:5,  paid:44000  },
+};
+
+function tkCalc(){
+  const type = document.getElementById('tk-type').value;
+  const preset = TICKET_PRESETS[type];
+  if(preset && !document.getElementById('tk-total').value){
+    document.getElementById('tk-total').value = preset.total;
+  }
+  if(preset && !document.getElementById('tk-paid').value){
+    document.getElementById('tk-paid').value = preset.paid;
+  }
 }
 
-// ===== HISTORY =====
-function renderHistory() {
-  const q = document.getElementById('hi-search').value.toLowerCase();
-  const m = document.getElementById('hi-month').value;
-  const tbody = document.getElementById('history-tbody');
-  const list = history.filter(h =>
-    (!q || h.customerName.includes(q) || h.menu.includes(q)) &&
-    (!m || h.date.startsWith(m))
-  );
-  if (!list.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">履歴がありません</td></tr>'; return; }
-  tbody.innerHTML = list.map(h => `
-    <tr>
-      <td>${h.date}</td>
-      <td>${h.customerName}</td>
-      <td>${h.menu}</td>
-      <td>${fmt(h.price)}</td>
-      <td><span class="badge badge-blue">${h.pay}</span></td>
-      <td>${h.memo || '-'}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="deleteHistory('${h.id}')">削除</button></td>
-    </tr>`).join('');
+document.getElementById('tk-type').addEventListener('change', function(){
+  const preset = TICKET_PRESETS[this.value];
+  if(preset){
+    document.getElementById('tk-total').value = preset.total;
+    document.getElementById('tk-paid').value  = preset.paid;
+  } else {
+    document.getElementById('tk-total').value = '';
+    document.getElementById('tk-paid').value  = '';
+  }
+});
+
+function populateTicketCustomerSelect(){
+  const sel = document.getElementById('tk-customer');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">-- 顧客を選択 --</option>';
+  [...customers].sort((a,b)=>a.name.localeCompare(b.name,'ja')).forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c.id; o.textContent=(c.no?`[${c.no}] `:'')+c.name;
+    sel.appendChild(o);
+  });
+  sel.value=cur;
 }
 
-function deleteHistory(id) {
-  showModal('削除確認', 'この履歴を削除しますか？', [
-    { label: '削除', cls: 'btn-danger', cb: () => { history = history.filter(x => x.id !== id); save(); renderHistory(); closeModal(); }},
-    { label: 'キャンセル', cls: 'btn-secondary', cb: closeModal }
+function filterTicketCustomers(){
+  const q=document.getElementById('tk-customer-search').value.toLowerCase();
+  const sel=document.getElementById('tk-customer');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">-- 顧客を選択 --</option>';
+  [...customers].filter(c=>!q||c.name.includes(q)||(c.kana||'').includes(q))
+    .sort((a,b)=>a.name.localeCompare(b.name,'ja')).forEach(c=>{
+      const o=document.createElement('option');
+      o.value=c.id; o.textContent=(c.no?`[${c.no}] `:'')+c.name;
+      sel.appendChild(o);
+    });
+  sel.value=cur;
+}
+
+function saveTicket(){
+  const cid  = document.getElementById('tk-customer').value;
+  if(!cid){alert('顧客を選択してください');return;}
+  const c    = customers.find(x=>x.id===cid);
+  const type = document.getElementById('tk-type').value;
+  const purchaseDate = document.getElementById('tk-purchase-date').value;
+  const total     = parseInt(document.getElementById('tk-total').value)||0;
+  const remaining = parseInt(document.getElementById('tk-remaining').value);
+  if(isNaN(remaining)){alert('現在の残回数を入力してください');return;}
+  const paid = parseInt(document.getElementById('tk-paid').value)||0;
+  const memo = document.getElementById('tk-memo').value;
+  const id   = document.getElementById('tk-id').value || genId();
+
+  const existing = tickets.findIndex(t=>t.id===id);
+  const record = {
+    id, customerId:cid, customerName:c.name,
+    type, purchaseDate, total, remaining, paid, memo,
+    consumedLog: existing>=0 ? (tickets[existing].consumedLog||[]) : [],
+    createdAt: existing>=0 ? tickets[existing].createdAt : nowStr()
+  };
+  if(existing>=0) tickets[existing]=record;
+  else tickets.unshift(record);
+
+  saveTickets();
+  clearTicketForm();
+  renderTicketList();
+  renderTicketSummary();
+  alert('回数券を保存しました！');
+}
+
+function clearTicketForm(){
+  document.getElementById('tk-id').value='';
+  document.getElementById('tk-customer').value='';
+  document.getElementById('tk-customer-search').value='';
+  document.getElementById('tk-type').value='回数券10回';
+  document.getElementById('tk-purchase-date').value='';
+  document.getElementById('tk-total').value='';
+  document.getElementById('tk-remaining').value='';
+  document.getElementById('tk-paid').value='';
+  document.getElementById('tk-memo').value='';
+}
+
+function editTicket(id){
+  const t=tickets.find(x=>x.id===id);if(!t)return;
+  document.getElementById('tk-id').value=t.id;
+  document.getElementById('tk-customer').value=t.customerId;
+  document.getElementById('tk-type').value=t.type;
+  document.getElementById('tk-purchase-date').value=t.purchaseDate||'';
+  document.getElementById('tk-total').value=t.total;
+  document.getElementById('tk-remaining').value=t.remaining;
+  document.getElementById('tk-paid').value=t.paid;
+  document.getElementById('tk-memo').value=t.memo||'';
+  window.scrollTo(0,0);
+}
+
+function deleteTicket(id){
+  showModal('削除確認','この回数券記録を削除しますか？',[
+    {label:'削除',cls:'btn-danger',cb:()=>{
+      tickets=tickets.filter(x=>x.id!==id);
+      saveTickets();renderTicketList();renderTicketSummary();closeModal();
+    }},
+    {label:'キャンセル',cls:'btn-secondary',cb:closeModal}
   ]);
 }
 
-// ===== DASHBOARD =====
-function renderDash() {
-  const td = today();
-  const tm = td.slice(0,7);
-  const todayH = history.filter(h => h.date === td);
-  const monthH = history.filter(h => h.date.startsWith(tm));
-  document.getElementById('stat-today').textContent = fmt(todayH.reduce((s,h) => s+h.price, 0));
-  document.getElementById('stat-today-count').textContent = todayH.length + '件';
-  document.getElementById('stat-month').textContent = fmt(monthH.reduce((s,h) => s+h.price, 0));
-  document.getElementById('stat-month-count').textContent = monthH.length + '件';
-  document.getElementById('stat-customers').textContent = customers.length;
-  const tbody = document.getElementById('recent-tbody');
-  const rec = history.slice(0,8);
-  tbody.innerHTML = rec.length ? rec.map(h => `
-    <tr><td>${h.date}</td><td>${h.customerName}</td><td>${h.menu}</td><td>${fmt(h.price)}</td></tr>`).join('')
-    : '<tr><td colspan="4" class="empty-state">履歴なし</td></tr>';
+function getTicketUnitPrice(t){
+  return t.total>0 ? Math.round(t.paid/t.total) : 0;
 }
-// 回数券残数アラート
-  const isTicket = h => h.menu && h.menu.includes('回数券') && !h.menu.includes('利用');
-  const ticketAlerts = customers.map(c => {
-    const all = history.filter(h => h.customerId === c.id);
-    const purchased = all.filter(isTicket).reduce((s, h) => {
-      const m = h.menu.match(/(\d+)回/); return s + (m ? parseInt(m[1]) : 0);
-    }, 0);
-    const used = all.filter(h => h.menu && h.menu.includes('回数券利用')).length;
-    const remaining = purchased - used;
-    return purchased > 0 ? { name: c.name, remaining, lastVisit: c.lastVisit, id: c.id } : null;
-  }).filter(x => x && x.remaining <= 2 && x.remaining > 0);
-  const ticketCard = document.getElementById('ticket-alert-card');
-  const ticketTbody = document.getElementById('ticket-alert-tbody');
-  if (ticketAlerts.length > 0) {
-    ticketCard.style.display = 'block';
-    ticketTbody.innerHTML = ticketAlerts.map(c => `<tr>
-      <td><strong>${c.name}</strong></td>
-      <td style="color:#1565c0;font-weight:700">${c.remaining}回</td>
-      <td>${c.lastVisit || '-'}</td>
+function getTicketResidualValue(t){
+  return getTicketUnitPrice(t)*t.remaining;
+}
+function getTicketConsumed(t){
+  return t.total - t.remaining - (t.consumedLog ? 0 : 0); // 残回数は手動更新 or 自動
+}
+
+function renderTicketSummary(){
+  const active  = tickets.filter(t=>t.remaining>0);
+  const totalRemaining = active.reduce((s,t)=>s+t.remaining,0);
+  const totalValue     = active.reduce((s,t)=>s+getTicketResidualValue(t),0);
+  const lowCount       = active.filter(t=>t.remaining<=2).length;
+  document.getElementById('ticket-summary').innerHTML=`
+    <div class="bussan-stat"><div class="blabel">有効回数券</div><div class="bvalue">${active.length}件</div></div>
+    <div class="bussan-stat"><div class="blabel">総残回数</div><div class="bvalue">${totalRemaining}回</div></div>
+    <div class="bussan-stat"><div class="blabel">残金額合計</div><div class="bvalue">${fmt(totalValue)}</div></div>`;
+  // ダッシュボードのアラートも更新
+  const alertDiv = document.getElementById('ticket-alert-card');
+  const alertTbody = document.getElementById('ticket-alert-tbody');
+  const low = tickets.filter(t=>t.remaining>0&&t.remaining<=2);
+  if(low.length>0){
+    alertDiv.style.display='block';
+    alertTbody.innerHTML=low.map(t=>`<tr>
+      <td><strong>${t.customerName}</strong></td>
+      <td style="color:#1565c0;font-weight:700">${t.remaining}回</td>
+      <td>${t.purchaseDate||'-'}</td>
       <td><button class="btn btn-primary btn-sm" onclick="showPanel('line')">💬 LINE生成</button></td>
     </tr>`).join('');
   } else {
-    ticketCard.style.display = 'none';
+    alertDiv.style.display='none';
   }
-  // 次回予約未設定アラート
-  const today7 = new Date(); today7.setDate(today7.getDate() - 7);
-  const noNext = history.filter(h => {
-    const isNew = h.menu && (h.menu.includes('初回') || h.menu.includes('体験'));
-    if (!isNew) return false;
-    if (h.nextDate) return false;
-    const diff = Math.floor((new Date() - new Date(h.date)) / 86400000);
-    return diff >= 7;
-  });
-  const alertCard = document.getElementById('alert-card');
-  const alertTbody = document.getElementById('alert-tbody');
-  if (noNext.length > 0) {
-    alertCard.style.display = 'block';
-    alertTbody.innerHTML = noNext.map(h => {
-      const diff = Math.floor((new Date() - new Date(h.date)) / 86400000);
-      return `<tr>
-        <td><strong>${h.customerName}</strong></td>
-        <td>${h.date}</td>
-        <td style="color:#e65100;font-weight:700">${diff}日経過</td>
-        <td><button class="btn btn-primary btn-sm" onclick="showPanel('line')">💬 LINE生成</button></td>
+}
+
+function renderTicketList(){
+  const q      = (document.getElementById('tk-search').value||'').toLowerCase();
+  const filter = document.getElementById('tk-filter').value;
+  let list = tickets.filter(t=>{
+    if(q && !t.customerName.includes(q)) return false;
+    if(filter==='active' && t.remaining<=0) return false;
+    if(filter==='low'    && t.remaining>2)  return false;
+    if(filter==='zero'   && t.remaining>0)  return false;
+    return true;
+  }).sort((a,b)=>a.customerName.localeCompare(b.customerName,'ja'));
+
+  const tbody = document.getElementById('ticket-tbody');
+  if(!list.length){
+    tbody.innerHTML='<tr><td colspan="10" class="empty-state">該当する回数券がありません</td></tr>';
+  } else {
+    tbody.innerHTML = list.map(t=>{
+      const consumed = t.total - t.remaining;
+      const unitPrice = getTicketUnitPrice(t);
+      const residual  = getTicketResidualValue(t);
+      const lowStyle  = t.remaining<=2 && t.remaining>0 ? 'background:#fff3e0' : t.remaining===0 ? 'background:#f5f5f5;color:#999' : '';
+      return `<tr style="${lowStyle}">
+        <td><strong>${t.customerName}</strong></td>
+        <td style="font-size:12px">${t.type}</td>
+        <td>${t.purchaseDate||'-'}</td>
+        <td style="text-align:center">${t.total}回</td>
+        <td style="text-align:center">${consumed}回</td>
+        <td style="text-align:center;font-weight:700;color:${t.remaining<=2?'#e65100':'var(--green)'}">${t.remaining}回</td>
+        <td>${fmt(t.paid)}</td>
+        <td style="font-size:12px">${fmt(unitPrice)}</td>
+        <td style="font-weight:700;color:var(--green)">${fmt(residual)}</td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-secondary btn-sm" onclick="editTicket('${t.id}')">編集</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteTicket('${t.id}')">削除</button>
+        </td>
       </tr>`;
     }).join('');
+  }
+
+  // 消化ログ（直近30件）
+  const allLogs = [];
+  tickets.forEach(t=>{
+    (t.consumedLog||[]).forEach(log=>{
+      allLogs.push({date:log.date, customerName:t.customerName, type:'消化', ticketType:t.type, remaining: '→ '+(t.consumedLog.indexOf(log)+1 <= t.consumedLog.length ? '-' : t.remaining)+'回' });
+    });
+  });
+  allLogs.sort((a,b)=>b.date.localeCompare(a.date));
+  const logTbody = document.getElementById('ticket-log-tbody');
+  if(!allLogs.length){
+    logTbody.innerHTML='<tr><td colspan="5" class="empty-state">消化記録がありません（会計タブで「回数券利用」を登録すると自動記録されます）</td></tr>';
   } else {
-    alertCard.style.display = 'none';
-  }
-// ===== CSV EXPORT =====
-function exportCustomersCSV() {
-  const rows = [['顧客No','氏名','ふりがな','性別','郵便番号','住所','メールアドレス','電話番号','生年月日','職業','動機','来院回数','最終来院']];
-  customers.forEach(c => rows.push([c.no||'',c.name,c.kana||'',c.gender||'',c.zip||'',c.address||'',c.email||'',c.tel||'',c.birth||'',c.job||'',c.motive||'',c.visitCount||0,c.lastVisit||'']));
-  downloadCSV(rows, '顧客リスト_' + today() + '.csv');
-}
-
-function exportHistoryCSV() {
-  const rows = [['日付','顧客名','メニュー','金額','支払方法','メモ']];
-  history.forEach(h => rows.push([h.date,h.customerName,h.menu,h.price,h.pay,h.memo||'']));
-  downloadCSV(rows, '来院履歴_' + today() + '.csv');
-}
-
-function downloadCSV(rows, filename) {
-  const bom = '\uFEFF';
-  const csv = bom + rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
-  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
-}
-
-// ===== CSV IMPORT =====
-function handleDrop(e) {
-  e.preventDefault();
-  document.getElementById('importZone').classList.remove('drag');
-  const file = e.dataTransfer.files[0];
-  if (file) processCSVFile(file);
-}
-
-function handleFileSelect(e) {
-  const file = e.target.files[0];
-  if (file) processCSVFile(file);
-  e.target.value = '';
-}
-
-function processCSVFile(file) {
-  const resultDiv = document.getElementById('importResult');
-  if (!file.name.endsWith('.csv')) {
-    resultDiv.innerHTML = '<div class="import-result error">❌ CSVファイルを選択してください</div>';
-    return;
-  }
-  resultDiv.innerHTML = '<div class="import-result info">⏳ 読み込み中...</div>';
-
-  // Shift-JIS と UTF-8 両対応
-  const reader = new FileReader();
-  reader.onload = function(e) {
-      const buffer = e.target.result;
-      // TextDecoderでShift-JIS→UTF-8変換（Android対応）
-      try {
-        let text;
-      try {
-        const d1 = new TextDecoder('utf-8', {fatal: true});
-        text = d1.decode(new Uint8Array(buffer));
-      } catch(e) {
-        const d2 = new TextDecoder('shift-jis');
-        text = d2.decode(new Uint8Array(buffer));
-      }
-      parseAndPreviewCSV(text);
-      } catch(err) {
-        const decoder = new TextDecoder('utf-8');
-        const text = decoder.decode(new Uint8Array(buffer));
-        parseAndPreviewCSV(text);
-      }
-    };
-    reader.readAsArrayBuffer(file);
-}
-
-function parseCSVLine(line) {
-  const result = [];
-  let cur = '';
-  let inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
-      else inQ = !inQ;
-    } else if (ch === ',' && !inQ) {
-      result.push(cur); cur = '';
-    } else {
-      cur += ch;
-    }
-  }
-  result.push(cur);
-  return result;
-}
-
-function parseAndPreviewCSV(text) {
-  const resultDiv = document.getElementById('importResult');
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
-  if (lines.length < 2) {
-    resultDiv.innerHTML = '<div class="import-result error">❌ データが見つかりません</div>';
-    return;
-  }
-
-  const header = parseCSVLine(lines[0]).map(h => h.trim().replace(/[\s\u3000\ufeff]/g, ''));
-  // 囲い込み職人の列マッピング
-  const colMap = {
-    no:        header.findIndex(h => h.includes('顧客No') || h.includes('顧客no')),
-    name:      header.findIndex(h => h.includes('顧客名') && !h.includes('ふりがな')),
-    kana:      header.findIndex(h => h.includes('ふりがな')),
-    gender:    header.findIndex(h => h.includes('性別')),
-    zip:       header.findIndex(h => h.includes('郵便番号')),
-    addr1:     header.findIndex(h => h.includes('住所１') || h.includes('住所1')),
-    addr2:     header.findIndex(h => h.includes('住所２') || h.includes('住所2')),
-    tel1:      header.findIndex(h => h.includes('電話-1') || h.includes('電話1') || (h.includes('電話') && !h.includes('-2') && !h.includes('2'))),
-    tel2:      header.findIndex(h => h.includes('電話-2') || h.includes('電話2')),
-    email:     header.findIndex(h => h.includes('メール')),
-    birth:     header.findIndex(h => h.includes('生年月日')),
-    job:       header.findIndex(h => h.includes('職業')),
-    motive:    header.findIndex(h => h.includes('動機')),
-    lastVisit: header.findIndex(h => h.includes('最終来店') || h.includes('最終来院')),
-    visitCount:header.findIndex(h => h.includes('来店回数') || h.includes('来院回数')),
-  };
-alert('列名確認: ' + header.slice(0,3).join(' / '));
-  if (colMap.name < 0) {
-    resultDiv.innerHTML = '<div class="import-result error">❌ 「顧客名」列が見つかりません。囲い込み職人のCSV形式を確認してください</div>';
-    return;
-  }
-
-  const parsed = [];
-  for (let i = 1; i < lines.length; i++) {
-    const cols = parseCSVLine(lines[i]);
-    if (!cols[colMap.name]?.trim()) continue;
-    const get = idx => idx >= 0 ? (cols[idx] || '').trim() : '';
-    const addr = [get(colMap.addr1), get(colMap.addr2)].filter(Boolean).join(' ');
-    // 生年月日を date 形式に変換
-    let birth = get(colMap.birth);
-    if (birth) {
-      // 1990/01/01 or 1990-01-01
-      birth = birth.replace(/\//g, '-').replace(/(\d{4})-(\d{1,2})-(\d{1,2})/, (_, y, m, d) =>
-        `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
-    }
-    parsed.push({
-      no: get(colMap.no),
-      name: get(colMap.name),
-      kana: get(colMap.kana),
-      gender: get(colMap.gender),
-      zip: get(colMap.zip),
-      address: addr,
-      tel: get(colMap.tel1),
-      email: get(colMap.email),
-      birth,
-      job: get(colMap.job),
-      motive: get(colMap.motive),
-      lastVisit: get(colMap.lastVisit).replace(/\//g,'-'),
-      visitCount: parseInt(get(colMap.visitCount)) || 0,
-    });
-  }
-
-  if (!parsed.length) {
-    resultDiv.innerHTML = '<div class="import-result error">❌ 有効なデータが見つかりません</div>';
-    return;
-  }
-
-  // 重複チェック（顧客No一致）
-  parsed.forEach(p => {
-    if (p.no && customers.find(c => c.no === p.no)) p._status = 'update';
-    else p._status = 'new';
-  });
-
-  pendingImport = parsed;
-  renderImportPreview(parsed);
-  resultDiv.innerHTML = `<div class="import-result success">✅ ${parsed.length}件を読み込みました。内容を確認して「インポート実行」をクリックしてください。</div>`;
-}
-
-function renderImportPreview(list) {
-  const card = document.getElementById('importPreviewCard');
-  card.style.display = 'block';
-  const newCount = list.filter(p => p._status === 'new').length;
-  const updCount = list.filter(p => p._status === 'update').length;
-  document.getElementById('importPreviewCount').textContent =
-    `新規追加: ${newCount}件  /  上書き更新: ${updCount}件`;
-  document.getElementById('importPreviewBody').innerHTML = list.map(p => `
-    <tr>
-      <td>${p.no || '-'}</td>
-      <td><strong>${p.name}</strong></td>
-      <td>${p.kana || '-'}</td>
-      <td>${p.tel || '-'}</td>
-      <td>${p.zip || '-'}</td>
-      <td style="max-width:160px;font-size:12px">${p.address || '-'}</td>
-      <td style="max-width:160px;font-size:12px">${p.email || '-'}</td>
-      <td>${p.job || '-'}</td>
-      <td><span class="badge ${p._status === 'new' ? 'badge-green' : 'badge-orange'}">${p._status === 'new' ? '新規' : '更新'}</span></td>
-    </tr>`).join('');
-}
-
-function confirmImport() {
-  if (!pendingImport.length) return;
-  let added = 0, updated = 0;
-  pendingImport.forEach(p => {
-    const existing = p.no ? customers.find(c => c.no === p.no) : null;
-    if (existing) {
-      Object.assign(existing, {
-        name: p.name, kana: p.kana, gender: p.gender,
-        zip: p.zip, address: p.address, tel: p.tel, email: p.email,
-        birth: p.birth, job: p.job, motive: p.motive,
-        lastVisit: p.lastVisit || existing.lastVisit,
-        visitCount: p.visitCount || existing.visitCount,
-      });
-      updated++;
-    } else {
-      customers.push({ id: genId(), visitCount: p.visitCount || 0, createdAt: nowStr(), ...p });
-      added++;
-    }
-  });
-  save();
-  pendingImport = [];
-  document.getElementById('importPreviewCard').style.display = 'none';
-  document.getElementById('importResult').innerHTML =
-    `<div class="import-result success">✅ インポート完了！　新規追加: ${added}件 / 更新: ${updated}件</div>`;
-  populateCustomerSelect();
-}
-
-function cancelImport() {
-  pendingImport = [];
-  document.getElementById('importPreviewCard').style.display = 'none';
-  document.getElementById('importResult').innerHTML = '';
-}
-
-// ===== MODAL =====
-function showModal(title, body, btns) {
-  document.getElementById('modalTitle').textContent = title;
-  document.getElementById('modalBody').innerHTML = `<p style="font-size:14px">${body}</p>`;
-  document.getElementById('modalBtns').innerHTML = '';
-  btns.forEach(b => {
-    const btn = document.createElement('button');
-    btn.className = 'btn ' + b.cls;
-    btn.textContent = b.label;
-    btn.onclick = b.cb;
-    document.getElementById('modalBtns').appendChild(btn);
-  });
-  document.getElementById('modalOverlay').classList.add('open');
-}
-function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
-document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target.id === 'modalOverlay') closeModal(); });
-
-
-// ===== LINE MESSAGE =====
-function onLineCustomerChange() {
-  const cid = document.getElementById('line-customer').value;
-  if (!cid) return;
-  const c = customers.find(x => x.id === cid);
-  if (!c) return;
-  // 最終メニューと気になったことメモを履歴から自動セット
-  const last = history.find(h => h.customerId === cid);
-  if (last) {
-    const sel = document.getElementById('line-last-menu');
-    for (let o of sel.options) { if (o.value === last.menu) { sel.value = last.menu; break; } }
-    // 気になったことメモを追加指示欄に自動セット
-    if (last.note) {
-      document.getElementById('line-extra').value = last.note;
-    }
-  }
-}
-
-function setTemplate(hint) {
-  document.getElementById('line-extra').value = hint;
-}
-
-function clearLinePanel() {
-  document.getElementById('line-customer').value = '';
-  document.getElementById('line-purpose').value = 'followup';
-  document.getElementById('line-last-menu').value = '';
-  document.getElementById('line-tone').value = 'warm';
-  document.getElementById('line-extra').value = '';
-  document.getElementById('line-result-card').style.display = 'none';
-}
-
-async function generateLineMessage() {
-  const cid = document.getElementById('line-customer').value;
-  const purpose = document.getElementById('line-purpose').value;
-  const menu = document.getElementById('line-last-menu').value;
-  const tone = document.getElementById('line-tone').value;
-  const extra = document.getElementById('line-extra').value.trim();
-  const c = cid ? customers.find(x => x.id === cid) : null;
-
-  const purposeMap = {
-    followup: '施術後フォローアップ',
-    remind: '次回来院リマインド',
-    reactivate: '久しぶり再来院促進',
-    diet: 'ダイエットプログラムモニター募集',
-    birthday: '誕生日メッセージ',
-    thanks: 'ご来院お礼',
-    custom: 'カスタム'
-  };
-  const toneMap = {
-    warm: '温かみがあり親しみやすい',
-    professional: '丁寧でプロフェッショナル',
-    casual: 'カジュアルでフレンドリー'
-  };
-
-  const customerInfo = c ? `
-- 氏名: ${c.name}${c.kana ? `（${c.kana}）` : ''}
-- 性別: ${c.gender || '不明'}
-- 職業: ${c.job || '不明'}
-- 来院回数: ${c.visitCount || 0}回
-- 最終来院: ${c.lastVisit || '不明'}` : '（顧客未選択）';
-
-  const prompt = `あなたは「整体院TAK」（静岡県袋井市）の院長Tak（桑原毅郎）として、患者さんへLINEメッセージを書いてください。
-
-【院の特徴】
-- Assist24フィットネスジム内の整体・鍼灸院
-- 40〜60代女性（看護師・公務員が多い）をメインターゲット
-- 完全予約制・一対一施術
-- 1cs.jp/seitaitak/r で予約受付
-
-【顧客情報】${customerInfo}
-
-【メッセージ用途】${purposeMap[purpose] || purpose}
-【最終施術メニュー】${menu || '不明'}
-【トーン】${toneMap[tone]}
-${extra ? `【施術メモ・気になったこと】${extra}` : ''}
-
-【ルール】
-- 施術メモがある場合は必ずその内容に触れた個別感のある文章にする
-- LINEのテキストメッセージとして自然な文体
-- 院長のファーストネーム「Tak」で締める
-- 絵文字を適度に使う
-- 200〜300文字程度（長すぎず短すぎず）
-- 予約URLは必要な場合のみ含める: https://1cs.jp/seitaitak/r
-- メッセージ本文のみ返す（説明・前置き不要）`;
-
-  const btn = document.getElementById('line-gen-btn');
-  btn.textContent = '⏳ 生成中...';
-  btn.classList.add('generating');
-
-  try {
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbxqsyCHPCjzNRNnmTP64xUIdxn9The5U6hX2kXv4CFGzt5704AX_v20TazKNummEWQ3XQ/exec';
-    const payload = JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      messages: [{ role: 'user', content: prompt }]
-    });
-    const form = new FormData();
-    form.append('payload', payload);
-    const res = await fetch(GAS_URL, { method: 'POST', body: form });
-    const data = await res.json();
-    const msg = data.content?.[0]?.text || 'エラーが発生しました';
-
-    const card = document.getElementById('line-result-card');
-    card.style.display = 'block';
-    document.getElementById('line-msg-box').textContent = msg;
-    const edit = document.getElementById('line-edit-area');
-    edit.value = msg;
-    updateLineCharCount();
-    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  } catch(e) {
-    alert('メッセージ生成に失敗しました: ' + e.message);
-  } finally {
-    btn.textContent = '✨ AIでメッセージ生成';
-    btn.classList.remove('generating');
-  }
-}
-
-function updateLineCharCount() {
-  const txt = document.getElementById('line-edit-area').value;
-  document.getElementById('line-char-count').textContent = `${txt.length}文字`;
-  document.getElementById('line-msg-box').textContent = txt;
-}
-
-function copyLineMsg() {
-  const txt = document.getElementById('line-edit-area').value;
-  navigator.clipboard.writeText(txt).then(() => {
-    const btn = event.target;
-    btn.textContent = '✅ コピーしました';
-    setTimeout(() => { btn.textContent = '📋 コピー'; }, 2000);
-  });
-}
-
-// ===== BEFORE / AFTER =====
-const baImages = { before: null, after: null };
-
-function handleBaDrop(e, side) {
-  e.preventDefault();
-  document.getElementById('ba-' + side + '-zone').classList.remove('drag');
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) loadBaImageFile(file, side);
-}
-
-function loadBaImage(e, side) {
-  const file = e.target.files[0];
-  if (file) loadBaImageFile(file, side);
-  e.target.value = '';
-}
-
-function loadBaImageFile(file, side) {
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const img = new Image();
-    img.onload = () => {
-      baImages[side] = img;
-      const zone = document.getElementById('ba-' + side + '-zone');
-      zone.innerHTML = `<img src="${ev.target.result}" alt="${side}">`;
-      document.getElementById('ba-compose-btn').disabled = !(baImages.before && baImages.after);
-    };
-    img.src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function composeBaImage() {
-  if (!baImages.before || !baImages.after) return;
-
-  const outW = parseInt(document.getElementById('ba-width').value) || 1080;
-  const labelStyle = document.getElementById('ba-label-style').value;
-  const dividerColor = document.getElementById('ba-divider-color').value;
-  const bgColor = document.getElementById('ba-bg-color').value;
-
-  const half = Math.floor(outW / 2);
-  const dividerW = 4;
-  const labelH = labelStyle === 'none' ? 0 : 44;
-
-  // 高さは両画像の縦横比から計算（長い方に合わせる）
-  const bH = Math.round(half * baImages.before.naturalHeight / baImages.before.naturalWidth);
-  const aH = Math.round(half * baImages.after.naturalHeight / baImages.after.naturalWidth);
-  const imgH = Math.max(bH, aH);
-  const totalH = imgH + labelH;
-
-  const canvas = document.getElementById('ba-canvas');
-  canvas.width = outW;
-  canvas.height = totalH;
-  const ctx = canvas.getContext('2d');
-
-  // 背景
-  ctx.fillStyle = bgColor;
-  ctx.fillRect(0, 0, outW, totalH);
-
-  // ビフォー画像（左半分・縦中央）
-  const bY = labelH + Math.round((imgH - bH) / 2);
-  ctx.drawImage(baImages.before, 0, bY, half, bH);
-
-  // アフター画像（右半分・縦中央）
-  const aY = labelH + Math.round((imgH - aH) / 2);
-  ctx.drawImage(baImages.after, half + dividerW, aY, half - dividerW, aH);
-
-  // 区切り線
-  ctx.fillStyle = dividerColor;
-  ctx.fillRect(half, 0, dividerW, totalH);
-
-  // ラベル
-  if (labelStyle !== 'none') {
-    ctx.fillStyle = dividerColor;
-    ctx.fillRect(0, 0, half, labelH);
-    ctx.fillRect(half + dividerW, 0, half - dividerW, labelH);
-    ctx.fillStyle = '#fff';
-    ctx.font = `bold ${Math.round(labelH * 0.52)}px 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    const labels = labelStyle === 'ja'
-      ? ['ビフォー', 'アフター']
-      : ['BEFORE', 'AFTER'];
-    ctx.fillText(labels[0], half / 2, labelH / 2);
-    ctx.fillText(labels[1], half + dividerW + (half - dividerW) / 2, labelH / 2);
-  }
-
-  document.getElementById('ba-result-card').style.display = 'block';
-  document.getElementById('ba-result-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function downloadBaImage() {
-  const canvas = document.getElementById('ba-canvas');
-  const a = document.createElement('a');
-  a.download = 'before_after_' + today() + '.jpg';
-  canvas.toBlob(blob => {
-    a.href = URL.createObjectURL(blob);
-    a.click();
-  }, 'image/jpeg', 0.92);
-}
-
-function resetBa() {
-  baImages.before = null; baImages.after = null;
-  ['before','after'].forEach(s => {
-    document.getElementById('ba-' + s + '-zone').innerHTML = `
-      <span style="font-size:32px">🖼</span>
-      <span style="font-size:13px;color:var(--text-sub)">クリックまたはドラッグ</span>`;
-  });
-  document.getElementById('ba-compose-btn').disabled = true;
-  document.getElementById('ba-result-card').style.display = 'none';
-}
-
-
-// ===== 問診票取込 =====
-const MONSHIN_GAS = 'https://script.google.com/macros/s/AKfycbyPXyFn9Wuh5taEbEJWtjp0LI5u7Ke4sYYT7vtgnpC-X0fbee59u8qttA5w_qK7xGdD6g/exec';
-let monshinList = [];
-let selectedMonshin = null;
-
-async function loadMonshinList() {
-  const status = document.getElementById('monshin-status');
-  const tbody = document.getElementById('monshin-tbody');
-  status.textContent = '⏳ 取得中...';
-  tbody.innerHTML = '';
-  try {
-    const res = await fetch(MONSHIN_GAS + '?type=list&t=' + Date.now());
-    monshinList = await res.json();
-    if (!monshinList.length) {
-      status.textContent = '未取込の問診票はありません';
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">データなし</td></tr>';
-      return;
-    }
-    status.textContent = `未取込: ${monshinList.length}件`;
-    tbody.innerHTML = monshinList.map((m, i) => `
+    logTbody.innerHTML = allLogs.slice(0,30).map(l=>`
       <tr>
-        <td style="font-size:12px">${m['受信日時'] || '-'}</td>
-        <td><strong>${m['氏名'] || '-'}</strong>${m['ふりがな'] ? '<br><span style="font-size:11px;color:var(--text-sub)">' + m['ふりがな'] + '</span>' : ''}</td>
-        <td>${m['電話番号'] || '-'}</td>
-        <td style="font-size:12px;max-width:120px">${(m['症状'] || '-').slice(0,20)}</td>
-        <td style="font-size:12px">${m['いつから'] || '-'}</td>
-        <td style="font-size:12px">${m['本日の期待'] || '-'}</td>
-        <td>
-          <button class="btn btn-blue btn-sm" onclick="showMonshinDetail(${i})">詳細</button>
-        </td>
+        <td>${l.date}</td><td>${l.customerName}</td>
+        <td><span class="badge badge-orange">消化</span></td>
+        <td style="font-size:12px">${l.ticketType}</td>
+        <td>${l.remaining}</td>
       </tr>`).join('');
-  } catch(e) {
-    status.textContent = '取得エラー: ' + e.message;
   }
 }
 
-function showMonshinDetail(i) {
-  selectedMonshin = { ...monshinList[i], _listIndex: i };
-  const m = selectedMonshin;
-  const card = document.getElementById('monshin-detail-card');
-  document.getElementById('monshin-detail-body').innerHTML = `
-    <div class="form-grid" style="margin-bottom:12px">
-      <div class="form-group"><label>氏名</label><div style="padding:8px;background:#f5f5f5;border-radius:6px">${m['氏名'] || '-'}</div></div>
-      <div class="form-group"><label>ふりがな</label><div style="padding:8px;background:#f5f5f5;border-radius:6px">${m['ふりがな'] || '-'}</div></div>
-      <div class="form-group"><label>電話番号</label><div style="padding:8px;background:#f5f5f5;border-radius:6px">${m['電話番号'] || '-'}</div></div>
-      <div class="form-group"><label>生年月日</label><div style="padding:8px;background:#f5f5f5;border-radius:6px">${m['生年月日'] || '-'}</div></div>
-    </div>
-    <table style="width:100%;font-size:13px;border-collapse:collapse">
-      ${[
-        ['①症状', m['症状']],
-        ['②いつから', m['いつから']],
-        ['③日常への影響', m['日常への影響']],
-        ['④良くなったら', m['良くなったら']],
-        ['⑤今までの対策', m['今までの対策']],
-        ['⑥本日の期待', m['本日の期待']],
-        ['⑦理想', m['理想']],
-        ['⑧いつまでに', m['いつまでに']],
-        ['メモ', m['メモ']],
-      ].map(([k,v]) => `<tr style="border-bottom:1px solid #eee"><td style="padding:6px 8px;color:var(--text-sub);width:140px;font-weight:600">${k}</td><td style="padding:6px 8px">${v || '-'}</td></tr>`).join('')}
-    </table>`;
-  card.style.display = 'block';
-  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+// 通常CSV
+function exportTicketCSV(){
+  const rows=[['顧客名','種別','購入日','総回数','消化回数','残回数','購入金額','1回単価','残金額','メモ']];
+  tickets.forEach(t=>{
+    const consumed=t.total-t.remaining;
+    rows.push([t.customerName,t.type,t.purchaseDate||'',t.total,consumed,t.remaining,t.paid,getTicketUnitPrice(t),getTicketResidualValue(t),t.memo||'']);
+  });
+  downloadCSV(rows,'回数券残数_'+today()+'.csv');
 }
 
-async function registerFromMonshin() {
-  if (!selectedMonshin) return;
-  const m = selectedMonshin;
+// 期末精算CSV（2027年3月提出用）
+function exportTicketFinalCSV(){
+  if(!confirm('2027年3月期末精算用CSVを出力します。有効な回数券のみ出力されます。')) return;
+  const active = tickets.filter(t=>t.remaining>0).sort((a,b)=>a.customerName.localeCompare(b.customerName,'ja'));
+  if(!active.length){alert('有効な回数券がありません');return;}
+  const rows=[
+    ['整体院TAK 回数券残高一覧（2027年3月期末精算）'],
+    ['出力日', today()],
+    [],
+    ['顧客名','回数券種別','購入日','総回数','残回数','購入金額','1回単価','残金額（精算額）','メモ']
+  ];
+  active.forEach(t=>{
+    rows.push([t.customerName,t.type,t.purchaseDate||'',t.total,t.remaining,t.paid,getTicketUnitPrice(t),getTicketResidualValue(t),t.memo||'']);
+  });
+  rows.push([]);
+  rows.push(['合計','','','',active.reduce((s,t)=>s+t.remaining,0),'','' ,active.reduce((s,t)=>s+getTicketResidualValue(t),0),'']);
+  downloadCSV(rows,'TAK回数券期末精算_2027年3月.csv');
+}
 
-  // 顧客データとして登録
-  const cu = {
-    id: genId(),
-    no: '',
-    name: m['氏名'] || '',
-    kana: m['ふりがな'] || '',
-    gender: '',
-    birth: m['生年月日'] || '',
-    job: '',
-    tel: m['電話番号'] || '',
-    email: '',
-    zip: '',
-    address: '',
-    motive: m['症状'] || '',
-    memo: [
-      m['いつから'] ? `いつから: ${m['いつから']}` : '',
-      m['日常への影響'] ? `影響: ${m['日常への影響']}` : '',
-      m['今までの対策'] ? `対策: ${m['今までの対策']}` : '',
-      m['本日の期待'] ? `期待: ${m['本日の期待']}` : '',
-      m['メモ'] ? `備考: ${m['メモ']}` : '',
-    ].filter(Boolean).join(' / '),
-    lastVisit: '',
-    visitCount: 0,
-    createdAt: nowStr()
-  };
+// ===== 広告費管理 =====
+let adCosts = JSON.parse(localStorage.getItem('tak_adcosts') || '[]');
+// デフォルト項目マスター
+let adItemMaster = JSON.parse(localStorage.getItem('tak_ad_items') || 'null');
+if(!adItemMaster){
+  adItemMaster = ['メタ広告','プロパゲート（LP）','Google広告','代行業者（小宮）'];
+  localStorage.setItem('tak_ad_items', JSON.stringify(adItemMaster));
+}
+function saveAdCosts(){ localStorage.setItem('tak_adcosts', JSON.stringify(adCosts)); }
+function saveAdItemMaster(){ localStorage.setItem('tak_ad_items', JSON.stringify(adItemMaster)); }
 
-  customers.push(cu);
-  save();
-  populateCustomerSelect();
+function renderAdCostList(){
+  const month = document.getElementById('ad-month').value || today().slice(0,7);
+  document.getElementById('ad-month').value = month;
 
-  // スプレッドシートに取込済みマーク
-  try {
-    await fetch(`${MONSHIN_GAS}?type=markDone&row=${m._rowIndex}&t=${Date.now()}`);
-  } catch(e) {
-    console.log('markDone error:', e);
+  // 入力フォーム（項目マスター＋その月の保存済み金額）
+  const saved = adCosts.filter(a=>a.month===month);
+  const area = document.getElementById('ad-items-area');
+  area.innerHTML = adItemMaster.map((item,i)=>{
+    const existing = saved.find(a=>a.item===item);
+    return `<div class="form-grid" style="margin-bottom:8px;align-items:center">
+      <div class="form-group">
+        <label>${item}</label>
+        <input type="number" id="ad-val-${i}" value="${existing?existing.amount:''}" placeholder="0" min="0">
+      </div>
+      <div style="display:flex;align-items:flex-end;padding-bottom:4px">
+        <button class="btn btn-danger btn-sm" onclick="deleteAdItem(${i})">削除</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // 履歴テーブル
+  const tbody = document.getElementById('ad-history-tbody');
+  if(!adCosts.length){
+    tbody.innerHTML='<tr><td colspan="4" class="empty-state">記録がありません</td></tr>';
+    return;
   }
+  // 月ごとにグループ化
+  const byMonth = {};
+  adCosts.forEach(a=>{
+    if(!byMonth[a.month]) byMonth[a.month]=[];
+    byMonth[a.month].push(a);
+  });
+  const rows = [];
+  Object.keys(byMonth).sort().reverse().forEach(m=>{
+    const items = byMonth[m];
+    const total = items.reduce((s,a)=>s+a.amount,0);
+    items.forEach((a,i)=>{
+      rows.push(`<tr>
+        ${i===0?`<td rowspan="${items.length}" style="font-weight:700;vertical-align:top">${m}</td>`:''}
+        <td>${a.item}</td>
+        <td>${fmt(a.amount)}</td>
+        <td>${i===0?`<button class="btn btn-danger btn-sm" onclick="deleteAdMonth('${m}')">削除</button>`:''}
+            ${i===items.length-1?`<div style="font-size:11px;color:var(--text-sub);margin-top:4px">合計: ${fmt(total)}</div>`:''}</td>
+      </tr>`);
+    });
+  });
+  tbody.innerHTML = rows.join('');
+}
 
-  // 一覧から削除
-  monshinList.splice(m._listIndex, 1);
-  document.getElementById('monshin-detail-card').style.display = 'none';
-  selectedMonshin = null;
-  loadMonshinList();
+function addAdItem(){
+  const name = prompt('追加する広告費項目名を入力してください：');
+  if(!name||!name.trim()) return;
+  if(adItemMaster.includes(name.trim())){alert('すでに存在する項目です');return;}
+  adItemMaster.push(name.trim());
+  saveAdItemMaster();
+  renderAdCostList();
+}
 
-  showModal('登録完了', `${cu.name} さんを顧客登録しました！`, [
-    { label: '顧客管理を開く', cls: 'btn-primary', cb: () => { closeModal(); document.querySelector('[onclick="showPanel(\'customers\')"]').click(); } },
-    { label: '閉じる', cls: 'btn-secondary', cb: closeModal }
+function deleteAdItem(idx){
+  if(!confirm(`「${adItemMaster[idx]}」を削除しますか？`)) return;
+  adItemMaster.splice(idx,1);
+  saveAdItemMaster();
+  renderAdCostList();
+}
+
+function saveAdCost(){
+  const month = document.getElementById('ad-month').value;
+  if(!month){alert('対象月を選択してください');return;}
+  // その月の既存データを削除して上書き
+  adCosts = adCosts.filter(a=>a.month!==month);
+  adItemMaster.forEach((item,i)=>{
+    const val = parseInt(document.getElementById(`ad-val-${i}`).value)||0;
+    if(val>0) adCosts.push({month, item, amount:val, updatedAt:nowStr()});
+  });
+  saveAdCosts();
+  alert(month+' の広告費を保存しました！');
+  renderAdCostList();
+}
+
+function deleteAdMonth(month){
+  showModal('削除確認',month+' の広告費データをすべて削除しますか？',[
+    {label:'削除',cls:'btn-danger',cb:()=>{
+      adCosts=adCosts.filter(a=>a.month!==month);
+      saveAdCosts();renderAdCostList();closeModal();
+    }},
+    {label:'キャンセル',cls:'btn-secondary',cb:closeModal}
   ]);
 }
 
-// ===== INITIAL RENDER =====
-renderDash();
-populateCustomerSelect();
-  // ===== GAS連携・月次統計エクスポート =====
-const STATS_GAS_URL = 'https://script.google.com/macros/s/AKfycbzcKt5IISrdIP3hGOvBiktIRpSg3Z6lOvEkn98Ua8CUJ-jwqUfEAYqim96IXdQXun2i/exec';
+function exportAdCostCSV(){
+  if(!adCosts.length){alert('データがありません');return;}
+  const byMonth={};
+  adCosts.forEach(a=>{if(!byMonth[a.month])byMonth[a.month]=[];byMonth[a.month].push(a);});
+  const rows=[['月','項目','金額']];
+  Object.keys(byMonth).sort().forEach(m=>{
+    byMonth[m].forEach(a=>rows.push([m,a.item,a.amount]));
+    rows.push([m,'合計',byMonth[m].reduce((s,a)=>s+a.amount,0)]);
+    rows.push([]);
+  });
+  downloadCSV(rows,'広告費一覧_'+today()+'.csv');
+}
 
-async function exportMonthlyStats() {
-  const month = document.getElementById('hi-month').value || today().slice(0,7);
-  const monthlyHistory = history.filter(h => h.date && h.date.startsWith(month));
-  if (!monthlyHistory.length) { alert(month + ' の履歴がありません'); return; }
-  if (!confirm(month + ' のデータ ' + monthlyHistory.length + '件をスプレッドシートに送信しますか？')) return;
-  const btn = event.target;
-  btn.textContent = '⏳ 送信中...'; btn.disabled = true;
-  try {
-    const form = new FormData();
-    form.append('action', 'writeStats');
-    form.append('month', month);
-    form.append('history', JSON.stringify(monthlyHistory));
-    form.append('customers', JSON.stringify(customers));
-    const res = await fetch(STATS_GAS_URL, { method: 'POST', body: form });
-    const data = await res.json();
-    if (data.ok) {
-      alert('✅ 完了！\nシート名: ' + data.sheetName + '\n売上: ¥' + Number(data.totalSales).toLocaleString('ja-JP') + '\n件数: ' + data.totalCount + '件（新規' + data.newCount + '件）');
-    } else {
-      alert('❌ エラー: ' + data.error);
+// ===== アラート =====
+function checkAlerts(){
+  const now = new Date();
+  const day = now.getDay(); // 0=日,1=月
+  const date = now.getDate();
+  const alerts = [];
+
+  // 毎週月曜日：売上CSV共有リマインダー
+  if(day===1){
+    const lastMonAlert = localStorage.getItem('tak_last_monday_alert');
+    const todayStr = today();
+    if(lastMonAlert !== todayStr){
+      alerts.push('📊 今日は月曜日です！先週の売上CSVをLINEで共有してください。');
+      localStorage.setItem('tak_last_monday_alert', todayStr);
     }
-  } catch(err) {
-    alert('❌ 通信エラー: ' + err.message);
-  } finally {
-    btn.textContent = '📊 月次統計をSheetsに送信'; btn.disabled = false;
+  }
+
+  // 毎月25日以降：広告費入力リマインダー
+  if(date>=25){
+    const currentMonth = today().slice(0,7);
+    const hasAdData = adCosts.some(a=>a.month===currentMonth);
+    const lastAdAlert = localStorage.getItem('tak_last_ad_alert');
+    if(!hasAdData && lastAdAlert!==currentMonth){
+      alerts.push('📣 月末です！今月の広告費を入力してください。（広告費タブから入力できます）');
+      localStorage.setItem('tak_last_ad_alert', currentMonth);
+    }
+  }
+
+  if(alerts.length>0){
+    const banner = document.getElementById('alert-banner');
+    banner.style.display='block';
+    banner.style.background = alerts.length>1 ? '#e65100' : day===1 ? '#1565c0' : '#e65100';
+    banner.style.color='#fff';
+    banner.innerHTML = alerts.map(a=>`⚡ ${a}`).join('　　') + '　　<span style="opacity:.7;font-size:11px">（タップで閉じる）</span>';
   }
 }
 
-function downloadStatsCSV() {
-  const month = document.getElementById('hi-month').value || today().slice(0,7);
-  const monthlyHistory = history.filter(h => h.date && h.date.startsWith(month));
-  if (!monthlyHistory.length) { alert(month + ' の履歴がありません'); return; }
-  const isNew    = h => h.menu && (h.menu.includes('初回') || h.menu.includes('体験'));
-  const isTicket = h => h.menu && h.menu.includes('回数券') && !h.menu.includes('利用');
-  const isSub    = h => h.pay && h.pay.includes('サブスク');
-  const totalSales  = monthlyHistory.reduce((s,h) => s+(h.price||0), 0);
-  const newSales    = monthlyHistory.filter(isNew).reduce((s,h) => s+h.price, 0);
-  const ticketSales = monthlyHistory.filter(isTicket).reduce((s,h) => s+h.price, 0);
-  const subSales    = monthlyHistory.filter(isSub).reduce((s,h) => s+h.price, 0);
-  const norm = m => { if(!m) return '不明'; if(m.includes('紹介')) return '紹介'; if(m.includes('腰痛')||m.includes('HP')) return '腰痛HP'; if(m.includes('Meta')||m.includes('Facebook')) return 'Meta広告'; if(m.includes('Hotpeper')||m.includes('ホットペッパー')) return 'Hotpepper'; if(m.includes('YouTube')) return 'YouTube'; if(m.includes('折込')||m.includes('チラシ')) return '折込'; return 'その他'; };
-  const rows = [
-    [month + ' 月次統計'], [],
-    ['A. 売上サマリー'], ['月間売上合計', totalSales], ['新規売上', newSales], ['回数券売上', ticketSales], ['サブスク売上', subSales], ['客単価', monthlyHistory.length > 0 ? Math.round(totalSales/monthlyHistory.length) : 0], [],
-    ['D. 新規管理明細'], ['氏名','媒体','初回金額','来院日'],
-    ...monthlyHistory.filter(isNew).map(h => { const c = customers.find(cu => cu.id===h.customerId); return [h.customerName, c ? norm(c.motive||'') : '-', h.price, h.date]; }), [],
-    ['G. 全履歴'], ['日付','顧客名','メニュー','金額','支払'],
-    ...monthlyHistory.map(h => [h.date, h.customerName, h.menu, h.price, h.pay])
-  ];
-  downloadCSV(rows, 'TAK月次統計_' + month + '.csv');
+
+// ===== 下書き自動保存（LINEメッセージ・ビフォーアフター設定） =====
+const DRAFT_KEYS = {
+  line: ['line-customer','line-purpose','line-last-menu','line-tone','line-extra'],
+  ba:   ['ba-width','ba-label-style','ba-divider-color','ba-bg-color'],
+};
+
+function saveDraft(panel){
+  const keys = DRAFT_KEYS[panel];
+  if(!keys) return;
+  const draft = {};
+  keys.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) draft[id] = el.value;
+  });
+  localStorage.setItem('tak_draft_'+panel, JSON.stringify(draft));
 }
+
+function restoreDraft(panel){
+  const raw = localStorage.getItem('tak_draft_'+panel);
+  if(!raw) return;
+  try{
+    const draft = JSON.parse(raw);
+    Object.entries(draft).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if(el) el.value = val;
+    });
+    if(panel==='line'){
+      // 顧客選択を復元した場合にメニュー等も復元できるよう表示更新
+      const custEl = document.getElementById('line-customer');
+      if(custEl && custEl.value) onLineCustomerChange();
+    }
+  }catch(e){}
+}
+
+function clearDraft(panel){
+  localStorage.removeItem('tak_draft_'+panel);
+}
+
+// 入力フィールドに自動保存イベントを付与
+function attachDraftListeners(){
+  DRAFT_KEYS.line.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('input', () => saveDraft('line'));
+    if(el) el.addEventListener('change', () => saveDraft('line'));
+  });
+  DRAFT_KEYS.ba.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('input', () => saveDraft('ba'));
+    if(el) el.addEventListener('change', () => saveDraft('ba'));
+  });
+}
+
+// INIT RENDER
+renderDash();populateCustomerSelect();checkAlerts();renderTicketSummary();
+attachDraftListeners();
 </script>
 </body>
 </html>
