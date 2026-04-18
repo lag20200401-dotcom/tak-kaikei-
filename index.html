@@ -1787,52 +1787,171 @@ function baDrawFace(cvId,zoneId,c){
   }
 }
 function baDownload(design){
-  var bZone=document.getElementById(design==='a'?'ba-a-bzone':'ba-c-bzone');
-  var aZone=document.getElementById(design==='a'?'ba-a-azone':'ba-c-azone');
-  var bImg=bZone?bZone.querySelector('img'):null;
-  var aImg=aZone?aZone.querySelector('img'):null;
-  if(!bImg||!aImg){alert('ビフォー・アフター両方の写真を選択してください');return;}
-  var W=1080,half=540,labelH=44;
-  var bH=Math.round(half*bImg.naturalHeight/bImg.naturalWidth);
-  var aH=Math.round(half*aImg.naturalHeight/aImg.naturalWidth);
-  var imgH=Math.max(bH,aH),totalH=imgH+labelH;
-  var cv=document.createElement('canvas');cv.width=W;cv.height=totalH;
+  if(!baImgs.before||!baImgs.after){alert('ビフォー・アフター両方の写真を選択してください');return;}
+
+  var W=1080, half=539, divW=2, labelH=50;
+  var bSrc=baImgs.before, aSrc=baImgs.after;
+  var bH=Math.round(half*bSrc.naturalHeight/bSrc.naturalWidth);
+  var aH=Math.round(half*aSrc.naturalHeight/aSrc.naturalWidth);
+  var imgH=Math.max(bH,aH);
+
+  // Aデザイン: 上=院名帯, 中=画像, 下=タグ帯+フッター帯
+  var tagH=44, footH=32, topH=40;
+  var totalH = topH + labelH + imgH + tagH + footH;
+
+  var cv=document.createElement('canvas');
+  cv.width=W; cv.height=totalH;
   var ctx=cv.getContext('2d');
+
   if(design==='a'){
-    ctx.fillStyle='#0a1628';ctx.fillRect(0,0,W,totalH);
-    ctx.fillStyle='rgba(0,0,0,0.85)';ctx.fillRect(0,0,half,labelH);
-    ctx.fillStyle='#c8f5a0';ctx.fillRect(half+2,0,half-2,labelH);
-    ctx.fillStyle='#c8f5a0';ctx.font='bold 18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('BEFORE',half/2,labelH/2);
-    ctx.fillStyle='#0a1628';ctx.fillText('AFTER',half+2+(half-2)/2,labelH/2);
+    // === 背景全体 ===
+    ctx.fillStyle='#0a1628'; ctx.fillRect(0,0,W,totalH);
+
+    // === 院名帯（上） ===
+    ctx.fillStyle='#c8f5a0';
+    ctx.font='bold 18px sans-serif';
+    ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillText('整体院  TAK', 24, topH/2);
+    ctx.fillStyle='#444';
+    ctx.font='12px sans-serif';
+    ctx.textAlign='right';
+    ctx.fillText('施術後の変化', W-24, topH/2);
+
+    // === BEFOREラベル帯 ===
+    ctx.fillStyle='rgba(0,0,0,0.85)'; ctx.fillRect(0,topH,half,labelH);
+    ctx.fillStyle='#c8f5a0'; ctx.fillRect(half+divW,topH,W-half-divW,labelH);
+    ctx.font='bold 20px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='#c8f5a0';
+    ctx.fillText('BEFORE', half/2, topH+labelH/2);
+    ctx.fillStyle='#0a1628';
+    ctx.fillText('AFTER', half+divW+(W-half-divW)/2, topH+labelH/2);
+
+    // === 仕切り線 ===
+    ctx.fillStyle='#c8f5a0'; ctx.fillRect(half,topH,divW,labelH+imgH);
+
+    // === 写真 ===
+    var yImg = topH+labelH;
+    ctx.drawImage(bSrc, 0, yImg, half, bH);
+    ctx.drawImage(aSrc, half+divW, yImg, W-half-divW, aH);
+
+    // === 顔ぼかし ===
+    [{side:'before',cfg:baCfg.before,ox:0,     oy:yImg,iw:half,         ih:bH},
+     {side:'after', cfg:baCfg.after, ox:half+divW,oy:yImg,iw:W-half-divW,ih:aH}
+    ].forEach(function(d){
+      var type=d.cfg.blur||baBlurType; if(type==='none') return;
+      var cx=d.ox+d.cfg.x/100*d.iw, cy=d.oy+d.cfg.y/100*d.ih, r=d.cfg.r/100*Math.min(d.iw,d.ih);
+      var useLogo=(type==='logo')||(type==='both'&&d.side==='before');
+      if(useLogo){
+        ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle='#0a1628';ctx.fill();
+        ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='#c8f5a0';ctx.lineWidth=Math.max(2,r*.08);ctx.stroke();
+        ctx.fillStyle='#c8f5a0';ctx.font='bold '+(r*.52)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('TAK',cx,cy);
+      } else {
+        ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle='#4db8d4';ctx.fill();
+        ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='#e0f7ff';ctx.lineWidth=Math.max(2,r*.08);ctx.stroke();
+        ctx.fillStyle='#e0f7ff';ctx.font='bold '+(r*.55)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(':)',cx,cy);
+      }
+    });
+
+    // === タグ帯 ===
+    var yTag = topH+labelH+imgH;
+    ctx.fillStyle='#0a1628'; ctx.fillRect(0,yTag,W,tagH);
+    var tags=[
+      document.getElementById('ba-tag1')?document.getElementById('ba-tag1').textContent:'✓ 姿勢改善',
+      document.getElementById('ba-tag2')?document.getElementById('ba-tag2').textContent:'✓ 肩甲骨整列',
+      document.getElementById('ba-tag3')?document.getElementById('ba-tag3').textContent:'✓ 体幹整正'
+    ];
+    var tagX=20, tagY=yTag+tagH/2;
+    ctx.font='bold 13px sans-serif'; ctx.textBaseline='middle';
+    tags.forEach(function(tag){
+      var tw=ctx.measureText(tag).width+20;
+      ctx.fillStyle='#112240'; ctx.beginPath();
+      ctx.roundRect(tagX,tagY-12,tw,24,12); ctx.fill();
+      ctx.fillStyle='#c8f5a0'; ctx.textAlign='left';
+      ctx.fillText(tag,tagX+10,tagY);
+      tagX+=tw+8;
+    });
+
+    // === フッター帯 ===
+    var yFoot = yTag+tagH;
+    ctx.fillStyle='#060e1a'; ctx.fillRect(0,yFoot,W,footH);
+    ctx.fillStyle='#444'; ctx.font='12px sans-serif'; ctx.textBaseline='middle';
+    ctx.textAlign='left';  ctx.fillText('@seitai_tak', 20, yFoot+footH/2);
+    ctx.textAlign='right'; ctx.fillText('#整体 #腰痛 #坐骨神経痛 #姿勢改善 #袋井', W-20, yFoot+footH/2);
+
   } else {
-    ctx.fillStyle='#f8f6ff';ctx.fillRect(0,0,W,totalH);
-    ctx.fillStyle='#7c3aed';ctx.fillRect(0,0,half,labelH);
-    ctx.fillStyle='#fbbf24';ctx.fillRect(half+2,0,half-2,labelH);
-    ctx.fillStyle='#fff';ctx.font='bold 18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('BEFORE',half/2,labelH/2);
-    ctx.fillStyle='#1a0a00';ctx.fillText('AFTER',half+2+(half-2)/2,labelH/2);
-  }
-  ctx.fillStyle=design==='a'?'#c8f5a0':'#ddd5ff';ctx.fillRect(half,0,2,totalH);
-  ctx.drawImage(bImg,0,labelH,half,bH);
-  ctx.drawImage(aImg,half+2,labelH,half-2,aH);
-  [{side:'before',cfg:baCfg.before,ox:0,oy:labelH,iw:half,ih:bH},
-   {side:'after', cfg:baCfg.after, ox:half+2,oy:labelH,iw:half-2,ih:aH}
-  ].forEach(function(d){
-    var type=d.cfg.blur||baBlurType; if(type==='none') return;
-    var cx=d.ox+d.cfg.x/100*d.iw,cy=d.oy+d.cfg.y/100*d.ih,r=d.cfg.r/100*Math.min(d.iw,d.ih);
-    var drawLogo=(type==='logo')||(type==='both'&&d.side==='before');
-    if(drawLogo){
-      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle='#0a1628';ctx.fill();
-      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='#c8f5a0';ctx.lineWidth=Math.max(2,r*.08);ctx.stroke();
-      ctx.fillStyle='#c8f5a0';ctx.font='bold '+(r*.52)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('TAK',cx,cy);
-    } else {
-      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle='#4db8d4';ctx.fill();
-      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='#e0f7ff';ctx.lineWidth=Math.max(2,r*.08);ctx.stroke();
-      ctx.fillStyle='#e0f7ff';ctx.font='bold '+(r*.55)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(':)',cx,cy);
+    // === Cデザイン ===
+    var cTopH=56, cLabelH=44, cChangeH=28, cFootH=40;
+    var totalHc=cTopH+cLabelH+bH+cChangeH+aH+cFootH;
+    cv.height=totalHc;
+    ctx.fillStyle='#f8f6ff'; ctx.fillRect(0,0,W,totalHc);
+
+    // 院名
+    ctx.fillStyle='#7c3aed'; ctx.font='bold 14px sans-serif';
+    ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillText('整体院  TAK', 24, cTopH*0.38);
+    ctx.fillStyle='#bbb'; ctx.font='11px sans-serif';
+    ctx.fillText('BODY TRANSFORMATION', 24, cTopH*0.72);
+    ctx.fillStyle='#e0d8ff'; ctx.fillRect(24,cTopH-2,W-48,1);
+
+    // Before
+    ctx.fillStyle='#7c3aed'; ctx.fillRect(0,cTopH,W,cLabelH);
+    ctx.fillStyle='#fff'; ctx.font='bold 20px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('BEFORE', W/2, cTopH+cLabelH/2);
+    ctx.drawImage(bSrc,0,cTopH+cLabelH,W,bH);
+
+    // ぼかし(before)
+    var bcx=baCfg.before.x/100*W, bcy=(cTopH+cLabelH)+baCfg.before.y/100*bH, br=baCfg.before.r/100*Math.min(W,bH);
+    var btLogo=(baCfg.before.blur||baBlurType)==='logo'||(baCfg.before.blur||baBlurType)==='both';
+    if((baCfg.before.blur||baBlurType)!=='none'){
+      ctx.beginPath();ctx.arc(bcx,bcy,br,0,Math.PI*2);ctx.fillStyle=btLogo?'#0a1628':'#4db8d4';ctx.fill();
+      ctx.beginPath();ctx.arc(bcx,bcy,br,0,Math.PI*2);ctx.strokeStyle=btLogo?'#c8f5a0':'#e0f7ff';ctx.lineWidth=Math.max(2,br*.08);ctx.stroke();
+      ctx.fillStyle=btLogo?'#c8f5a0':'#e0f7ff';ctx.font='bold '+(br*.52)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(btLogo?'TAK':':)',bcx,bcy);
     }
-  });
-  var a=document.createElement('a');a.download='TAK_BA_'+design+'_'+today()+'.jpg';
+
+    // Change帯
+    var yCh=cTopH+cLabelH+bH;
+    ctx.fillStyle='#f0ebff'; ctx.fillRect(0,yCh,W,cChangeH);
+    ctx.fillStyle='#7c3aed'; ctx.font='bold 14px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('▼  CHANGE  ▼', W/2, yCh+cChangeH/2);
+
+    // After
+    ctx.fillStyle='#fbbf24'; ctx.fillRect(0,yCh+cChangeH,W,cLabelH);
+    ctx.fillStyle='#1a0a00'; ctx.font='bold 20px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('AFTER', W/2, yCh+cChangeH+cLabelH/2);
+    ctx.drawImage(aSrc,0,yCh+cChangeH+cLabelH,W,aH);
+
+    // ぼかし(after)
+    var acx=baCfg.after.x/100*W, acy=(yCh+cChangeH+cLabelH)+baCfg.after.y/100*aH, ar2=baCfg.after.r/100*Math.min(W,aH);
+    var atLogo=(baCfg.after.blur||baBlurType)==='smile'||(baCfg.after.blur||baBlurType)==='both';
+    if((baCfg.after.blur||baBlurType)!=='none'){
+      ctx.beginPath();ctx.arc(acx,acy,ar2,0,Math.PI*2);ctx.fillStyle=atLogo?'#4db8d4':'#0a1628';ctx.fill();
+      ctx.beginPath();ctx.arc(acx,acy,ar2,0,Math.PI*2);ctx.strokeStyle=atLogo?'#e0f7ff':'#c8f5a0';ctx.lineWidth=Math.max(2,ar2*.08);ctx.stroke();
+      ctx.fillStyle=atLogo?'#e0f7ff':'#c8f5a0';ctx.font='bold '+(ar2*.52)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(atLogo?':)':'TAK',acx,acy);
+    }
+
+    // フッター
+    var yFc=yCh+cChangeH+cLabelH+aH;
+    ctx.fillStyle='#f0ebff'; ctx.fillRect(0,yFc,W,cFootH);
+    var fps=[
+      document.getElementById('ba-cf1')?document.getElementById('ba-cf1').textContent:'姿勢改善',
+      document.getElementById('ba-cf2')?document.getElementById('ba-cf2').textContent:'肩甲骨整列',
+      document.getElementById('ba-cf3')?document.getElementById('ba-cf3').textContent:'可動域拡大'
+    ];
+    ctx.fillStyle='#e0d8ff'; ctx.fillRect(W/3,yFc+8,1,cFootH-16); ctx.fillRect(W*2/3,yFc+8,1,cFootH-16);
+    fps.forEach(function(txt,i){
+      ctx.fillStyle='#7c3aed'; ctx.font='bold 13px sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(txt, W/6+W/3*i, yFc+cFootH/2);
+    });
+  }
+
+  var a=document.createElement('a');
+  a.download='TAK_BA_'+design+'_'+today()+'.jpg';
   cv.toBlob(function(blob){a.href=URL.createObjectURL(blob);a.click();},'image/jpeg',0.93);
 }
 function baResetAll(){
