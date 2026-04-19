@@ -310,8 +310,8 @@
   <div class="card">
     <div class="card-title">📥 顧客マスターCSVインポート</div>
     <p style="font-size:13px;color:var(--text-sub);margin-bottom:14px;">
-      囲い込み職人からエクスポートした顧客マスターCSV（または会計アプリCSV出力）を読み込みます。<br>
-      列構成：<code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:12px">顧客No, 顧客名, 売上金額, 平均単価, 来店数, 最終来店日</code>
+      囲い込み職人の <strong>顧客別期間集計PDF</strong>、または顧客マスターCSVを読み込みます。<br>
+      PDF形式: <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:12px">0001054 : 久保田順子 1,111,000 9,415 118 2026-04-04</code>
     </p>
     <div class="import-zone" id="kmImportZone"
       onclick="document.getElementById('kmFileInput').click()"
@@ -320,9 +320,9 @@
       ondrop="kmHandleDrop(event)">
       <div class="import-icon">📂</div>
       <p>クリックまたはCSVをドラッグ＆ドロップ</p>
-      <p style="font-size:11px;margin-top:4px">UTF-8 / Shift-JIS 自動判別</p>
+      <p style="font-size:11px;margin-top:4px">CSV（UTF-8/Shift-JIS）または 囲い込み職人PDF に対応</p>
     </div>
-    <input type="file" id="kmFileInput" accept=".csv" onchange="kmHandleFile(event)">
+    <input type="file" id="kmFileInput" accept=".csv,.pdf,text/csv,application/pdf" onchange="kmHandleFile(event)">
     <div id="kmImportMsg"></div>
     <div class="btn-row" style="margin-top:10px">
       <button class="btn btn-secondary btn-sm" onclick="kmExportCSV()">⬇ ステータス付きCSV出力</button>
@@ -852,6 +852,12 @@ function kmReadFile(file){
   const msg=document.getElementById('kmImportMsg');
   msg.innerHTML='<div class="import-result info">⏳ 読み込み中…</div>';
 
+  // PDFファイルの場合はPDFパーサーへ
+  if(file.name.toLowerCase().endsWith('.pdf')||file.type==='application/pdf'){
+    kmReadPDF(file,msg);
+    return;
+  }
+
   // ① まずArrayBufferで読んでバイト列を解析
   const sr=new FileReader();
   sr.onload=ev=>{
@@ -922,6 +928,88 @@ function kmSplitLine(line){
     cur+=ch;
   }
   cols.push(cur);return cols;
+}
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 囲い込み職人 PDF パーサー
+// 行フォーマット: "0001054 : 久保田順子 1,111,000 9,415 118 118 2026-04-04"
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function kmReadPDF(file,msg){
+  // pdf.jsをCDNから動的ロード（必要時のみ）
+  function loadPdfJs(cb){
+    if(window.pdfjsLib){cb();return;}
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.onload=()=>{
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc=
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      cb();
+    };
+    s.onerror=()=>{ msg.innerHTML='<div class="import-result error">❌ PDFライブラリの読み込みに失敗しました</div>'; };
+    document.head.appendChild(s);
+  }
+
+  loadPdfJs(async()=>{
+    try{
+      const arr=await file.arrayBuffer();
+      const pdf=await window.pdfjsLib.getDocument({data:arr}).promise;
+      let allText='';
+      for(let p=1;p<=pdf.numPages;p++){
+        const page=await pdf.getPage(p);
+        const tc=await page.getTextContent();
+        // テキストアイテムをY座標でグループ化して行に戻す
+        const items=tc.items;
+        // Y座標でソート（降順=上から）→ 同じY行を結合
+        const rows={};
+        items.forEach(it=>{
+          if(!it.str.trim()) return;
+          const y=Math.round(it.transform[5]);
+          if(!rows[y]) rows[y]=[];
+          rows[y].push({x:it.transform[4], str:it.str});
+        });
+        const ys=Object.keys(rows).map(Number).sort((a,b)=>b-a);
+        ys.forEach(y=>{
+          const line=rows[y].sort((a,b)=>a.x-b.x).map(i=>i.str).join(' ');
+          allText+=line+'\n';
+        });
+      }
+      kmParsePDFText(allText,msg);
+    }catch(e){
+      msg.innerHTML='<div class="import-result error">❌ PDF読み込みエラー: '+e.message+'</div>';
+    }
+  });
+}
+
+function kmParsePDFText(text,msgEl){
+  // 囲い込み職人の行パターン:
+  // "0001054 : 久保田順子 1,111,000 9,415 118 118 2026-04-04"
+  // 顧客No : 顧客名  売上金額  平均単価  来店数  施術数  最終来店日
+  const RE=/^(\d{7})\s*:\s*(.+?)\s+([\d,]+)\s+([\d,]+)\s+(\d+)\s+\d+\s+(\d{4}-\d{2}-\d{2})$/;
+  const parsed=[];
+  const lines=text.split('\n');
+  for(const line of lines){
+    const m=line.trim().match(RE);
+    if(!m) continue;
+    const no=m[1];
+    const name=m[2].trim();
+    const sales=parseInt(m[3].replace(/,/g,''))||0;
+    const avg=parseInt(m[4].replace(/,/g,''))||0;
+    const visits=parseInt(m[5])||0;
+    const lastStr=m[6];
+    const lastDate=kmParseDate(lastStr);
+    const days=lastDate?Math.floor((KM_TODAY-lastDate)/86400000):null;
+    parsed.push({no,name,sales,avg,visits,lastStr,days});
+  }
+  if(!parsed.length){
+    msgEl.innerHTML='<div class="import-result error">❌ 囲い込み職人の顧客データが見つかりません。PDFの形式を確認してください。</div>';
+    return;
+  }
+  kmCustomers=parsed;
+  kmSave();
+  msgEl.innerHTML=`<div class="import-result success">✅ PDF から ${parsed.length.toLocaleString()}件を読み込みました</div>`;
+  kmUpdateStats();
+  kmApplyFilters();
 }
 
 function kmParseCSV(text,msgEl){
