@@ -851,44 +851,62 @@ function kmHandleFile(e){ const f=e.target.files[0]; if(f) kmReadFile(f); e.targ
 function kmReadFile(file){
   const msg=document.getElementById('kmImportMsg');
   msg.innerHTML='<div class="import-result info">⏳ 読み込み中…</div>';
-  // まずArrayBufferで読み込んでBOM・文字コード判定
+
+  // ① まずArrayBufferで読んでバイト列を解析
   const sr=new FileReader();
   sr.onload=ev=>{
     const buf=ev.target.result;
     const arr=new Uint8Array(buf);
+
     // UTF-8 BOM判定
-    const hasBOM=(arr[0]===0xEF&&arr[1]===0xBB&&arr[2]===0xBF);
-    // UTF-8として正常にデコードできるか厳格チェック
-    let isValidUTF8=false;
-    try{
-      new TextDecoder('utf-8',{fatal:true}).decode(arr);
-      isValidUTF8=true;
-    }catch(e){}
-    // 顧客名フィールドに日本語（2バイト以上）が含まれ、
-    // UTF-8でデコードした結果が正常かどうかで判定
-    // 囲い込み職人はShift-JIS固定なのでBOMなしかつShift-JIS文字コード範囲を含む場合はSJIS
-    let hasSjisRange=false;
-    for(let i=0;i<Math.min(arr.length-1,4000);i++){
-      const b=arr[i];
-      // Shift-JIS第1バイト範囲（0x81-0x9F, 0xE0-0xFC）かつ第2バイトが有効
-      if(((b>=0x81&&b<=0x9F)||(b>=0xE0&&b<=0xFC))&&i+1<arr.length){
-        const b2=arr[i+1];
-        if((b2>=0x40&&b2<=0x7E)||(b2>=0x80&&b2<=0xFC)){
-          hasSjisRange=true;break;
+    const hasBOM=(arr.length>=3&&arr[0]===0xEF&&arr[1]===0xBB&&arr[2]===0xBF);
+
+    // ② UTF-8として読んで、日本語（ひらがな・カタカナ・漢字）が含まれるか確認
+    //    UTF-8の日本語は3バイト: E3-E9, EA-EF 範囲
+    let hasJpUTF8=false;
+    if(!hasBOM){
+      for(let i=0;i<Math.min(arr.length-2,8000);i++){
+        const b=arr[i];
+        // UTF-8 3バイト日本語（U+3000〜U+9FFF など）
+        if((b===0xE3||b===0xE4||b===0xE5||b===0xE6||b===0xE7||b===0xE8||b===0xE9)&&
+           (arr[i+1]&0xC0)===0x80&&(arr[i+2]&0xC0)===0x80){
+          hasJpUTF8=true;break;
         }
       }
     }
-    // BOMありUTF-8 → UTF-8確定
-    // Shift-JIS範囲あり → Shift-JIS優先
-    // それ以外でUTF-8有効 → UTF-8
-    let enc;
-    if(hasBOM) enc='utf-8';
-    else if(hasSjisRange) enc='shift-jis';
-    else if(isValidUTF8) enc='utf-8';
-    else enc='shift-jis';
+
+    // ③ Shift-JIS判定（第1バイト+第2バイトの組み合わせ）
+    let hasSjis=false;
+    if(!hasBOM&&!hasJpUTF8){
+      for(let i=0;i<Math.min(arr.length-1,8000);i++){
+        const b=arr[i];
+        if((b>=0x81&&b<=0x9F)||(b>=0xE0&&b<=0xFC)){
+          const b2=arr[i+1];
+          if((b2>=0x40&&b2<=0x7E)||(b2>=0x80&&b2<=0xFC)){
+            hasSjis=true;break;
+          }
+        }
+      }
+    }
+
+    const enc=hasBOM?'utf-8':hasJpUTF8?'utf-8':hasSjis?'shift-jis':'utf-8';
+
     const r2=new FileReader();
     r2.onload=ev2=>{
       let text=ev2.target.result.replace(/^\uFEFF/,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+      // デコード後に文字化けチェック（Shift-JIS判定が誤った場合の救済）
+      const garbled=text.split('\n').slice(0,3).join('').includes('?') ||
+                    (text.match(/[\ufffd]/g)||[]).length>5;
+      if(garbled&&enc==='shift-jis'){
+        // Shift-JIS判定が誤り → UTF-8で再試行
+        const r3=new FileReader();
+        r3.onload=ev3=>{
+          let t2=ev3.target.result.replace(/^\uFEFF/,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+          kmParseCSV(t2,msg);
+        };
+        r3.readAsText(file,'utf-8');
+        return;
+      }
       kmParseCSV(text,msg);
     };
     r2.readAsText(file,enc);
@@ -911,38 +929,79 @@ function kmParseCSV(text,msgEl){
   if(lines.length<2){msgEl.innerHTML='<div class="import-result error">❌ データが見つかりません</div>';return;}
 
   const firstCols=kmSplitLine(lines[0]);
-  const hasHeader=isNaN(parseInt(firstCols[0]));
-  const start=hasHeader?1:0;
-  const hdr=hasHeader?firstCols.map(h=>h.trim()):['顧客No','顧客名','売上金額','平均単価','来店数','最終来店日'];
 
-  // 列インデックス解決
-  const fi=name=>hdr.findIndex(h=>h.includes(name));
-  const iNo   =fi('顧客No')>=0?fi('顧客No'):0;
-  const iName =fi('顧客名')>=0?fi('顧客名'):1;
-  const iSales=fi('売上')>=0?fi('売上'):2;
-  const iAvg  =fi('平均')>=0?fi('平均'):3;
-  const iVisit=fi('来店')>=0?fi('来店'):4;
-  const iLast =fi('最終')>=0?fi('最終'):5;
+  // ヘッダー行かどうかの判定：
+  // 1行目の最初のセルが数字のみ → データ行（ヘッダーなし）
+  // それ以外 → ヘッダー行
+  const firstCell=(firstCols[0]||'').trim().replace(/"/g,'');
+  const hasHeader=isNaN(parseInt(firstCell))||firstCell==='';
+  const start=hasHeader?1:0;
+  const hdr=hasHeader
+    ? firstCols.map(h=>h.trim().replace(/"/g,'').replace(/[\u3000\s]/g,''))
+    : null;
+
+  // ヘッダー列インデックス解決（ヘッダーあり）
+  let iNo,iName,iSales,iAvg,iVisit,iLast;
+  if(hdr){
+    const fi=name=>hdr.findIndex(h=>h.includes(name));
+    // 囲い込み職人の列名パターンに対応
+    iNo    = fi('顧客No')>=0?fi('顧客No'):fi('No')>=0?fi('No'):-1;
+    iName  = (() => {
+      // 「顧客名」を含むがふりがな・カナ系を除く
+      const idx=hdr.findIndex(h=>h.includes('顧客名')&&!h.includes('かな')&&!h.includes('カナ')&&!h.includes('フリ'));
+      if(idx>=0) return idx;
+      return hdr.findIndex(h=>h.includes('氏名')||h.includes('名前'));
+    })();
+    iSales = fi('売上')>=0?fi('売上'):fi('金額')>=0?fi('金額'):-1;
+    iAvg   = fi('平均')>=0?fi('平均'):fi('単価')>=0?fi('単価'):-1;
+    iVisit = fi('来店')>=0?fi('来店'):fi('来院')>=0?fi('来院'):fi('回数')>=0?fi('回数'):-1;
+    iLast  = fi('最終')>=0?fi('最終'):-1;
+    if(iNo<0)    iNo=0;
+    if(iName<0)  iName=1;
+    if(iSales<0) iSales=2;
+    if(iAvg<0)   iAvg=3;
+    if(iVisit<0) iVisit=4;
+    if(iLast<0)  iLast=5;
+  } else {
+    // ヘッダーなし → 囲い込み職人デフォルト列順
+    iNo=0; iName=1; iSales=2; iAvg=3; iVisit=4; iLast=5;
+  }
+
+  // デバッグ：ヘッダー情報と2行目のサンプルを表示
+  const sample2=lines[start]?kmSplitLine(lines[start]).slice(0,8):[];
+  const hdrInfo=hdr?hdr.slice(0,8).join(' | '):'（ヘッダーなし）';
+  const colInfo=`列マッピング → No[${iNo}] 名前[${iName}] 売上[${iSales}] 来店[${iVisit}] 最終[${iLast}]`;
+  const sample2str=sample2.map((v,i)=>`[${i}]${(v||'').trim().slice(0,12)}`).join(' ');
 
   const parsed=[];
   for(let i=start;i<lines.length;i++){
     const cols=kmSplitLine(lines[i]);
-    const name=(cols[iName]||'').trim(); if(!name) continue;
-    const no   =(cols[iNo]||'').trim();
+    const name=(cols[iName]||'').trim().replace(/^"|"$/g,'');
+    if(!name||name==='顧客名') continue;
+    const no   =(cols[iNo]||'').trim().replace(/^"|"$/g,'');
     const sales=parseInt((cols[iSales]||'0').replace(/[^\d]/g,''))||0;
     const avg  =parseInt((cols[iAvg]||'0').replace(/[^\d]/g,''))||0;
     const visits=parseInt((cols[iVisit]||'0').replace(/[^\d]/g,''))||0;
-    const lastStr=(cols[iLast]||'').trim();
+    const lastStr=(cols[iLast]||'').trim().replace(/^"|"$/g,'');
     const lastDate=kmParseDate(lastStr);
     const days=lastDate?Math.floor((KM_TODAY-lastDate)/86400000):null;
     parsed.push({no,name,sales,avg,visits,lastStr,days});
   }
 
-  if(!parsed.length){msgEl.innerHTML='<div class="import-result error">❌ 有効データなし</div>';return;}
+  if(!parsed.length){
+    msgEl.innerHTML=`<div class="import-result error">❌ 有効データなし<br><small>ヘッダー: ${hdrInfo}<br>${colInfo}<br>2行目サンプル: ${sample2str}</small></div>`;
+    return;
+  }
 
   kmCustomers=parsed;
   kmSave();
-  msgEl.innerHTML=`<div class="import-result success">✅ ${parsed.length.toLocaleString()}件を読み込みました</div>`;
+  msgEl.innerHTML=`
+    <div class="import-result success">✅ ${parsed.length.toLocaleString()}件を読み込みました</div>
+    <div style="margin-top:6px;padding:6px 10px;background:#f0f0f0;border-radius:4px;font-size:11px;color:#555;font-family:monospace">
+      ヘッダー: ${hdrInfo}<br>
+      ${colInfo}<br>
+      サンプル(2行目): ${sample2str}
+    </div>`;
   kmUpdateStats();
   kmApplyFilters();
 }
