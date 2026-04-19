@@ -780,6 +780,61 @@
         <div style="position:absolute;top:6px;left:6px;font-size:9px;font-weight:800;padding:2px 8px;border-radius:4px;background:#fbbf24;color:#1a0a00;">AFTER</div>
       </div>
     </div>
+    <!-- 顔ぼかし調整（Cデザイン用・AパネルのスライダーIDと共通） -->
+    <div style="background:#ede9ff;border-radius:10px;padding:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:10px;font-weight:700;color:#7c3aed;">😊 顔ぼかし調整</span>
+        <div style="display:flex;gap:4px;">
+          <button onclick="baSetBlur('logo')" style="padding:4px 8px;border-radius:6px;border:1.5px solid #7c3aed;background:#7c3aed;color:#fff;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">TAK</button>
+          <button onclick="baSetBlur('smile')" style="padding:4px 8px;border-radius:6px;border:1.5px solid #ddd5ff;background:#f8f6ff;color:#7c3aed;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">:)</button>
+          <button onclick="baSetBlur('both')" style="padding:4px 8px;border-radius:6px;border:1.5px solid #ddd5ff;background:#f8f6ff;color:#7c3aed;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">両方</button>
+          <button onclick="baSetBlur('none')" style="padding:4px 8px;border-radius:6px;border:1.5px solid #ddd5ff;background:#f8f6ff;color:#7c3aed;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">なし</button>
+        </div>
+      </div>
+      <!-- ビフォー/アフター切替（Aパネルと同じIDを共有） -->
+      <div style="display:flex;gap:4px;margin-bottom:8px;">
+        <button onclick="baSetTarget('before')" style="flex:1;padding:4px;border-radius:6px;border:1.5px solid #7c3aed;background:#7c3aed;color:#fff;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;" id="ba-tgt-before-c">ビフォー調整中</button>
+        <button onclick="baSetTarget('after')" style="flex:1;padding:4px;border-radius:6px;border:1.5px solid #ddd5ff;background:#f8f6ff;color:#7c3aed;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;" id="ba-tgt-after-c">アフター調整中</button>
+      </div>
+      <!-- ビフォースライダー -->
+      <div id="ba-sl-before-c">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span style="font-size:9px;color:#9b7fe8;width:36px;">横</span>
+          <input type="range" min="10" max="90" value="40" oninput="baSyncSlider('bx',this.value)" style="flex:1;accent-color:#7c3aed;">
+          <span style="font-size:9px;color:#7c3aed;font-weight:700;width:28px;text-align:right;" id="ba-vbx-c">40%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span style="font-size:9px;color:#9b7fe8;width:36px;">縦</span>
+          <input type="range" min="5" max="65" value="36" oninput="baSyncSlider('by',this.value)" style="flex:1;accent-color:#7c3aed;">
+          <span style="font-size:9px;color:#7c3aed;font-weight:700;width:28px;text-align:right;" id="ba-vby-c">36%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:9px;color:#9b7fe8;width:36px;">大きさ</span>
+          <input type="range" min="4" max="22" value="10" oninput="baSyncSlider('br',this.value)" style="flex:1;accent-color:#7c3aed;">
+          <span style="font-size:9px;color:#7c3aed;font-weight:700;width:28px;text-align:right;" id="ba-vbr-c">10%</span>
+        </div>
+      </div>
+      <!-- アフタースライダー -->
+      <div id="ba-sl-after-c" style="display:none;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span style="font-size:9px;color:#9b7fe8;width:36px;">横</span>
+          <input type="range" min="10" max="90" value="40" oninput="baSyncSlider('ax',this.value)" style="flex:1;accent-color:#7c3aed;">
+          <span style="font-size:9px;color:#7c3aed;font-weight:700;width:28px;text-align:right;" id="ba-vax-c">40%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span style="font-size:9px;color:#9b7fe8;width:36px;">縦</span>
+          <input type="range" min="5" max="65" value="33" oninput="baSyncSlider('ay',this.value)" style="flex:1;accent-color:#7c3aed;">
+          <span style="font-size:9px;color:#7c3aed;font-weight:700;width:28px;text-align:right;" id="ba-vay-c">33%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:9px;color:#9b7fe8;width:36px;">大きさ</span>
+          <input type="range" min="4" max="22" value="10" oninput="baSyncSlider('ar',this.value)" style="flex:1;accent-color:#7c3aed;">
+          <span style="font-size:9px;color:#7c3aed;font-weight:700;width:28px;text-align:right;" id="ba-var-c">10%</span>
+        </div>
+      </div>
+      <p style="font-size:9px;color:#9b7fe8;text-align:center;margin-top:6px;">💡 画像の顔をタップすると位置が移動します</p>
+    </div>
+
     <div style="border-top:1px solid #e0d8ff;padding-top:7px;display:flex;">
       <div style="flex:1;font-size:8px;color:#7c3aed;font-weight:700;text-align:center;line-height:1.6;border-right:1px solid #e0d8ff;" id="ba-cf1">姿勢<br>改善</div>
       <div style="flex:1;font-size:8px;color:#7c3aed;font-weight:700;text-align:center;line-height:1.6;border-right:1px solid #e0d8ff;" id="ba-cf2">肩甲骨<br>整列</div>
@@ -1698,15 +1753,49 @@ function baUpdatePoints(){
   var f2=document.getElementById('ba-cf2'); if(f2) f2.textContent=p2;
   var f3=document.getElementById('ba-cf3'); if(f3) f3.textContent=p3;
 }
+function baSyncSlider(key, val){
+  val = parseInt(val);
+  // Aパネルのスライダーと値・表示を同期
+  var map = {
+    'bx': {sl:'ba-bx', vl:'ba-vbx', vlc:'ba-vbx-c', cfg:'before', prop:'x'},
+    'by': {sl:'ba-by', vl:'ba-vby', vlc:'ba-vby-c', cfg:'before', prop:'y'},
+    'br': {sl:'ba-br', vl:'ba-vbr', vlc:'ba-vbr-c', cfg:'before', prop:'r'},
+    'ax': {sl:'ba-ax', vl:'ba-vax', vlc:'ba-vax-c', cfg:'after',  prop:'x'},
+    'ay': {sl:'ba-ay', vl:'ba-vay', vlc:'ba-vay-c', cfg:'after',  prop:'y'},
+    'ar': {sl:'ba-ar', vl:'ba-var', vlc:'ba-var-c', cfg:'after',  prop:'r'},
+  };
+  var m = map[key]; if(!m) return;
+  baCfg[m.cfg][m.prop] = val;
+  // Aパネルのスライダーに反映
+  var sl = document.getElementById(m.sl); if(sl) sl.value = val;
+  // 両方の値表示を更新
+  var vl = document.getElementById(m.vl); if(vl) vl.textContent = val+'%';
+  var vlc = document.getElementById(m.vlc); if(vlc) vlc.textContent = val+'%';
+  baDrawAll();
+}
 function baSetTarget(t){
   var sb=document.getElementById('ba-sl-before');
   var sa=document.getElementById('ba-sl-after');
   var tb=document.getElementById('ba-tgt-before');
   var ta=document.getElementById('ba-tgt-after');
+  // Cパネル側
+  var sbc=document.getElementById('ba-sl-before-c');
+  var sac=document.getElementById('ba-sl-after-c');
+  var tbc=document.getElementById('ba-tgt-before-c');
+  var tac=document.getElementById('ba-tgt-after-c');
+
+  var onA='#0a1628', offA='#2a3a50', onAc='#c8f5a0', offAc='#aaa';
+  var onC='#7c3aed', offC='#f8f6ff', onCc='#fff', offCc='#7c3aed';
+
   if(sb) sb.style.display=t==='before'?'block':'none';
   if(sa) sa.style.display=t==='after'?'block':'none';
-  if(tb){tb.style.background=t==='before'?'#0a1628':'#2a3a50';tb.style.color=t==='before'?'#c8f5a0':'#aaa';tb.style.borderColor=t==='before'?'#0a1628':'#2a3a50';}
-  if(ta){ta.style.background=t==='after'?'#0a1628':'#2a3a50';ta.style.color=t==='after'?'#c8f5a0':'#aaa';ta.style.borderColor=t==='after'?'#0a1628':'#2a3a50';}
+  if(sbc) sbc.style.display=t==='before'?'block':'none';
+  if(sac) sac.style.display=t==='after'?'block':'none';
+
+  if(tb){tb.style.background=t==='before'?onA:offA;tb.style.color=t==='before'?onAc:offAc;tb.style.borderColor=t==='before'?onA:offA;}
+  if(ta){ta.style.background=t==='after'?onA:offA;ta.style.color=t==='after'?onAc:offAc;ta.style.borderColor=t==='after'?onA:offA;}
+  if(tbc){tbc.style.background=t==='before'?onC:offC;tbc.style.color=t==='before'?onCc:offCc;tbc.style.borderColor=t==='before'?onC:'#ddd5ff';}
+  if(tac){tac.style.background=t==='after'?onC:offC;tac.style.color=t==='after'?onCc:offCc;tac.style.borderColor=t==='after'?onC:'#ddd5ff';}
 }
 function baSetBlur(type){
   baBlurType=type;
@@ -1747,17 +1836,21 @@ function baImgTap(e, side){
   var pct_y = Math.round((e.clientY - rect.top)  / rect.height * 100);
   baCfg[side].x = Math.min(90, Math.max(10, pct_x));
   baCfg[side].y = Math.min(65, Math.max(5,  pct_y));
-  // スライダーも同期
+  // Aパネル・Cパネル両方のスライダー表示を同期
   if(side==='before'){
-    document.getElementById('ba-bx').value = baCfg.before.x;
-    document.getElementById('ba-by').value = baCfg.before.y;
-    document.getElementById('ba-vbx').textContent = baCfg.before.x+'%';
-    document.getElementById('ba-vby').textContent = baCfg.before.y+'%';
+    var bx=document.getElementById('ba-bx'); if(bx) bx.value=baCfg.before.x;
+    var by=document.getElementById('ba-by'); if(by) by.value=baCfg.before.y;
+    var vbx=document.getElementById('ba-vbx'); if(vbx) vbx.textContent=baCfg.before.x+'%';
+    var vby=document.getElementById('ba-vby'); if(vby) vby.textContent=baCfg.before.y+'%';
+    var vbxc=document.getElementById('ba-vbx-c'); if(vbxc) vbxc.textContent=baCfg.before.x+'%';
+    var vbyc=document.getElementById('ba-vby-c'); if(vbyc) vbyc.textContent=baCfg.before.y+'%';
   } else {
-    document.getElementById('ba-ax').value = baCfg.after.x;
-    document.getElementById('ba-ay').value = baCfg.after.y;
-    document.getElementById('ba-vax').textContent = baCfg.after.x+'%';
-    document.getElementById('ba-vay').textContent = baCfg.after.y+'%';
+    var ax=document.getElementById('ba-ax'); if(ax) ax.value=baCfg.after.x;
+    var ay=document.getElementById('ba-ay'); if(ay) ay.value=baCfg.after.y;
+    var vax=document.getElementById('ba-vax'); if(vax) vax.textContent=baCfg.after.x+'%';
+    var vay=document.getElementById('ba-vay'); if(vay) vay.textContent=baCfg.after.y+'%';
+    var vaxc=document.getElementById('ba-vax-c'); if(vaxc) vaxc.textContent=baCfg.after.x+'%';
+    var vayc=document.getElementById('ba-vay-c'); if(vayc) vayc.textContent=baCfg.after.y+'%';
   }
   baDrawAll();
 }
