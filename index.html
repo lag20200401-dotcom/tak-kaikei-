@@ -305,70 +305,24 @@
 <!-- 日報取込 -->
 <div id="panel-nisshi" class="panel">
   <div class="card">
-    <div class="card-title">📅 日報取込（スクショ転記）</div>
+    <div class="card-title">📅 日報取込（スクショ → 自動登録）</div>
     <p style="font-size:13px;color:var(--text-sub);margin-bottom:14px;">
-      囲い込み職人の日報画面から読み取ったデータを登録します。<br>
-      取込項目：日付・時刻・顧客名・担当・コース・金額・支払方法・動機・受付
+      ① 囲い込み職人の日報スクショをClaudeに送る<br>
+      ② ClaudeがJSONを生成 → 下のテキストエリアに貼り付け<br>
+      ③「取込実行」ボタンを押すだけで会計アプリに一括登録
     </p>
-
-    <!-- 入力フォーム -->
-    <div class="form-grid" style="margin-bottom:12px">
-      <div class="form-group"><label>日付</label><input type="date" id="ni-date"></div>
-      <div class="form-group"><label>時刻</label><input type="time" id="ni-time"></div>
-    </div>
-    <div class="form-grid triple" style="margin-bottom:10px">
-      <div class="form-group">
-        <label>顧客</label>
-        <input type="text" id="ni-search" placeholder="名前で検索…" oninput="filterNiCustomers()" style="margin-bottom:4px">
-        <select id="ni-customer"><option value="">-- 顧客を選択 --</option></select>
-      </div>
-      <div class="form-group"><label>コース（メニュー）</label>
-        <select id="ni-course">
-          <option value="袋井2回目以降">袋井2回目以降</option>
-          <option value="回数券ご利用">回数券ご利用</option>
-          <option value="初回体験コース">初回体験コース</option>
-          <option value="TAK式組織再生プログラム">TAK式組織再生プログラム</option>
-          <option value="月イチ整体">月イチ整体</option>
-          <option value="インディバ60分">インディバ60分</option>
-          <option value="月イチインディバ">月イチインディバ</option>
-          <option value="カスタム">カスタム</option>
-        </select>
-      </div>
-      <div class="form-group"><label>売上金額（円）</label><input type="number" id="ni-price" value="0" min="0"></div>
-    </div>
-    <div class="form-grid triple" style="margin-bottom:10px">
-      <div class="form-group"><label>支払方法</label>
-        <select id="ni-pay">
-          <option value="現金">現金</option>
-          <option value="クレジット">クレジット</option>
-          <option value="回数券">回数券</option>
-          <option value="PayPay">PayPay</option>
-          <option value="スクエアサブスク">スクエアサブスク</option>
-        </select>
-      </div>
-      <div class="form-group"><label>動機</label>
-        <select id="ni-motive">
-          <option value="紹介">紹介</option>
-          <option value="袋井折込（問合せ）">袋井折込（問合せ）</option>
-          <option value="Hotpepper">Hotpepper</option>
-          <option value="メタ広告">メタ広告</option>
-          <option value="GoogleMap">GoogleMap</option>
-          <option value="LINEリッチメニュー">LINEリッチメニュー</option>
-          <option value="その他">その他</option>
-        </select>
-      </div>
-      <div class="form-group"><label>受付</label>
-        <select id="ni-uketsuke">
-          <option value="前回">前回</option>
-          <option value="新規">新規</option>
-          <option value="当日">当日</option>
-        </select>
-      </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>📋 ClaudeからのJSONをここに貼り付け</label>
+      <textarea id="ni-json" rows="10" placeholder='[
+  {"date":"2026-02-03","time":"09:00","customerName":"小倉豊寿","course":"回数券ご利用","price":0,"pay":"回数券","motive":"紹介","uketsuke":"前回"},
+  {"date":"2026-02-03","time":"10:00","customerName":"荻原みさ子","course":"袋井2回目以降","price":8800,"pay":"現金","motive":"袋井折込（問合せ）","uketsuke":"前回"}
+]' style="font-size:12px;font-family:monospace"></textarea>
     </div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="addNisshi()">＋ 追加</button>
-      <button class="btn btn-secondary" onclick="clearNisshiForm()">🔄 クリア</button>
+      <button class="btn btn-primary" onclick="parseNisshiJSON()">📥 JSONを読み込む</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('ni-json').value=''">🔄 クリア</button>
     </div>
+    <div id="ni-parse-status"></div>
   </div>
 
   <!-- 未登録リスト -->
@@ -1552,6 +1506,30 @@ function attachDraftListeners(){DRAFT_KEYS.line.forEach(id=>{const el=document.g
 // ═══════════════════════════════════════
 let nisshiPending = JSON.parse(localStorage.getItem('tak_nisshi_pending')||'[]');
 function saveNisshiPending(){ localStorage.setItem('tak_nisshi_pending', JSON.stringify(nisshiPending)); }
+
+function parseNisshiJSON(){
+  const raw = document.getElementById('ni-json').value.trim();
+  const statusEl = document.getElementById('ni-parse-status');
+  if(!raw){ statusEl.innerHTML='<div class="import-result error">❌ JSONを貼り付けてください</div>'; return; }
+  let data;
+  try { data = JSON.parse(raw); } catch(e) { statusEl.innerHTML='<div class="import-result error">❌ JSON形式が正しくありません: '+e.message+'</div>'; return; }
+  if(!Array.isArray(data)||!data.length){ statusEl.innerHTML='<div class="import-result error">❌ データが空です</div>'; return; }
+
+  // 顧客名からIDを検索してセット
+  data.forEach(r=>{
+    if(!r.customerId){
+      const c = customers.find(x=>x.name===r.customerName || x.name.replace(/\s/g,'')===r.customerName.replace(/\s/g,''));
+      r.customerId = c ? c.id : '';
+    }
+    r.id = r.id || genId();
+  });
+
+  nisshiPending = nisshiPending.concat(data);
+  saveNisshiPending();
+  document.getElementById('ni-json').value = '';
+  statusEl.innerHTML = `<div class="import-result success">✅ ${data.length}件を取込待ちリストに追加しました</div>`;
+  renderNisshiList();
+}
 
 function filterNiCustomers(){
   const q=document.getElementById('ni-search').value.toLowerCase();
