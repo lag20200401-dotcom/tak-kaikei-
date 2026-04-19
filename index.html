@@ -851,14 +851,41 @@ function kmHandleFile(e){ const f=e.target.files[0]; if(f) kmReadFile(f); e.targ
 function kmReadFile(file){
   const msg=document.getElementById('kmImportMsg');
   msg.innerHTML='<div class="import-result info">⏳ 読み込み中…</div>';
+  // まずArrayBufferで読み込んでBOM・文字コード判定
   const sr=new FileReader();
   sr.onload=ev=>{
-    const arr=new Uint8Array(ev.target.result);
-    let isSjis=false;
-    for(let i=0;i<Math.min(arr.length-1,2000);i++){
-      if((arr[i]>=0x81&&arr[i]<=0x9F)||(arr[i]>=0xE0&&arr[i]<=0xFC)){isSjis=true;break;}
+    const buf=ev.target.result;
+    const arr=new Uint8Array(buf);
+    // UTF-8 BOM判定
+    const hasBOM=(arr[0]===0xEF&&arr[1]===0xBB&&arr[2]===0xBF);
+    // UTF-8として正常にデコードできるか厳格チェック
+    let isValidUTF8=false;
+    try{
+      new TextDecoder('utf-8',{fatal:true}).decode(arr);
+      isValidUTF8=true;
+    }catch(e){}
+    // 顧客名フィールドに日本語（2バイト以上）が含まれ、
+    // UTF-8でデコードした結果が正常かどうかで判定
+    // 囲い込み職人はShift-JIS固定なのでBOMなしかつShift-JIS文字コード範囲を含む場合はSJIS
+    let hasSjisRange=false;
+    for(let i=0;i<Math.min(arr.length-1,4000);i++){
+      const b=arr[i];
+      // Shift-JIS第1バイト範囲（0x81-0x9F, 0xE0-0xFC）かつ第2バイトが有効
+      if(((b>=0x81&&b<=0x9F)||(b>=0xE0&&b<=0xFC))&&i+1<arr.length){
+        const b2=arr[i+1];
+        if((b2>=0x40&&b2<=0x7E)||(b2>=0x80&&b2<=0xFC)){
+          hasSjisRange=true;break;
+        }
+      }
     }
-    const enc=isSjis?'Shift-JIS':'UTF-8';
+    // BOMありUTF-8 → UTF-8確定
+    // Shift-JIS範囲あり → Shift-JIS優先
+    // それ以外でUTF-8有効 → UTF-8
+    let enc;
+    if(hasBOM) enc='utf-8';
+    else if(hasSjisRange) enc='shift-jis';
+    else if(isValidUTF8) enc='utf-8';
+    else enc='shift-jis';
     const r2=new FileReader();
     r2.onload=ev2=>{
       let text=ev2.target.result.replace(/^\uFEFF/,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
