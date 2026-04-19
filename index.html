@@ -158,6 +158,7 @@
   <div class="tab" onclick="showPanel('line')">💬 LINEメッセージ</div>
   <div class="tab" onclick="showPanel('ba')">📸 ビフォーアフター</div>
   <div class="tab" onclick="showPanel('monshin')">📋 問診票取込</div>
+  <div class="tab" onclick="showPanel('nisshi')">📅 日報取込</div>
 </div>
 <div id="alert-banner" style="display:none;padding:10px 16px;font-size:13px;font-weight:600;text-align:center;cursor:pointer" onclick="document.getElementById('alert-banner').style.display='none'"></div>
 <main>
@@ -300,6 +301,104 @@
     <div class="table-wrap"><table><thead><tr><th>No</th><th>氏名</th><th>電話</th><th>来院回数</th><th>最終来院</th><th>操作</th></tr></thead><tbody id="customer-tbody"></tbody></table></div>
   </div>
 </div>
+
+<!-- 日報取込 -->
+<div id="panel-nisshi" class="panel">
+  <div class="card">
+    <div class="card-title">📅 日報取込（スクショ転記）</div>
+    <p style="font-size:13px;color:var(--text-sub);margin-bottom:14px;">
+      囲い込み職人の日報画面から読み取ったデータを登録します。<br>
+      取込項目：日付・時刻・顧客名・担当・コース・金額・支払方法・動機・受付
+    </p>
+
+    <!-- 入力フォーム -->
+    <div class="form-grid" style="margin-bottom:12px">
+      <div class="form-group"><label>日付</label><input type="date" id="ni-date"></div>
+      <div class="form-group"><label>時刻</label><input type="time" id="ni-time"></div>
+    </div>
+    <div class="form-grid triple" style="margin-bottom:10px">
+      <div class="form-group">
+        <label>顧客</label>
+        <input type="text" id="ni-search" placeholder="名前で検索…" oninput="filterNiCustomers()" style="margin-bottom:4px">
+        <select id="ni-customer"><option value="">-- 顧客を選択 --</option></select>
+      </div>
+      <div class="form-group"><label>コース（メニュー）</label>
+        <select id="ni-course">
+          <option value="袋井2回目以降">袋井2回目以降</option>
+          <option value="回数券ご利用">回数券ご利用</option>
+          <option value="初回体験コース">初回体験コース</option>
+          <option value="TAK式組織再生プログラム">TAK式組織再生プログラム</option>
+          <option value="月イチ整体">月イチ整体</option>
+          <option value="インディバ60分">インディバ60分</option>
+          <option value="月イチインディバ">月イチインディバ</option>
+          <option value="カスタム">カスタム</option>
+        </select>
+      </div>
+      <div class="form-group"><label>売上金額（円）</label><input type="number" id="ni-price" value="0" min="0"></div>
+    </div>
+    <div class="form-grid triple" style="margin-bottom:10px">
+      <div class="form-group"><label>支払方法</label>
+        <select id="ni-pay">
+          <option value="現金">現金</option>
+          <option value="クレジット">クレジット</option>
+          <option value="回数券">回数券</option>
+          <option value="PayPay">PayPay</option>
+          <option value="スクエアサブスク">スクエアサブスク</option>
+        </select>
+      </div>
+      <div class="form-group"><label>動機</label>
+        <select id="ni-motive">
+          <option value="紹介">紹介</option>
+          <option value="袋井折込（問合せ）">袋井折込（問合せ）</option>
+          <option value="Hotpepper">Hotpepper</option>
+          <option value="メタ広告">メタ広告</option>
+          <option value="GoogleMap">GoogleMap</option>
+          <option value="LINEリッチメニュー">LINEリッチメニュー</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+      <div class="form-group"><label>受付</label>
+        <select id="ni-uketsuke">
+          <option value="前回">前回</option>
+          <option value="新規">新規</option>
+          <option value="当日">当日</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="addNisshi()">＋ 追加</button>
+      <button class="btn btn-secondary" onclick="clearNisshiForm()">🔄 クリア</button>
+    </div>
+  </div>
+
+  <!-- 未登録リスト -->
+  <div class="card">
+    <div class="card-title">📋 取込待ちリスト</div>
+    <div id="ni-empty" class="empty-state" style="display:none">まだ追加されていません</div>
+    <div class="table-wrap">
+      <table><thead><tr><th>日付</th><th>時刻</th><th>顧客名</th><th>コース</th><th>金額</th><th>支払</th><th>動機</th><th>受付</th><th>操作</th></tr></thead>
+      <tbody id="ni-tbody"></tbody></table>
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-primary" onclick="commitNisshi()">✅ 会計アプリに一括登録</button>
+      <button class="btn btn-danger btn-sm" onclick="clearNisshiList()">🗑 リストをクリア</button>
+    </div>
+    <div id="ni-status"></div>
+  </div>
+
+  <!-- 登録済み日報履歴 -->
+  <div class="card">
+    <div class="card-title">✅ 登録済み日報一覧</div>
+    <div class="search-bar">
+      <input type="month" id="ni-filter-month" onchange="renderNisshiList()" style="max-width:150px">
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>日付</th><th>時刻</th><th>顧客名</th><th>コース</th><th>金額</th><th>支払</th><th>動機</th></tr></thead>
+      <tbody id="ni-done-tbody"></tbody></table>
+    </div>
+  </div>
+</div>
+<!-- /日報取込 -->
 
 <!-- ══════════════════════════════════════════ -->
 <!-- 顧客マスター（囲い込み職人CSV連携）       -->
@@ -996,9 +1095,12 @@ function kmReadPDF(file,msg){
 }
 
 function kmParsePDFLines(lines,msgEl){
-  // 囲い込み職人「顧客別期間集計」のデータ行を抽出
-  // テキストは各フィールドが別スパンに分割されて来るため、
-  // 複数行をトークン列として結合し、パターンマッチで再組み立てる
+  // デバッグ：最初の30行をコンソールに出力
+  console.log('=== PDF lines sample (first 30) ===');
+  lines.slice(0,30).forEach((l,i)=>console.log(i+':',JSON.stringify(l)));
+  console.log('=== bulk sample (first 500 chars) ===');
+  const bulkSample = lines.join(' ').slice(0,500);
+  console.log(bulkSample);
 
   // 全行をスペースで結合した1本の文字列にして正規表現で全マッチを抽出
   const bulk = lines.join(' ');
@@ -1282,6 +1384,7 @@ function showPanel(id){
   if(id==='subscriptions'){ populateSubCustomerSelect(); renderSubSummary(); renderSubscriptions(); }
   if(id==='tickets'){ populateTicketCustomerSelect(); renderTicketList(); renderTicketSummary(); }
   if(id==='adcost'){ renderAdCostList(); }
+  if(id==='nisshi'){ renderNisshiList(); }
 }
 
 // 物販
@@ -1442,6 +1545,161 @@ function saveDraft(panel){const keys=DRAFT_KEYS[panel];if(!keys)return;const dra
 function restoreDraft(panel){const raw=localStorage.getItem('tak_draft_'+panel);if(!raw)return;try{const draft=JSON.parse(raw);Object.entries(draft).forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.value=val;});if(panel==='line'){const custEl=document.getElementById('line-customer');if(custEl&&custEl.value)onLineCustomerChange();}}catch(e){}}
 function clearDraft(panel){localStorage.removeItem('tak_draft_'+panel);}
 function attachDraftListeners(){DRAFT_KEYS.line.forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('input',()=>saveDraft('line'));el.addEventListener('change',()=>saveDraft('line'));}});}
+
+
+// ═══════════════════════════════════════
+// 日報取込
+// ═══════════════════════════════════════
+let nisshiPending = JSON.parse(localStorage.getItem('tak_nisshi_pending')||'[]');
+function saveNisshiPending(){ localStorage.setItem('tak_nisshi_pending', JSON.stringify(nisshiPending)); }
+
+function filterNiCustomers(){
+  const q=document.getElementById('ni-search').value.toLowerCase();
+  const sel=document.getElementById('ni-customer');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">-- 顧客を選択 --</option>';
+  [...customers].filter(c=>!q||c.name.includes(q)||(c.kana||'').includes(q))
+    .sort((a,b)=>a.name.localeCompare(b.name,'ja')).forEach(c=>{
+      const o=document.createElement('option');
+      o.value=c.id; o.textContent=(c.no?`[${c.no}] `:'')+c.name;
+      sel.appendChild(o);
+    });
+  sel.value=cur;
+}
+
+function populateNiCustomerSelect(){
+  const sel=document.getElementById('ni-customer');
+  sel.innerHTML='<option value="">-- 顧客を選択 --</option>';
+  [...customers].sort((a,b)=>a.name.localeCompare(b.name,'ja')).forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c.id; o.textContent=(c.no?`[${c.no}] `:'')+c.name;
+    sel.appendChild(o);
+  });
+}
+
+function addNisshi(){
+  const date=document.getElementById('ni-date').value;
+  const time=document.getElementById('ni-time').value;
+  const cid =document.getElementById('ni-customer').value;
+  const c   =customers.find(x=>x.id===cid);
+  if(!date){alert('日付を入力してください');return;}
+  if(!cid) {alert('顧客を選択してください');return;}
+  nisshiPending.push({
+    id: genId(),
+    date, time,
+    customerId:   cid,
+    customerName: c.name,
+    course:   document.getElementById('ni-course').value,
+    price:    parseInt(document.getElementById('ni-price').value)||0,
+    pay:      document.getElementById('ni-pay').value,
+    motive:   document.getElementById('ni-motive').value,
+    uketsuke: document.getElementById('ni-uketsuke').value,
+  });
+  saveNisshiPending();
+  renderNisshiList();
+  clearNisshiForm();
+}
+
+function clearNisshiForm(){
+  document.getElementById('ni-date').value='';
+  document.getElementById('ni-time').value='';
+  document.getElementById('ni-customer').value='';
+  document.getElementById('ni-search').value='';
+  document.getElementById('ni-price').value='0';
+}
+
+function deleteNisshiPending(id){
+  nisshiPending=nisshiPending.filter(x=>x.id!==id);
+  saveNisshiPending(); renderNisshiList();
+}
+
+function clearNisshiList(){
+  if(!confirm('取込待ちリストをクリアしますか？')) return;
+  nisshiPending=[]; saveNisshiPending(); renderNisshiList();
+}
+
+function commitNisshi(){
+  if(!nisshiPending.length){alert('取込待ちデータがありません');return;}
+  if(!confirm(nisshiPending.length+'件を会計アプリに登録しますか？')) return;
+
+  nisshiPending.forEach(r=>{
+    const c=customers.find(x=>x.id===r.customerId);
+    history.unshift({
+      id: genId(),
+      importTag: 'nisshi_'+r.date,
+      customerId:   r.customerId,
+      customerName: r.customerName,
+      date:  r.date,
+      menu:  r.course,
+      type:  'normal',
+      price: r.price,
+      pay:   r.pay,
+      staff: 'Tak（桑原毅郎）',
+      memo:  (r.time?r.time+' | ':'')+`動機:${r.motive} | 受付:${r.uketsuke}`,
+      note:  '',
+      nextDate: '',
+      createdAt: new Date().toISOString()
+    });
+    if(c && r.price>0){
+      c.visitCount=(c.visitCount||0)+1;
+      if(!c.lastVisit||r.date>c.lastVisit) c.lastVisit=r.date;
+    }
+  });
+
+  save();
+  const count=nisshiPending.length;
+  nisshiPending=[]; saveNisshiPending();
+  document.getElementById('ni-status').innerHTML=
+    `<div class="import-result success" style="margin-top:10px">✅ ${count}件を登録しました！来院履歴タブで確認できます。</div>`;
+  renderNisshiList();
+  renderDash();
+}
+
+function renderNisshiList(){
+  populateNiCustomerSelect();
+
+  // 取込待ち
+  const tbody=document.getElementById('ni-tbody');
+  const empty=document.getElementById('ni-empty');
+  if(!nisshiPending.length){
+    tbody.innerHTML=''; empty.style.display='block';
+  } else {
+    empty.style.display='none';
+    tbody.innerHTML=nisshiPending.map(r=>`
+      <tr>
+        <td>${r.date}</td><td>${r.time||'—'}</td>
+        <td><strong>${r.customerName}</strong></td>
+        <td style="font-size:12px">${r.course}</td>
+        <td>${r.price>0?'¥'+r.price.toLocaleString():'<span style="color:#999">回数券</span>'}</td>
+        <td><span class="badge badge-blue">${r.pay}</span></td>
+        <td style="font-size:12px">${r.motive}</td>
+        <td style="font-size:12px">${r.uketsuke}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteNisshiPending('${r.id}')">削除</button></td>
+      </tr>`).join('');
+  }
+
+  // 登録済み（importTag が nisshi_ で始まるもの）
+  const m=document.getElementById('ni-filter-month').value;
+  const done=history.filter(h=>h.importTag&&h.importTag.startsWith('nisshi_')&&(!m||h.date.startsWith(m)));
+  const doneTbody=document.getElementById('ni-done-tbody');
+  if(!done.length){
+    doneTbody.innerHTML='<tr><td colspan="7" class="empty-state">登録済みデータなし</td></tr>';
+  } else {
+    // memoから時刻を抽出
+    doneTbody.innerHTML=done.map(h=>{
+      const timeMatch=h.memo&&h.memo.match(/^(\d{2}:\d{2})/);
+      const t=timeMatch?timeMatch[1]:'—';
+      return `<tr>
+        <td>${h.date}</td><td>${t}</td>
+        <td>${h.customerName}</td>
+        <td style="font-size:12px">${h.menu}</td>
+        <td>${h.price>0?'¥'+h.price.toLocaleString():'回数券'}</td>
+        <td>${h.pay}</td>
+        <td style="font-size:12px;color:var(--text-sub)">${(h.memo||'').replace(/^[\d:]+\s*\|\s*/,'').replace('動機:','').replace('| 受付:','→')}</td>
+      </tr>`;
+    }).join('');
+  }
+}
 
 renderDash();populateCustomerSelect();checkAlerts();renderTicketSummary();attachDraftListeners();
 // 顧客マスター：localStorage復元
