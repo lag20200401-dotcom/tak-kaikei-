@@ -936,7 +936,6 @@ function kmSplitLine(line){
 // 行フォーマット: "0001054 : 久保田順子 1,111,000 9,415 118 118 2026-04-04"
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function kmReadPDF(file,msg){
-  // pdf.jsをCDNから動的ロード（必要時のみ）
   function loadPdfJs(cb){
     if(window.pdfjsLib){cb();return;}
     const s=document.createElement('script');
@@ -946,7 +945,7 @@ function kmReadPDF(file,msg){
         'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
       cb();
     };
-    s.onerror=()=>{ msg.innerHTML='<div class="import-result error">❌ PDFライブラリの読み込みに失敗しました</div>'; };
+    s.onerror=()=>{ msg.innerHTML='<div class="import-result error">❌ PDFライブラリ読み込み失敗。ネット接続を確認してください</div>'; };
     document.head.appendChild(s);
   }
 
@@ -954,45 +953,65 @@ function kmReadPDF(file,msg){
     try{
       const arr=await file.arrayBuffer();
       const pdf=await window.pdfjsLib.getDocument({data:arr}).promise;
-      let allText='';
+
+      // 全ページのテキストアイテムを収集（Y座標・X座標付き）
+      const allItems=[];
       for(let p=1;p<=pdf.numPages;p++){
         const page=await pdf.getPage(p);
         const tc=await page.getTextContent();
-        // テキストアイテムをY座標でグループ化して行に戻す
-        const items=tc.items;
-        // Y座標でソート（降順=上から）→ 同じY行を結合
-        const rows={};
-        items.forEach(it=>{
+        const vp=page.getViewport({scale:1});
+        const pageH=vp.height;
+        tc.items.forEach(it=>{
           if(!it.str.trim()) return;
-          const y=Math.round(it.transform[5]);
-          if(!rows[y]) rows[y]=[];
-          rows[y].push({x:it.transform[4], str:it.str});
-        });
-        const ys=Object.keys(rows).map(Number).sort((a,b)=>b-a);
-        ys.forEach(y=>{
-          const line=rows[y].sort((a,b)=>a.x-b.x).map(i=>i.str).join(' ');
-          allText+=line+'\n';
+          // Y座標を「上からの距離」に変換（PDFは下原点なので反転）
+          allItems.push({
+            str:it.str.trim(),
+            x:it.transform[4],
+            y:pageH-it.transform[5],  // 上からの距離
+            page:p
+          });
         });
       }
-      kmParsePDFText(allText,msg);
+
+      // ページ・Y座標でソート後、近いY（±2pt）を同じ行にグループ化
+      allItems.sort((a,b)=>a.page!==b.page?a.page-b.page:a.y!==b.y?a.y-b.y:a.x-b.x);
+
+      const lines=[];
+      let curY=-9999, curPage=-1, curLine=[];
+      allItems.forEach(it=>{
+        if(it.page!==curPage||Math.abs(it.y-curY)>3){
+          if(curLine.length) lines.push(curLine.map(i=>i.str).join(' '));
+          curLine=[it]; curY=it.y; curPage=it.page;
+        } else {
+          curLine.push(it);
+        }
+      });
+      if(curLine.length) lines.push(curLine.map(i=>i.str).join(' '));
+
+      kmParsePDFLines(lines,msg);
     }catch(e){
       msg.innerHTML='<div class="import-result error">❌ PDF読み込みエラー: '+e.message+'</div>';
     }
   });
 }
 
-function kmParsePDFText(text,msgEl){
-  // 囲い込み職人の行パターン:
-  // "0001054 : 久保田順子 1,111,000 9,415 118 118 2026-04-04"
-  // 顧客No : 顧客名  売上金額  平均単価  来店数  施術数  最終来店日
-  const RE=/^(\d{7})\s*:\s*(.+?)\s+([\d,]+)\s+([\d,]+)\s+(\d+)\s+\d+\s+(\d{4}-\d{2}-\d{2})$/;
+function kmParsePDFLines(lines,msgEl){
+  // 囲い込み職人「顧客別期間集計」のデータ行を抽出
+  // テキストは各フィールドが別スパンに分割されて来るため、
+  // 複数行をトークン列として結合し、パターンマッチで再組み立てる
+
+  // 全行をスペースで結合した1本の文字列にして正規表現で全マッチを抽出
+  const bulk = lines.join(' ');
+
+  // パターン: 7桁No  :  顧客名（1文字以上）  売上金額  平均単価  来店数  施術数  日付
+  // 売上・平均単価はカンマ区切り数字、来店数・施術数は整数
+  const RE = /(\d{7})\s*:\s*([^\d：:]+?)\s+(\d{1,3}(?:,\d{3})*)\s+(\d{1,3}(?:,\d{3})*)\s+(\d+)\s+\d+\s+(\d{4}-\d{2}-\d{2})/g;
+
   const parsed=[];
-  const lines=text.split('\n');
-  for(const line of lines){
-    const m=line.trim().match(RE);
-    if(!m) continue;
+  let m;
+  while((m=RE.exec(bulk))!==null){
     const no=m[1];
-    const name=m[2].trim();
+    const name=m[2].trim().replace(/\s+/g,'　');  // 空白を全角スペースに
     const sales=parseInt(m[3].replace(/,/g,''))||0;
     const avg=parseInt(m[4].replace(/,/g,''))||0;
     const visits=parseInt(m[5])||0;
@@ -1001,8 +1020,9 @@ function kmParsePDFText(text,msgEl){
     const days=lastDate?Math.floor((KM_TODAY-lastDate)/86400000):null;
     parsed.push({no,name,sales,avg,visits,lastStr,days});
   }
+
   if(!parsed.length){
-    msgEl.innerHTML='<div class="import-result error">❌ 囲い込み職人の顧客データが見つかりません。PDFの形式を確認してください。</div>';
+    msgEl.innerHTML='<div class="import-result error">❌ 囲い込み職人の顧客データが見つかりません。<br>このPDFは「顧客別期間集計」レポートですか？</div>';
     return;
   }
   kmCustomers=parsed;
