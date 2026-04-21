@@ -454,14 +454,25 @@
 <div id="panel-history" class="panel">
   <div class="card">
     <div class="card-title">📋 来院・会計履歴</div>
-    <div class="search-bar">
-      <input type="text" id="hi-search" placeholder="顧客名・メニューで検索…" oninput="renderHistory()">
-      <input type="month" id="hi-month" onchange="renderHistory()" style="max-width:150px">
+    <div class="search-bar" style="flex-wrap:wrap;gap:6px">
+      <input type="text" id="hi-search" placeholder="顧客名・メニューで検索…" oninput="renderHistory()" style="min-width:160px">
+      <input type="month" id="hi-month" onchange="onHiMonthChange()" style="max-width:140px">
+      <input type="date" id="hi-date" onchange="onHiDateChange()" style="max-width:140px" title="特定日で絞り込み">
+      <div style="display:flex;gap:4px;align-items:center">
+        <button class="btn btn-sm" id="hi-mode-month" onclick="setHiMode('month')" style="background:#2e7d52;color:#fff">月表示</button>
+        <button class="btn btn-sm" id="hi-mode-day" onclick="setHiMode('day')" style="background:#eee;color:#333">日別</button>
+      </div>
       <button class="btn btn-secondary btn-sm" onclick="exportHistoryCSV()">⬇ CSV</button>
-      <button class="btn btn-primary btn-sm" onclick="exportMonthlyStats()">📊 月次統計をSheetsに送信</button>
-      <button class="btn btn-secondary btn-sm" onclick="downloadStatsCSV()">⬇ 統計CSV保存</button>
+      <button class="btn btn-primary btn-sm" onclick="exportMonthlyStats()">📊 Sheetsに送信</button>
+      <button class="btn btn-secondary btn-sm" onclick="downloadStatsCSV()">⬇ 統計CSV</button>
+    </div>
+    <!-- 日別サマリーバー -->
+    <div id="hi-day-summary" style="display:none;background:#e8f5ee;border-radius:6px;padding:8px 12px;margin-bottom:8px;font-size:13px;display:none">
+      <span id="hi-day-summary-text"></span>
     </div>
     <div class="table-wrap"><table><thead><tr><th>日付</th><th>顧客名</th><th>種別</th><th>メニュー</th><th>金額</th><th>支払</th><th>担当</th><th>メモ</th><th>操作</th></tr></thead><tbody id="history-tbody"></tbody></table></div>
+    <!-- ページネーション -->
+    <div id="hi-pagination" style="display:flex;gap:6px;align-items:center;margin-top:10px;flex-wrap:wrap"></div>
   </div>
 </div>
 
@@ -1377,7 +1388,172 @@ function deleteCustomer(id){showModal('削除確認','顧客データを削除�
 function clearCustomerForm(){['cu-id','cu-no','cu-name','cu-kana','cu-gender','cu-birth','cu-job','cu-tel','cu-email','cu-zip','cu-address','cu-motive','cu-memo'].forEach(i=>document.getElementById(i).value='');}
 function renderCustomerList(){const q=document.getElementById('cu-search').value.toLowerCase();const tbody=document.getElementById('customer-tbody');const list=customers.filter(c=>!q||c.name.includes(q)||(c.kana||'').includes(q)||(c.tel||'').includes(q)).sort((a,b)=>(a.no||'').localeCompare(b.no||'',undefined,{numeric:true}));if(!list.length){tbody.innerHTML='<tr><td colspan="6" class="empty-state">顧客データがありません</td></tr>';return;}tbody.innerHTML=list.map(c=>`<tr><td>${c.no||'-'}</td><td><strong>${c.name}</strong>${c.kana?`<br><span style="font-size:11px;color:var(--text-sub)">${c.kana}</span>`:''}</td><td>${c.tel||'-'}</td><td>${c.visitCount||0}回</td><td>${c.lastVisit||'-'}</td><td><button class="btn btn-secondary btn-sm" onclick="editCustomer('${c.id}')">編集</button> <button class="btn btn-danger btn-sm" onclick="deleteCustomer('${c.id}')">削除</button></td></tr>`).join('');}
 
-function renderHistory(){const q=document.getElementById('hi-search').value.toLowerCase();const m=document.getElementById('hi-month').value;const tbody=document.getElementById('history-tbody');const list=history.filter(h=>(!q||h.customerName.includes(q)||h.menu.includes(q))&&(!m||h.date.startsWith(m)));if(!list.length){tbody.innerHTML='<tr><td colspan="9" class="empty-state">履歴がありません</td></tr>';return;}tbody.innerHTML=list.map(h=>{const isRefund=h.type==='refund'||h.price<0;const typeBadge=isRefund?'<span class="badge" style="background:#ffebee;color:#c62828">返金</span>':'<span class="badge badge-green">通常</span>';const priceStyle=isRefund?'color:#c62828;font-weight:700':'';return `<tr style="${isRefund?'background:#fff8f8':''}"><td>${h.date}</td><td>${h.customerName}</td><td>${typeBadge}</td><td>${h.menu}</td><td style="${priceStyle}">${fmt(h.price)}</td><td><span class="badge badge-blue">${h.pay}</span></td><td>${h.staff||'Tak'}</td><td>${h.memo||'-'}</td><td style="white-space:nowrap"><button class="btn btn-secondary btn-sm" onclick="openHistoryEditModal('${h.id}')">編集</button><button class="btn btn-danger btn-sm" onclick="deleteHistory('${h.id}')">削除</button></td></tr>`;}).join('');}
+
+// ── 来院履歴 表示モード管理 ────────────────────────────
+let hiMode = 'month'; // 'month' | 'day'
+let hiPage = 1;
+const HI_PAGE_SIZE = 30;
+
+function setHiMode(mode){
+  hiMode = mode;
+  hiPage = 1;
+  document.getElementById('hi-mode-month').style.cssText = mode==='month' ? 'background:#2e7d52;color:#fff' : 'background:#eee;color:#333';
+  document.getElementById('hi-mode-day').style.cssText   = mode==='day'   ? 'background:#2e7d52;color:#fff' : 'background:#eee;color:#333';
+  renderHistory();
+}
+
+function onHiMonthChange(){
+  document.getElementById('hi-date').value = '';
+  hiMode = 'month';
+  setHiMode('month');
+}
+
+function onHiDateChange(){
+  const d = document.getElementById('hi-date').value;
+  if(!d) return;
+  // 月も合わせてセット
+  document.getElementById('hi-month').value = d.slice(0,7);
+  hiMode = 'day';
+  setHiMode('day');
+}
+
+function renderHistory(){
+  const q  = document.getElementById('hi-search').value.toLowerCase();
+  const m  = document.getElementById('hi-month').value;
+  const d  = document.getElementById('hi-date').value;
+  const tbody = document.getElementById('history-tbody');
+  const summaryEl = document.getElementById('hi-day-summary');
+  const summaryText = document.getElementById('hi-day-summary-text');
+  const paginationEl = document.getElementById('hi-pagination');
+
+  // フィルタリング
+  let list = history.filter(h => {
+    if(q && !h.customerName.includes(q) && !(h.menu||'').includes(q)) return false;
+    if(hiMode==='day' && d) return h.date === d;
+    if(m) return h.date && h.date.startsWith(m);
+    return true;
+  }).sort((a,b) => b.date.localeCompare(a.date) || (b.time||'').localeCompare(a.time||''));
+
+  if(!list.length){
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">履歴がありません</td></tr>';
+    summaryEl.style.display = 'none';
+    paginationEl.innerHTML = '';
+    return;
+  }
+
+  // 日別モード：サマリーバー表示
+  if(hiMode === 'day' && d){
+    const dayTotal = list.reduce((s,h)=>s+(h.price||0),0);
+    const dayCount = list.length;
+    const cashTotal = list.filter(h=>h.pay==='現金').reduce((s,h)=>s+(h.price||0),0);
+    const creditTotal = list.filter(h=>h.pay==='クレジット').reduce((s,h)=>s+(h.price||0),0);
+    summaryText.innerHTML = `<strong>${d}</strong>　${dayCount}件　合計 <strong style="color:#2e7d52">${fmt(dayTotal)}</strong>　現金 ${fmt(cashTotal)}　クレジット ${fmt(creditTotal)}`;
+    summaryEl.style.display = 'block';
+    paginationEl.innerHTML = '';
+    // 日別は全件表示（ページネーションなし）
+    tbody.innerHTML = renderHistoryRows(list);
+    return;
+  }
+
+  summaryEl.style.display = 'none';
+
+  // 月表示：日別グループ化
+  if(hiMode === 'month'){
+    // 日付ごとにグループ化
+    const groups = {};
+    list.forEach(h => {
+      if(!groups[h.date]) groups[h.date] = [];
+      groups[h.date].push(h);
+    });
+    const dates = Object.keys(groups).sort().reverse();
+
+    // ページネーション
+    const totalPages = Math.ceil(dates.length / 5); // 1ページ5日分
+    if(hiPage > totalPages) hiPage = totalPages;
+    if(hiPage < 1) hiPage = 1;
+    const pageDates = dates.slice((hiPage-1)*5, hiPage*5);
+
+    let rows = '';
+    pageDates.forEach(date => {
+      const dayList = groups[date];
+      const dayTotal = dayList.reduce((s,h)=>s+(h.price||0),0);
+      const dayCount = dayList.length;
+      // 日付ヘッダー行
+      rows += `<tr style="background:#f0f7f4;cursor:pointer" onclick="setDayFilter('${date}')">
+        <td colspan="9" style="padding:6px 10px;font-weight:700;font-size:13px;color:#2e7d52">
+          📅 ${date}（${dayCount}件）　合計 ${fmt(dayTotal)}
+          <span style="font-size:11px;color:#888;font-weight:400;margin-left:8px">▶ 日別表示</span>
+        </td>
+      </tr>`;
+      rows += renderHistoryRows(dayList);
+    });
+    tbody.innerHTML = rows;
+
+    // ページネーションUI
+    if(totalPages > 1){
+      let pHtml = `<span style="font-size:12px;color:#888">${dates.length}日分 / ${totalPages}ページ</span>`;
+      pHtml += `<button class="btn btn-sm btn-secondary" onclick="hiPage=1;renderHistory()" ${hiPage===1?'disabled':''}>«</button>`;
+      pHtml += `<button class="btn btn-sm btn-secondary" onclick="hiPage--;renderHistory()" ${hiPage===1?'disabled':''}>‹</button>`;
+      for(let p=Math.max(1,hiPage-2);p<=Math.min(totalPages,hiPage+2);p++){
+        pHtml += `<button class="btn btn-sm" onclick="hiPage=${p};renderHistory()" style="${p===hiPage?'background:#2e7d52;color:#fff':'background:#eee;color:#333'}">${p}</button>`;
+      }
+      pHtml += `<button class="btn btn-sm btn-secondary" onclick="hiPage++;renderHistory()" ${hiPage===totalPages?'disabled':''}>›</button>`;
+      pHtml += `<button class="btn btn-sm btn-secondary" onclick="hiPage=${totalPages};renderHistory()" ${hiPage===totalPages?'disabled':''}>»</button>`;
+      paginationEl.innerHTML = pHtml;
+    } else {
+      paginationEl.innerHTML = '';
+    }
+    return;
+  }
+
+  // 通常リスト表示（検索時など）
+  const totalPages = Math.ceil(list.length / HI_PAGE_SIZE);
+  const pageList = list.slice((hiPage-1)*HI_PAGE_SIZE, hiPage*HI_PAGE_SIZE);
+  tbody.innerHTML = renderHistoryRows(pageList);
+  // ページネーション
+  if(totalPages > 1){
+    let pHtml = `<span style="font-size:12px;color:#888">${list.length}件 / ${totalPages}ページ</span>`;
+    for(let p=Math.max(1,hiPage-2);p<=Math.min(totalPages,hiPage+2);p++){
+      pHtml += `<button class="btn btn-sm" onclick="hiPage=${p};renderHistory()" style="${p===hiPage?'background:#2e7d52;color:#fff':'background:#eee;color:#333'}">${p}</button>`;
+    }
+    paginationEl.innerHTML = pHtml;
+  } else {
+    paginationEl.innerHTML = '';
+  }
+}
+
+function setDayFilter(date){
+  document.getElementById('hi-date').value = date;
+  document.getElementById('hi-month').value = date.slice(0,7);
+  hiMode = 'day';
+  setHiMode('day');
+}
+
+function renderHistoryRows(list){
+  return list.map(h => {
+    const isRefund = h.type==='refund' || h.price<0;
+    const typeBadge = isRefund
+      ? '<span class="badge" style="background:#ffebee;color:#c62828">返金</span>'
+      : '<span class="badge badge-green">通常</span>';
+    const priceStyle = isRefund ? 'color:#c62828;font-weight:700' : '';
+    const timeStr = h.memo ? (h.memo.match(/^(\d{2}:\d{2})/) || [])[1] || '' : '';
+    const displayDate = timeStr ? `${h.date}<br><span style="font-size:11px;color:#888">${timeStr}</span>` : h.date;
+    return `<tr style="${isRefund?'background:#fff8f8':''}">
+      <td style="white-space:nowrap">${displayDate}</td>
+      <td>${h.customerName}</td>
+      <td>${typeBadge}</td>
+      <td style="font-size:12px">${h.menu}</td>
+      <td style="${priceStyle}">${fmt(h.price)}</td>
+      <td><span class="badge badge-blue">${h.pay}</span></td>
+      <td style="font-size:11px">${h.staff||'Tak'}</td>
+      <td style="font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis">${h.memo||'-'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-secondary btn-sm" onclick="openHistoryEditModal('${h.id}')">編集</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteHistory('${h.id}')">削除</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
 function deleteHistory(id){showModal('削除確認','この履歴を削除しますか？',[{label:'削除',cls:'btn-danger',cb:()=>{history=history.filter(x=>x.id!==id);save();renderHistory();closeModal();}},{label:'キャンセル',cls:'btn-secondary',cb:closeModal}]);}
 function openHistoryEditModal(id){const h=history.find(x=>x.id===id);if(!h)return;document.getElementById('he-id').value=h.id;document.getElementById('he-date').value=h.date;document.getElementById('he-customer-name').value=h.customerName;document.getElementById('he-type').value=h.type||'normal';heTypeChanged();document.getElementById('he-menu').value=h.menu;document.getElementById('he-price').value=Math.abs(h.price);document.getElementById('he-pay').value=h.pay;document.getElementById('he-staff').value=h.staff||'Tak（桑原毅郎）';document.getElementById('he-memo').value=h.memo||'';document.getElementById('he-note').value=h.note||'';document.getElementById('he-next-date').value=h.nextDate||'';document.getElementById('historyEditModalOverlay').classList.add('open');}
 function heTypeChanged(){const t=document.getElementById('he-type').value;document.getElementById('he-refund-note').style.display=t==='refund'?'block':'none';}
