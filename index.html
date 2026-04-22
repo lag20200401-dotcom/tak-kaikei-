@@ -1930,7 +1930,8 @@ function baSaveToDrive() {
     p.append('action','saveImage'); p.append('customerName',name);
     p.append('date',date); p.append('category',category);
     p.append('label',label); p.append('imageData',data);
-   fetch(BA_GAS_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:p.toString()})
+   var url = BA_GAS_URL + '?' + p.toString();
+fetch(url)
   .then(function(r){return r.json();}).then(cb)
   .catch(function(e){cb({ok:false,error:e.message});});
   }
