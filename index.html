@@ -1877,8 +1877,7 @@ renderDash();populateCustomerSelect();checkAlerts();renderTicketSummary();attach
 if(kmCustomers.length){ kmUpdateStats();kmApplyFilters(); }
 else { document.getElementById('km-empty').style.display='block'; }
 // ===== ビフォーアフター Gドライブ保存 =====
-var BA_GAS_URL = 'https://script.google.com/macros/s/AKfycbzcKt5IISrdIP3hGOvBiktIRpSg3Z6lOvEkn98Ua8CUJ-jwqUfEAYqim96IXdQXun2i/exec';
-
+var BA_GAS_URL = 'https://script.google.com/macros/s/AKfycby06dn6vxfM6thV2zKwyFMVEGvysE4A8N3XZU_g4FDXlXrBQlvaBuQrrbUUwwebBB38/exec
 function baLoadCustomerSelect() {
   var sel = document.getElementById('ba-dr-customer');
   if (!sel || sel.options.length > 1) return;
