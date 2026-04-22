@@ -768,7 +768,24 @@
     <div style="margin-bottom:10px;"><label style="font-size:11px;color:var(--text-sub);font-weight:700;display:block;margin-bottom:4px;">変化ポイント（3項目）</label><div style="display:flex;flex-direction:column;gap:4px;"><input type="text" id="ba-point1" placeholder="例: 頭部前方位改善" value="姿勢改善"><input type="text" id="ba-point2" placeholder="例: 肩甲骨整列" value="肩甲骨整列"><input type="text" id="ba-point3" placeholder="例: 体幹整正" value="体幹整正"></div></div>
     <div class="btn-row"><button class="btn btn-primary" onclick="baUpdatePoints()">✅ 反映</button><button class="btn btn-secondary" onclick="baResetAll()">🔄 リセット</button></div>
   </div>
-  <div class="card"><div class="card-title">⬇ ダウンロード</div><div class="btn-row"><button class="btn btn-primary" onclick="baDownload('a')" id="ba-dl-a">⬇ モノトーン保存</button><button class="btn btn-secondary" onclick="baDownload('c')" id="ba-dl-c">⬇ エディトリアル保存</button></div></div>
+  <div class="card"><div class="card-title">⬇ ダウンロード</div><div class="btn-row"><button class="btn btn-primary" onclick="baDownload('a')" id="ba-dl-a">⬇ モノトーン保存</button><button class="btn btn-secondary" onclick="baDownload('c')" id="ba-dl-c">⬇ エディトリアル保存</button></div></div><div class="card" style="background:#e8f5e9;margin-top:10px;">
+  <div class="card-title" style="color:#2e7d32;">📁 Gドライブ保存</div>
+  <div class="form-group" style="margin-bottom:8px;">
+    <label style="font-size:12px;color:#555;">顧客</label>
+    <select id="ba-dr-customer" class="form-control" style="font-size:12px;border-color:#a5d6a7;">
+      <option value="">-- 顧客を選択 --</option>
+    </select>
+  </div>
+  <div class="form-group" style="margin-bottom:8px;">
+    <label style="font-size:12px;color:#555;">カテゴリ</label>
+    <select id="ba-dr-category" class="form-control" style="font-size:12px;border-color:#a5d6a7;">
+      <option value="before_after">整体（before_after）</option>
+      <option value="diet">ダイエット（diet）</option>
+    </select>
+  </div>
+  <button class="btn btn-primary" onclick="baSaveToDrive()" id="ba-drive-btn" style="background:#2e7d32;width:100%;">📤 Gドライブに保存（before + after）</button>
+  <div id="ba-drive-status" style="font-size:11px;text-align:center;margin-top:6px;min-height:16px;"></div>
+</div>
 </div>
 
 <!-- 問診票取込 -->
@@ -1859,6 +1876,75 @@ renderDash();populateCustomerSelect();checkAlerts();renderTicketSummary();attach
 // 顧客マスター：localStorage復元
 if(kmCustomers.length){ kmUpdateStats();kmApplyFilters(); }
 else { document.getElementById('km-empty').style.display='block'; }
-</script>
+// ===== ビフォーアフター Gドライブ保存 =====
+var BA_GAS_URL = 'https://script.google.com/macros/s/AKfycbzcKt5IISrdIP3hGOvBiktIRpSg3Z6lOvEkn98Ua8CUJ-jwqUfEAYqim96IXdQXun2i/exec';
+
+function baLoadCustomerSelect() {
+  var sel = document.getElementById('ba-dr-customer');
+  if (!sel || sel.options.length > 1) return;
+  try {
+    var customers = JSON.parse(localStorage.getItem('tak_customers') || '[]');
+    customers.sort(function(a,b){return(a.name||'').localeCompare(b.name||'','ja');});
+    customers.forEach(function(c){
+      if (!c.name) return;
+      var opt = document.createElement('option');
+      opt.value = c.name; opt.textContent = c.name;
+      sel.appendChild(opt);
+    });
+  } catch(e) {}
+}
+
+function baCaptureImage(label) {
+  var imgData = baImgs[label];
+  if (!imgData) return null;
+  var cvId = label === 'before' ? 'ba-a-bc' : 'ba-a-ac';
+  var img = new Image();
+  img.src = imgData;
+  var w = img.naturalWidth || 600;
+  var h = img.naturalHeight || 800;
+  var out = document.createElement('canvas');
+  out.width = w; out.height = h;
+  var ctx = out.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  var cv = document.getElementById(cvId);
+  if (cv && cv.width) ctx.drawImage(cv, 0, 0, cv.width, cv.height, 0, 0, w, h);
+  return out.toDataURL('image/jpeg', 0.85);
+}
+
+function baSaveToDrive() {
+  baLoadCustomerSelect();
+  var name     = document.getElementById('ba-dr-customer').value;
+  var category = document.getElementById('ba-dr-category').value;
+  var statusEl = document.getElementById('ba-drive-status');
+  if (!name) { statusEl.textContent='⚠ 顧客を選択してください'; statusEl.style.color='#c62828'; return; }
+  var bData = baCaptureImage('before');
+  var aData = baCaptureImage('after');
+  if (!bData || !aData) { statusEl.textContent='⚠ 画像を選択してください'; statusEl.style.color='#c62828'; return; }
+  var btn = document.getElementById('ba-drive-btn');
+  btn.disabled = true;
+  statusEl.style.color = '#555';
+  statusEl.textContent = '保存中… (1/2)';
+  var today = new Date();
+  var date = today.getFullYear()+('0'+(today.getMonth()+1)).slice(-2)+('0'+today.getDate()).slice(-2);
+  function send(label, data, cb) {
+    var p = new URLSearchParams();
+    p.append('action','saveImage'); p.append('customerName',name);
+    p.append('date',date); p.append('category',category);
+    p.append('label',label); p.append('imageData',data);
+    fetch(BA_GAS_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:p.toString()})
+      .then(function(r){return r.json();}).then(cb)
+      .catch(function(e){cb({ok:false,error:e.message});});
+  }
+  send('before', bData, function(r1){
+    if (!r1.ok){btn.disabled=false;statusEl.textContent='⚠ before失敗: '+(r1.error||'');statusEl.style.color='#c62828';return;}
+    statusEl.textContent='保存中… (2/2)';
+    send('after', aData, function(r2){
+      btn.disabled=false;
+      if (!r2.ok){statusEl.textContent='⚠ after失敗: '+(r2.error||'');statusEl.style.color='#c62828';return;}
+      statusEl.textContent='✅ 保存完了！ '+name+' / '+category;
+      statusEl.style.color='#2e7d32';
+    });
+  });
+}</script>
 </body>
 </html>
