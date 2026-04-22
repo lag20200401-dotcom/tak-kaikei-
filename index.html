@@ -1927,17 +1927,34 @@ function baSaveToDrive() {
   var date = today.getFullYear()+('0'+(today.getMonth()+1)).slice(-2)+('0'+today.getDate()).slice(-2);
  function send(label, data, cb) {
   var p = new URLSearchParams();
-  p.append('action','saveImage'); p.append('customerName',name);
-  p.append('date',date); p.append('category',category);
-  p.append('label',label); p.append('imageData',data);
-  fetch(BA_GAS_URL, {
-    method:'POST',
-    mode:'no-cors',
-    body: p.toString(),
-    headers:{'Content-Type':'application/x-www-form-urlencoded'}
-  })
-  .then(function(){ cb({ok:true}); })
-  .catch(function(e){ cb({ok:false,error:e.message}); });
+  p.append('action','saveImage');
+  p.append('customerName',name);
+  p.append('date',date);
+  p.append('category',category);
+  p.append('label',label);
+  p.append('imageData',data);
+  var form = document.createElement('form');
+  form.method = 'POST';
+  form.action = BA_GAS_URL;
+  form.target = 'hidden_iframe';
+  for (var pair of p.entries()) {
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = pair[0];
+    input.value = pair[1];
+    form.appendChild(input);
+  }
+  var iframe = document.getElementById('hidden_iframe');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.name = 'hidden_iframe';
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+  }
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+  setTimeout(function() { cb({ok:true}); }, 3000);
 }
   send('before', bData, function(r1){
     if (!r1.ok){btn.disabled=false;statusEl.textContent='⚠ before失敗: '+(r1.error||'');statusEl.style.color='#c62828';return;}
