@@ -1925,16 +1925,20 @@ function baSaveToDrive() {
   statusEl.textContent = '保存中… (1/2)';
   var today = new Date();
   var date = today.getFullYear()+('0'+(today.getMonth()+1)).slice(-2)+('0'+today.getDate()).slice(-2);
-  function send(label, data, cb) {
-    var p = new URLSearchParams();
-    p.append('action','saveImage'); p.append('customerName',name);
-    p.append('date',date); p.append('category',category);
-    p.append('label',label); p.append('imageData',data);
-   var url = BA_GAS_URL + '?' + p.toString();
-fetch(url)
-  .then(function(r){return r.json();}).then(cb)
-  .catch(function(e){cb({ok:false,error:e.message});});
-  }
+ function send(label, data, cb) {
+  var p = new URLSearchParams();
+  p.append('action','saveImage'); p.append('customerName',name);
+  p.append('date',date); p.append('category',category);
+  p.append('label',label); p.append('imageData',data);
+  fetch(BA_GAS_URL, {
+    method:'POST',
+    mode:'no-cors',
+    body: p.toString(),
+    headers:{'Content-Type':'application/x-www-form-urlencoded'}
+  })
+  .then(function(){ cb({ok:true}); })
+  .catch(function(e){ cb({ok:false,error:e.message}); });
+}
   send('before', bData, function(r1){
     if (!r1.ok){btn.disabled=false;statusEl.textContent='⚠ before失敗: '+(r1.error||'');statusEl.style.color='#c62828';return;}
     statusEl.textContent='保存中… (2/2)';
