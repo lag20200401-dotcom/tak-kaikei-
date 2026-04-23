@@ -492,8 +492,8 @@
     </div>
     <div class="form-grid triple" style="margin-top:10px">
       <div class="form-group"><label>数量</label><input type="number" id="bs-qty" value="1" min="1" oninput="bsCalc()"></div>
-      <div class="form-group"><label>売上金額（自動）</label><input type="number" id="bs-price" readonly style="background:#f5f5f5"></div>
-      <div class="form-group"><label>利益（自動）</label><input type="number" id="bs-profit" readonly style="background:#f5f5f5"></div>
+      <div class="form-group"><label>売上金額（自動・編集可）</label><input type="number" id="bs-price"></div>
+      <div class="form-group"><label>利益（自動・編集可）</label><input type="number" id="bs-profit"></div>
     </div>
     <div class="form-group" style="margin-top:10px"><label>メモ</label><input type="text" id="bs-memo" placeholder="任意メモ"></div>
     <div class="btn-row"><button class="btn btn-primary" onclick="addBussanSale()">✅ 販売記録を登録</button></div>
@@ -503,13 +503,14 @@
     <div class="search-bar">
       <input type="month" id="bs-month" onchange="renderBussanPanel()" style="max-width:150px">
       <button class="btn btn-secondary btn-sm" onclick="exportBussanCSV()">⬇ CSV出力</button>
+      <button class="btn btn-primary btn-sm" onclick="exportBussanMonthlyReport()">📊 月次レポート</button>
     </div>
     <div class="table-wrap"><table><thead><tr><th>日付</th><th>顧客</th><th>商品</th><th>数量</th><th>売上</th><th>利益</th><th>削除</th></tr></thead><tbody id="bussan-history-tbody"></tbody></table></div>
   </div>
   <div class="card">
     <div class="card-title">📦 商品マスター管理</div>
     <div class="btn-row" style="margin-bottom:12px"><button class="btn btn-primary btn-sm" onclick="openProductModal()">＋ 新規商品追加</button></div>
-    <div class="table-wrap"><table><thead><tr><th>商品名</th><th>売価</th><th>仕入値</th><th>利益</th><th>操作</th></tr></thead><tbody id="product-master-tbody"></tbody></table></div>
+    <div class="table-wrap"><table><thead><tr><th>商品名</th><th>売価</th><th>仕入値</th><th>利益</th><th>在庫</th><th>操作</th></tr></thead><tbody id="product-master-tbody"></tbody></table></div>
   </div>
 </div>
 
@@ -816,7 +817,7 @@
     <div class="modal-title" id="productModalTitle">商品を追加</div>
     <input type="hidden" id="pm-id">
     <div class="form-group" style="margin-bottom:10px"><label>商品名 *</label><input type="text" id="pm-name" placeholder="例: テラヴィータ"></div>
-    <div class="form-grid triple"><div class="form-group"><label>売価（円）*</label><input type="number" id="pm-price" placeholder="0" oninput="pmCalc()"></div><div class="form-group"><label>仕入値（円）</label><input type="number" id="pm-cost" placeholder="0" oninput="pmCalc()"></div><div class="form-group"><label>利益（自動）</label><input type="number" id="pm-profit" readonly style="background:#f5f5f5"></div></div>
+    <div class="form-grid triple"><div class="form-group"><label>売価（円）*</label><input type="number" id="pm-price" placeholder="0" oninput="pmCalc()"></div><div class="form-group"><label>仕入値（円）</label><input type="number" id="pm-cost" placeholder="0" oninput="pmCalc()"></div><div class="form-group"><label>利益（自動）</label><input type="number" id="pm-profit" readonly style="background:#f5f5f5"></div></div><div class="form-group" style="margin-top:10px"><label>在庫数</label><input type="number" id="pm-stock" placeholder="0"></div>
     <div class="modal-btns"><button class="btn btn-secondary" onclick="closeProductModal()">キャンセル</button><button class="btn btn-primary" onclick="saveProduct()">💾 保存</button></div>
   </div>
 </div>
@@ -1388,20 +1389,53 @@ function showPanel(id){
 function renderBussanPanel(){populateBussanCustomerSelect();populateBussanProductSelect();renderBussanSummary();renderBussanHistory();renderProductMaster();}
 function populateBussanCustomerSelect(){const sel=document.getElementById('bs-customer');const cur=sel.value;sel.innerHTML='<option value="">-- 選択 --</option>';[...customers].sort((a,b)=>a.name.localeCompare(b.name,'ja')).forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=(c.no?`[${c.no}] `:'')+c.name;sel.appendChild(o);});sel.value=cur;}
 function filterBussanCustomers(){const q=(document.getElementById('bs-customer-search').value||'').toLowerCase();const sel=document.getElementById('bs-customer');const cur=sel.value;sel.innerHTML='<option value="">-- 選択 --</option>';[...customers].filter(c=>!q||c.name.toLowerCase().includes(q)||(c.kana||'').toLowerCase().includes(q)||(c.no||'').includes(q)).sort((a,b)=>a.name.localeCompare(b.name,'ja')).forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=(c.no?`[${c.no}] `:'')+c.name;sel.appendChild(o);});sel.value=cur;}
-function populateBussanProductSelect(){const sel=document.getElementById('bs-product');const cur=sel.value;sel.innerHTML='<option value="">-- 商品を選択 --</option>';products.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name+'  '+fmt(p.price);sel.appendChild(o);});sel.value=cur;}
+function populateBussanProductSelect(){const sel=document.getElementById('bs-product');const cur=sel.value;sel.innerHTML='<option value="">-- 商品を選択 --</option>';products.forEach(p=>{const o=document.createElement('option');o.value=p.id;const stock=p.stock||0;const stockLabel=stock<=0?'（在庫切れ）':`（在庫${stock}）`;o.textContent=p.name+'  '+fmt(p.price)+'  '+stockLabel;sel.appendChild(o);});sel.value=cur;}
 function bsProductChanged(){const pid=document.getElementById('bs-product').value;const p=products.find(x=>x.id===pid);const qty=parseInt(document.getElementById('bs-qty').value)||1;if(p){document.getElementById('bs-price').value=p.price*qty;document.getElementById('bs-profit').value=p.profit*qty;}else{document.getElementById('bs-price').value='';document.getElementById('bs-profit').value='';}}
 function bsCalc(){const pid=document.getElementById('bs-product').value;const p=products.find(x=>x.id===pid);const qty=parseInt(document.getElementById('bs-qty').value)||1;if(p){document.getElementById('bs-price').value=p.price*qty;document.getElementById('bs-profit').value=p.profit*qty;}}
-function addBussanSale(){const pid=document.getElementById('bs-product').value;if(!pid){alert('商品を選択してください');return;}const p=products.find(x=>x.id===pid);const qty=parseInt(document.getElementById('bs-qty').value)||1;const cid=document.getElementById('bs-customer').value;const c=customers.find(x=>x.id===cid);bussanSales.unshift({id:genId(),date:document.getElementById('bs-date').value,customerId:cid,customerName:c?c.name:'（顧客未選択）',productId:pid,productName:p.name,qty,price:p.price*qty,profit:p.profit*qty,memo:document.getElementById('bs-memo').value,createdAt:nowStr()});save();alert('販売記録を登録しました！');document.getElementById('bs-product').value='';document.getElementById('bs-qty').value='1';document.getElementById('bs-price').value='';document.getElementById('bs-profit').value='';document.getElementById('bs-memo').value='';renderBussanSummary();renderBussanHistory();}
+function addBussanSale(){const pid=document.getElementById('bs-product').value;if(!pid){alert('商品を選択してください');return;}const p=products.find(x=>x.id===pid);const qty=parseInt(document.getElementById('bs-qty').value)||1;const cid=document.getElementById('bs-customer').value;const c=customers.find(x=>x.id===cid);const priceInput=document.getElementById('bs-price').value;const profitInput=document.getElementById('bs-profit').value;const price=priceInput!==''?parseInt(priceInput):p.price*qty;const profit=profitInput!==''?parseInt(profitInput):p.profit*qty;const currentStock=p.stock||0;if(currentStock<qty && !confirm(`在庫不足です（現在${currentStock}個、販売${qty}個）。このまま販売しますか？`))return;p.stock=Math.max(0,currentStock-qty);bussanSales.unshift({id:genId(),date:document.getElementById('bs-date').value,customerId:cid,customerName:c?c.name:'（顧客未選択）',productId:pid,productName:p.name,qty,price,profit,memo:document.getElementById('bs-memo').value,createdAt:nowStr()});save();alert('販売記録を登録しました！ 在庫: '+p.stock+'個');document.getElementById('bs-product').value='';document.getElementById('bs-qty').value='1';document.getElementById('bs-price').value='';document.getElementById('bs-profit').value='';document.getElementById('bs-memo').value='';renderBussanSummary();renderBussanHistory();renderProductMaster();populateBussanProductSelect();}
 function renderBussanSummary(){const m=document.getElementById('bs-month').value||today().slice(0,7);const monthly=bussanSales.filter(s=>s.date&&s.date.startsWith(m));const ts=monthly.reduce((s,x)=>s+x.price,0);const tp=monthly.reduce((s,x)=>s+x.profit,0);const tc=monthly.reduce((s,x)=>s+x.qty,0);document.getElementById('bussan-summary').innerHTML=`<div class="bussan-stat"><div class="blabel">今月物販売上</div><div class="bvalue">${fmt(ts)}</div></div><div class="bussan-stat"><div class="blabel">今月物販利益</div><div class="bvalue">${fmt(tp)}</div></div><div class="bussan-stat"><div class="blabel">今月販売数</div><div class="bvalue">${tc}個</div></div>`;}
 function renderBussanHistory(){const m=document.getElementById('bs-month').value||today().slice(0,7);const list=bussanSales.filter(s=>!m||s.date.startsWith(m));const tbody=document.getElementById('bussan-history-tbody');if(!list.length){tbody.innerHTML='<tr><td colspan="7" class="empty-state">販売履歴がありません</td></tr>';return;}tbody.innerHTML=list.map(s=>`<tr><td>${s.date}</td><td>${s.customerName}</td><td>${s.productName}</td><td>${s.qty}個</td><td>${fmt(s.price)}</td><td style="color:var(--green);font-weight:600">${fmt(s.profit)}</td><td><button class="btn btn-danger btn-sm" onclick="deleteBussanSale('${s.id}')">削除</button></td></tr>`).join('');}
-function deleteBussanSale(id){showModal('削除確認','この販売記録を削除しますか？',[{label:'削除',cls:'btn-danger',cb:()=>{bussanSales=bussanSales.filter(x=>x.id!==id);save();renderBussanHistory();renderBussanSummary();closeModal();}},{label:'キャンセル',cls:'btn-secondary',cb:closeModal}]);}
-function renderProductMaster(){document.getElementById('product-master-tbody').innerHTML=products.map(p=>`<tr><td><strong>${p.name}</strong></td><td>${fmt(p.price)}</td><td>${fmt(p.cost)}</td><td style="color:var(--green);font-weight:600">${fmt(p.profit)}</td><td><button class="btn btn-secondary btn-sm" onclick="openProductModal('${p.id}')">編集</button> <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">削除</button></td></tr>`).join('');}
-function openProductModal(id){const overlay=document.getElementById('productModalOverlay');if(id){const p=products.find(x=>x.id===id);document.getElementById('productModalTitle').textContent='商品を編集';document.getElementById('pm-id').value=p.id;document.getElementById('pm-name').value=p.name;document.getElementById('pm-price').value=p.price;document.getElementById('pm-cost').value=p.cost;document.getElementById('pm-profit').value=p.profit;}else{document.getElementById('productModalTitle').textContent='商品を追加';['pm-id','pm-name','pm-price','pm-cost','pm-profit'].forEach(i=>document.getElementById(i).value='');}overlay.classList.add('open');}
+function deleteBussanSale(id){showModal('削除確認','この販売記録を削除しますか？（在庫を戻します）',[{label:'削除',cls:'btn-danger',cb:()=>{const s=bussanSales.find(x=>x.id===id);if(s){const p=products.find(x=>x.id===s.productId);if(p)p.stock=(p.stock||0)+s.qty;}bussanSales=bussanSales.filter(x=>x.id!==id);save();renderBussanHistory();renderBussanSummary();renderProductMaster();populateBussanProductSelect();closeModal();}},{label:'キャンセル',cls:'btn-secondary',cb:closeModal}]);}
+function renderProductMaster(){document.getElementById('product-master-tbody').innerHTML=products.map(p=>{const stock=p.stock||0;const stockColor=stock<=0?'#d32f2f':(stock<=3?'#e65100':'#1565c0');return `<tr><td><strong>${p.name}</strong></td><td>${fmt(p.price)}</td><td>${fmt(p.cost)}</td><td style="color:var(--green);font-weight:600">${fmt(p.profit)}</td><td style="color:${stockColor};font-weight:700">${stock}個 <button class="btn btn-secondary btn-sm" style="padding:2px 6px;margin-left:4px" onclick="adjustStock('${p.id}',1)">＋1</button> <button class="btn btn-secondary btn-sm" style="padding:2px 6px" onclick="adjustStock('${p.id}',10)">＋10</button> <button class="btn btn-secondary btn-sm" style="padding:2px 6px" onclick="adjustStock('${p.id}',-1)">−1</button></td><td><button class="btn btn-secondary btn-sm" onclick="openProductModal('${p.id}')">編集</button> <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">削除</button></td></tr>`;}).join('');}
+function adjustStock(pid,delta){const p=products.find(x=>x.id===pid);if(!p)return;p.stock=Math.max(0,(p.stock||0)+delta);save();renderProductMaster();populateBussanProductSelect();}
+function openProductModal(id){const overlay=document.getElementById('productModalOverlay');if(id){const p=products.find(x=>x.id===id);document.getElementById('productModalTitle').textContent='商品を編集';document.getElementById('pm-id').value=p.id;document.getElementById('pm-name').value=p.name;document.getElementById('pm-price').value=p.price;document.getElementById('pm-cost').value=p.cost;document.getElementById('pm-profit').value=p.profit;document.getElementById('pm-stock').value=p.stock||0;}else{document.getElementById('productModalTitle').textContent='商品を追加';['pm-id','pm-name','pm-price','pm-cost','pm-profit','pm-stock'].forEach(i=>document.getElementById(i).value='');}overlay.classList.add('open');}
 function closeProductModal(){document.getElementById('productModalOverlay').classList.remove('open');}
 function pmCalc(){const price=parseInt(document.getElementById('pm-price').value)||0;const cost=parseInt(document.getElementById('pm-cost').value)||0;document.getElementById('pm-profit').value=price-cost;}
-function saveProduct(){const name=document.getElementById('pm-name').value.trim();if(!name){alert('商品名を入力してください');return;}const price=parseInt(document.getElementById('pm-price').value)||0;const cost=parseInt(document.getElementById('pm-cost').value)||0;const profit=price-cost;const id=document.getElementById('pm-id').value;if(id){const idx=products.findIndex(x=>x.id===id);if(idx>=0)products[idx]={id,name,price,cost,profit};}else products.push({id:genId(),name,price,cost,profit});save();closeProductModal();renderProductMaster();populateBussanProductSelect();}
+function saveProduct(){const name=document.getElementById('pm-name').value.trim();if(!name){alert('商品名を入力してください');return;}const price=parseInt(document.getElementById('pm-price').value)||0;const cost=parseInt(document.getElementById('pm-cost').value)||0;const profit=price-cost;const stock=parseInt(document.getElementById('pm-stock').value)||0;const id=document.getElementById('pm-id').value;if(id){const idx=products.findIndex(x=>x.id===id);if(idx>=0)products[idx]={id,name,price,cost,profit,stock};}else products.push({id:genId(),name,price,cost,profit,stock});save();closeProductModal();renderProductMaster();populateBussanProductSelect();}
 function deleteProduct(id){showModal('削除確認','この商品を削除しますか？',[{label:'削除',cls:'btn-danger',cb:()=>{products=products.filter(x=>x.id!==id);save();renderProductMaster();populateBussanProductSelect();closeModal();}},{label:'キャンセル',cls:'btn-secondary',cb:closeModal}]);}
 function exportBussanCSV(){const m=document.getElementById('bs-month').value||today().slice(0,7);const list=bussanSales.filter(s=>!m||s.date.startsWith(m));if(!list.length){alert('データがありません');return;}const rows=[['日付','顧客名','商品名','数量','売上金額','利益','メモ']];list.forEach(s=>rows.push([s.date,s.customerName,s.productName,s.qty,s.price,s.profit,s.memo||'']));const tp=list.reduce((s,x)=>s+x.price,0);const tpf=list.reduce((s,x)=>s+x.profit,0);const tq=list.reduce((s,x)=>s+x.qty,0);rows.push(['合計','','',tq,tp,tpf,'']);downloadCSV(rows,'物販売上_'+m+'.csv');}
+function exportBussanMonthlyReport(){
+  const m=document.getElementById('bs-month').value||today().slice(0,7);
+  const list=bussanSales.filter(s=>!m||s.date.startsWith(m));
+  if(!list.length){alert('データがありません');return;}
+  // 顧客別に集計（同じ顧客の複数購入は合算）
+  const grouped={};
+  list.forEach(s=>{
+    const key=s.customerId||'_no_cust_'+s.customerName;
+    if(!grouped[key]){
+      const c=customers.find(x=>x.id===s.customerId);
+      grouped[key]={
+        customerName: s.customerName,
+        motive: c?(c.motive||''):'',
+        totalPrice: 0,
+        totalProfit: 0,
+        items: []
+      };
+    }
+    grouped[key].totalPrice += s.price;
+    grouped[key].totalProfit += s.profit;
+    grouped[key].items.push(s.productName+'×'+s.qty);
+  });
+  const rows=[['氏名','新規時媒体','売上金額','利益','購入商品']];
+  let totalP=0, totalPf=0;
+  Object.values(grouped).forEach(g=>{
+    rows.push([g.customerName, g.motive, g.totalPrice, g.totalProfit, g.items.join(' / ')]);
+    totalP+=g.totalPrice;
+    totalPf+=g.totalProfit;
+  });
+  rows.push(['小計','',totalP,totalPf,'']);
+  downloadCSV(rows,'物販月次レポート_'+m+'.csv');
+}
 
 // CUSTOMER SELECT
 function populateCustomerSelect(){const sel=document.getElementById('co-customer');const cur=sel.value;sel.innerHTML='<option value="">-- 顧客を選択 --</option>';[...customers].sort((a,b)=>a.name.localeCompare(b.name,'ja')).forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=(c.no?`[${c.no}] `:'')+c.name+(c.kana?` (${c.kana})`:'');sel.appendChild(o);});sel.value=cur;}
