@@ -237,7 +237,7 @@
         <label>支払方法</label>
         <select id="co-pay">
           <option value="現金">現金</option><option value="スクエアサブスク">スクエアサブスク</option>
-          <option value="ライフ">ライフ</option><option value="PayPay">PayPay</option>
+          <option value="ライフ">ライフ</option><option value="PayPay">PayPay</option><option value="回数券">回数券</option>
         </select>
       </div>
     </div>
@@ -592,6 +592,7 @@
       <select id="tk-filter" onchange="renderTicketList()"><option value="active">有効のみ</option><option value="all">すべて</option><option value="low">残2回以下</option><option value="zero">使い切り</option></select>
       <button class="btn btn-secondary btn-sm" onclick="exportTicketCSV()">⬇ CSV</button>
       <button class="btn btn-primary btn-sm" onclick="exportTicketFinalCSV()">📄 期末精算CSV</button>
+      <button class="btn btn-orange btn-sm" onclick="recalcAllTicketRemaining()">🔄 履歴から残数を再計算</button>
     </div>
     <div class="table-wrap"><table><thead><tr><th>顧客名</th><th>種別</th><th>購入日</th><th>総回数</th><th>消化回数</th><th>残回数</th><th>購入金額</th><th>1回単価</th><th>残金額</th><th>操作</th></tr></thead><tbody id="ticket-tbody"></tbody></table></div>
     <div style="margin-top:10px;padding:10px 12px;background:#e8f5ee;border-radius:6px;font-size:12px;color:var(--green)">📌 期末精算（2027年3月）時は「期末精算CSV」ボタンで顧客名・残回数・残金額を一括出力できます。</div>
@@ -837,7 +838,7 @@
     <div class="form-grid" style="margin-bottom:10px"><div class="form-group"><label>日付</label><input type="date" id="he-date"></div><div class="form-group"><label>顧客名</label><input type="text" id="he-customer-name"></div></div>
     <div class="form-grid" style="margin-bottom:10px"><div class="form-group"><label>種別</label><select id="he-type" onchange="heTypeChanged()"><option value="normal">通常会計</option><option value="refund">返金（マイナス処理）</option></select></div><div class="form-group"><label>メニュー</label><select id="he-menu"><option value="初回体験コース">初回体験コース</option><option value="TAK式組織再生プログラム">TAK式組織再生プログラム</option><option value="月イチ整体">月イチ整体</option><option value="メンテナンス回数券5回">メンテナンス回数券5回</option><option value="回数券10回">回数券10回</option><option value="回数券20回">回数券20回</option><option value="回数券30回">回数券30回</option><option value="インディバ60分">インディバ60分</option><option value="月イチインディバ">月イチインディバ</option><option value="回数券利用">回数券利用</option><option value="カスタム">カスタム</option></select></div></div>
     <div id="he-refund-note" style="display:none;margin-bottom:8px;padding:8px 12px;background:#fff3e0;border-radius:6px;font-size:12px;color:#e65100">⚠️ 返金処理です。金額はマイナスで記録されます。</div>
-    <div class="form-grid triple" style="margin-bottom:10px"><div class="form-group"><label>金額（円）</label><input type="number" id="he-price" min="0"></div><div class="form-group"><label>支払方法</label><select id="he-pay"><option value="現金">現金</option><option value="スクエアサブスク">スクエアサブスク</option><option value="ライフ">ライフ</option><option value="PayPay">PayPay</option></select></div><div class="form-group"><label>担当スタッフ</label><select id="he-staff"><option value="Tak（桑原毅郎）">Tak（桑原毅郎）</option><option value="日向訓子">日向訓子</option></select></div></div>
+    <div class="form-grid triple" style="margin-bottom:10px"><div class="form-group"><label>金額（円）</label><input type="number" id="he-price" min="0"></div><div class="form-group"><label>支払方法</label><select id="he-pay"><option value="現金">現金</option><option value="スクエアサブスク">スクエアサブスク</option><option value="ライフ">ライフ</option><option value="PayPay">PayPay</option><option value="回数券">回数券</option></select></div><div class="form-group"><label>担当スタッフ</label><select id="he-staff"><option value="Tak（桑原毅郎）">Tak（桑原毅郎）</option><option value="日向訓子">日向訓子</option></select></div></div>
     <div class="form-group" style="margin-bottom:10px"><label>メモ</label><textarea id="he-memo" rows="2"></textarea></div>
     <div class="form-group" style="margin-bottom:10px"><label>施術メモ（LINE連携）</label><textarea id="he-note" rows="2"></textarea></div>
     <div class="form-group" style="margin-bottom:10px"><label>次回予約日</label><input type="date" id="he-next-date"></div>
@@ -881,6 +882,16 @@ if(!products){
   localStorage.setItem('tak_products',JSON.stringify(products));
 }
 let bussanSales=JSON.parse(localStorage.getItem('tak_bussan_sales')||'[]');
+
+// ─── 回数券判定ヘルパー ───
+function isTicketUseEntry(menu){
+  if(!menu) return false;
+  return menu.includes('回数券') && menu.includes('利用');
+}
+function isTicketPurchaseEntry(menu){
+  if(!menu) return false;
+  return menu.includes('回数券') && !menu.includes('利用');
+}
 
 function save(){
   localStorage.setItem('tak_customers',JSON.stringify(customers));
@@ -1395,7 +1406,7 @@ function filterLineCustomers(){const q=document.getElementById('line-customer-se
 function menuChanged(){const sel=document.getElementById('co-menu');const price=sel.options[sel.selectedIndex].dataset.price;if(price!==undefined&&price!=='0') document.getElementById('co-price').value=price;}
 function coTypeChanged(){const t=document.getElementById('co-type').value;document.getElementById('co-refund-note').style.display=t==='refund'?'block':'none';}
 
-function addCheckout(){const cid=document.getElementById('co-customer').value;const date=document.getElementById('co-date').value;const menu=document.getElementById('co-menu').value;const type=document.getElementById('co-type').value;const rawPrice=parseInt(document.getElementById('co-price').value)||0;const price=type==='refund'?-Math.abs(rawPrice):Math.abs(rawPrice);const pay=document.getElementById('co-pay').value;const staff=document.getElementById('co-staff').value;const memo=document.getElementById('co-memo').value;const note=document.getElementById('co-note').value.trim();const nextDate=document.getElementById('co-next-date').value;if(!cid){alert('顧客を選択してください');return;}if(!menu){alert('メニューを選択してください');return;}if(!rawPrice){alert('金額を入力してください');return;}const c=customers.find(x=>x.id===cid);const newRecord={id:genId(),customerId:cid,customerName:c?c.name:'',date,menu,type,price,pay,staff,memo,note,nextDate,createdAt:nowStr()};history.unshift(newRecord);if(c&&type!=='refund'){c.lastVisit=date;c.visitCount=(c.visitCount||0)+1;}if(menu==='回数券利用'&&cid){const activeTickets=tickets.filter(t=>t.customerId===cid&&t.remaining>0);if(activeTickets.length>0){activeTickets.sort((a,b)=>a.purchaseDate.localeCompare(b.purchaseDate));const t=activeTickets[0];t.remaining=Math.max(0,t.remaining-1);t.consumedLog=t.consumedLog||[];t.consumedLog.push({date,historyId:newRecord.id});saveTickets();}}save();alert(type==='refund'?'返金処理を登録しました！':'会計を登録しました！');document.getElementById('co-type').value='normal';document.getElementById('co-refund-note').style.display='none';document.getElementById('co-menu').value='';document.getElementById('co-price').value='';document.getElementById('co-memo').value='';document.getElementById('co-note').value='';document.getElementById('co-next-date').value='';renderDash();}
+function addCheckout(){const cid=document.getElementById('co-customer').value;const date=document.getElementById('co-date').value;const menu=document.getElementById('co-menu').value;const type=document.getElementById('co-type').value;const rawPrice=parseInt(document.getElementById('co-price').value)||0;const price=type==='refund'?-Math.abs(rawPrice):Math.abs(rawPrice);const pay=document.getElementById('co-pay').value;const staff=document.getElementById('co-staff').value;const memo=document.getElementById('co-memo').value;const note=document.getElementById('co-note').value.trim();const nextDate=document.getElementById('co-next-date').value;if(!cid){alert('顧客を選択してください');return;}if(!menu){alert('メニューを選択してください');return;}if(!rawPrice){alert('金額を入力してください');return;}const c=customers.find(x=>x.id===cid);const newRecord={id:genId(),customerId:cid,customerName:c?c.name:'',date,menu,type,price,pay,staff,memo,note,nextDate,createdAt:nowStr()};history.unshift(newRecord);if(c&&type!=='refund'){c.lastVisit=date;c.visitCount=(c.visitCount||0)+1;}if(isTicketUseEntry(menu)&&cid){const activeTickets=tickets.filter(t=>t.customerId===cid&&t.remaining>0);if(activeTickets.length>0){activeTickets.sort((a,b)=>a.purchaseDate.localeCompare(b.purchaseDate));const t=activeTickets[0];t.remaining=Math.max(0,t.remaining-1);t.consumedLog=t.consumedLog||[];t.consumedLog.push({date,historyId:newRecord.id});saveTickets();}}save();alert(type==='refund'?'返金処理を登録しました！':'会計を登録しました！');document.getElementById('co-type').value='normal';document.getElementById('co-refund-note').style.display='none';document.getElementById('co-menu').value='';document.getElementById('co-price').value='';document.getElementById('co-memo').value='';document.getElementById('co-note').value='';document.getElementById('co-next-date').value='';renderDash();}
 
 function previewReceipt(){const cid=document.getElementById('co-customer').value;const menu=document.getElementById('co-menu').value||'施術';const price=parseInt(document.getElementById('co-price').value)||0;const date=document.getElementById('co-date').value;const c=customers.find(x=>x.id===cid);const name=c?c.name:'様';const tax=Math.round(price-price/1.1);document.getElementById('receipt-card').style.display='block';document.getElementById('receipt-content').innerHTML=`<div class="receipt-preview"><h2>領 収 書</h2><div class="sub">整体院TAK 旭町院</div><div style="margin:8px 0;font-size:12px">${date} 発行</div><div style="margin:8px 0"><strong>${name} 様</strong></div><hr style="margin:8px 0"><div class="receipt-line"><span>${menu}</span><span>${fmt(price)}</span></div><div class="receipt-line total"><span>合 計</span><span>${fmt(price)}</span></div><div class="receipt-line tax"><span>（内消費税10%）</span><span>${fmt(tax)}</span></div><hr style="margin:8px 0"><div style="font-size:11px;margin-top:8px;text-align:center">整体院TAK 旭町院<br>Assist24フィットネスジム内<br>静岡県袋井市旭町</div></div>`;}
 
@@ -1576,7 +1587,7 @@ function openHistoryEditModal(id){const h=history.find(x=>x.id===id);if(!h)retur
 function heTypeChanged(){const t=document.getElementById('he-type').value;document.getElementById('he-refund-note').style.display=t==='refund'?'block':'none';}
 function saveHistoryEdit(){const id=document.getElementById('he-id').value;const idx=history.findIndex(x=>x.id===id);if(idx<0)return;const type=document.getElementById('he-type').value;const rawPrice=parseInt(document.getElementById('he-price').value)||0;const price=type==='refund'?-Math.abs(rawPrice):Math.abs(rawPrice);history[idx]={...history[idx],date:document.getElementById('he-date').value,customerName:document.getElementById('he-customer-name').value,type,price,menu:document.getElementById('he-menu').value,pay:document.getElementById('he-pay').value,staff:document.getElementById('he-staff').value,memo:document.getElementById('he-memo').value,note:document.getElementById('he-note').value,nextDate:document.getElementById('he-next-date').value};save();document.getElementById('historyEditModalOverlay').classList.remove('open');renderHistory();renderDash();}
 
-function renderDash(){const td=today();const tm=td.slice(0,7);const todayH=history.filter(h=>h.date===td);const monthH=history.filter(h=>h.date.startsWith(tm));document.getElementById('stat-today').textContent=fmt(todayH.reduce((s,h)=>s+h.price,0));document.getElementById('stat-today-count').textContent=todayH.length+'件';document.getElementById('stat-month').textContent=fmt(monthH.reduce((s,h)=>s+h.price,0));document.getElementById('stat-month-count').textContent=monthH.length+'件';document.getElementById('stat-customers').textContent=customers.length;const rec=history.slice(0,8);document.getElementById('recent-tbody').innerHTML=rec.length?rec.map(h=>`<tr><td>${h.date}</td><td>${h.customerName}</td><td>${h.menu}</td><td>${fmt(h.price)}</td></tr>`).join(''):'<tr><td colspan="4" class="empty-state">履歴なし</td></tr>';const isTicket=h=>h.menu&&h.menu.includes('回数券')&&!h.menu.includes('利用');const ticketAlerts=customers.map(c=>{const all=history.filter(h=>h.customerId===c.id);const purchased=all.filter(isTicket).reduce((s,h)=>{const m=h.menu.match(/(\d+)回/);return s+(m?parseInt(m[1]):0);},0);const used=all.filter(h=>h.menu&&h.menu.includes('回数券利用')).length;const remaining=purchased-used;return purchased>0?{name:c.name,remaining,lastVisit:c.lastVisit,id:c.id}:null;}).filter(x=>x&&x.remaining<=2&&x.remaining>0);const ticketCard=document.getElementById('ticket-alert-card');if(ticketAlerts.length>0){ticketCard.style.display='block';document.getElementById('ticket-alert-tbody').innerHTML=ticketAlerts.map(c=>`<tr><td><strong>${c.name}</strong></td><td style="color:#1565c0;font-weight:700">${c.remaining}回</td><td>${c.lastVisit||'-'}</td><td><button class="btn btn-primary btn-sm" onclick="showPanel('line')">💬 LINE生成</button></td></tr>`).join('');}else ticketCard.style.display='none';const noNext=history.filter(h=>{const isNew=h.menu&&(h.menu.includes('初回')||h.menu.includes('体験'));if(!isNew||h.nextDate) return false;return Math.floor((new Date()-new Date(h.date))/86400000)>=7;});const alertCard=document.getElementById('alert-card');if(noNext.length>0){alertCard.style.display='block';document.getElementById('alert-tbody').innerHTML=noNext.map(h=>{const diff=Math.floor((new Date()-new Date(h.date))/86400000);return `<tr><td><strong>${h.customerName}</strong></td><td>${h.date}</td><td style="color:#e65100;font-weight:700">${diff}日経過</td><td><button class="btn btn-primary btn-sm" onclick="showPanel('line')">💬 LINE生成</button></td></tr>`;}).join('');}else alertCard.style.display='none';}
+function renderDash(){const td=today();const tm=td.slice(0,7);const todayH=history.filter(h=>h.date===td);const monthH=history.filter(h=>h.date.startsWith(tm));document.getElementById('stat-today').textContent=fmt(todayH.reduce((s,h)=>s+h.price,0));document.getElementById('stat-today-count').textContent=todayH.length+'件';document.getElementById('stat-month').textContent=fmt(monthH.reduce((s,h)=>s+h.price,0));document.getElementById('stat-month-count').textContent=monthH.length+'件';document.getElementById('stat-customers').textContent=customers.length;const rec=history.slice(0,8);document.getElementById('recent-tbody').innerHTML=rec.length?rec.map(h=>`<tr><td>${h.date}</td><td>${h.customerName}</td><td>${h.menu}</td><td>${fmt(h.price)}</td></tr>`).join(''):'<tr><td colspan="4" class="empty-state">履歴なし</td></tr>';const isTicket=h=>isTicketPurchaseEntry(h.menu);const ticketAlerts=customers.map(c=>{const all=history.filter(h=>h.customerId===c.id);const purchased=all.filter(isTicket).reduce((s,h)=>{const m=h.menu.match(/(\d+)回/);return s+(m?parseInt(m[1]):0);},0);const used=all.filter(h=>isTicketUseEntry(h.menu)).length;const remaining=purchased-used;return purchased>0?{name:c.name,remaining,lastVisit:c.lastVisit,id:c.id}:null;}).filter(x=>x&&x.remaining<=2&&x.remaining>0);const ticketCard=document.getElementById('ticket-alert-card');if(ticketAlerts.length>0){ticketCard.style.display='block';document.getElementById('ticket-alert-tbody').innerHTML=ticketAlerts.map(c=>`<tr><td><strong>${c.name}</strong></td><td style="color:#1565c0;font-weight:700">${c.remaining}回</td><td>${c.lastVisit||'-'}</td><td><button class="btn btn-primary btn-sm" onclick="showPanel('line')">💬 LINE生成</button></td></tr>`).join('');}else ticketCard.style.display='none';const noNext=history.filter(h=>{const isNew=h.menu&&(h.menu.includes('初回')||h.menu.includes('体験'));if(!isNew||h.nextDate) return false;return Math.floor((new Date()-new Date(h.date))/86400000)>=7;});const alertCard=document.getElementById('alert-card');if(noNext.length>0){alertCard.style.display='block';document.getElementById('alert-tbody').innerHTML=noNext.map(h=>{const diff=Math.floor((new Date()-new Date(h.date))/86400000);return `<tr><td><strong>${h.customerName}</strong></td><td>${h.date}</td><td style="color:#e65100;font-weight:700">${diff}日経過</td><td><button class="btn btn-primary btn-sm" onclick="showPanel('line')">💬 LINE生成</button></td></tr>`;}).join('');}else alertCard.style.display='none';}
 
 function exportCustomersCSV(){const rows=[['顧客No','氏名','ふりがな','性別','郵便番号','住所','メールアドレス','電話番号','生年月日','職業','動機','来院回数','最終来院']];customers.forEach(c=>rows.push([c.no||'',c.name,c.kana||'',c.gender||'',c.zip||'',c.address||'',c.email||'',c.tel||'',c.birth||'',c.job||'',c.motive||'',c.visitCount||0,c.lastVisit||'']));downloadCSV(rows,'顧客リスト_'+today()+'.csv');}
 function exportHistoryCSV(){const m=document.getElementById('hi-month').value;const list=m?history.filter(h=>h.date&&h.date.startsWith(m)):history;const rows=[['日付','顧客名','種別','メニュー','金額','支払方法','担当','メモ','次回予約日']];list.forEach(h=>rows.push([h.date,h.customerName,(h.type==='refund'||h.price<0)?'返金':'通常',h.menu,h.price,h.pay,h.staff||'Tak（桑原毅郎）',h.memo||'',h.nextDate||'']));const totalNormal=list.filter(h=>!(h.type==='refund'||h.price<0)).reduce((s,h)=>s+h.price,0);const totalRefund=list.filter(h=>(h.type==='refund'||h.price<0)).reduce((s,h)=>s+h.price,0);rows.push([]);rows.push(['通常会計合計','','','',totalNormal,'','','','']);rows.push(['返金合計','','','',totalRefund,'','','','']);rows.push(['差引合計','','','',totalNormal+totalRefund,'','','','']);downloadCSV(rows,'来院履歴_'+(m||today())+'.csv');}
@@ -1671,6 +1682,64 @@ function renderTicketSummary(){const active=tickets.filter(t=>t.remaining>0);con
 function renderTicketList(){const q=(document.getElementById('tk-search').value||'').toLowerCase();const filter=document.getElementById('tk-filter').value;let list=tickets.filter(t=>{if(q&&!t.customerName.includes(q))return false;if(filter==='active'&&t.remaining<=0)return false;if(filter==='low'&&t.remaining>2)return false;if(filter==='zero'&&t.remaining>0)return false;return true;}).sort((a,b)=>a.customerName.localeCompare(b.customerName,'ja'));const tbody=document.getElementById('ticket-tbody');if(!list.length){tbody.innerHTML='<tr><td colspan="10" class="empty-state">該当する回数券がありません</td></tr>';}else{tbody.innerHTML=list.map(t=>{const consumed=t.total-t.remaining;const unitPrice=getTicketUnitPrice(t);const residual=getTicketResidualValue(t);const lowStyle=t.remaining<=2&&t.remaining>0?'background:#fff3e0':t.remaining===0?'background:#f5f5f5;color:#999':'';return`<tr style="${lowStyle}"><td><strong>${t.customerName}</strong></td><td style="font-size:12px">${t.type}</td><td>${t.purchaseDate||'-'}</td><td style="text-align:center">${t.total}回</td><td style="text-align:center">${consumed}回</td><td style="text-align:center;font-weight:700;color:${t.remaining<=2?'#e65100':'var(--green)'}">${t.remaining}回</td><td>${fmt(t.paid)}</td><td style="font-size:12px">${fmt(unitPrice)}</td><td style="font-weight:700;color:var(--green)">${fmt(residual)}</td><td style="white-space:nowrap"><button class="btn btn-secondary btn-sm" onclick="editTicket('${t.id}')">編集</button><button class="btn btn-danger btn-sm" onclick="deleteTicket('${t.id}')">削除</button></td></tr>`;}).join('');}const allLogs=[];tickets.forEach(t=>{(t.consumedLog||[]).forEach(log=>{allLogs.push({date:log.date,customerName:t.customerName,type:'消化',ticketType:t.type,remaining:'→ -1回'});});});allLogs.sort((a,b)=>b.date.localeCompare(a.date));const logTbody=document.getElementById('ticket-log-tbody');if(!allLogs.length){logTbody.innerHTML='<tr><td colspan="5" class="empty-state">消化記録がありません（会計タブで「回数券利用」を登録すると自動記録されます）</td></tr>';}else{logTbody.innerHTML=allLogs.slice(0,30).map(l=>`<tr><td>${l.date}</td><td>${l.customerName}</td><td><span class="badge badge-orange">消化</span></td><td style="font-size:12px">${l.ticketType}</td><td>${l.remaining}</td></tr>`).join('');}}
 function exportTicketCSV(){const rows=[['顧客名','種別','購入日','総回数','消化回数','残回数','購入金額','1回単価','残金額','メモ']];tickets.forEach(t=>{const consumed=t.total-t.remaining;rows.push([t.customerName,t.type,t.purchaseDate||'',t.total,consumed,t.remaining,t.paid,getTicketUnitPrice(t),getTicketResidualValue(t),t.memo||'']);});downloadCSV(rows,'回数券残数_'+today()+'.csv');}
 function exportTicketFinalCSV(){if(!confirm('2027年3月期末精算用CSVを出力します。有効な回数券のみ出力されます。'))return;const active=tickets.filter(t=>t.remaining>0).sort((a,b)=>a.customerName.localeCompare(b.customerName,'ja'));if(!active.length){alert('有効な回数券がありません');return;}const rows=[['整体院TAK 回数券残高一覧（2027年3月期末精算）'],['出力日',today()],[],['顧客名','回数券種別','購入日','総回数','残回数','購入金額','1回単価','残金額（精算額）','メモ']];active.forEach(t=>{rows.push([t.customerName,t.type,t.purchaseDate||'',t.total,t.remaining,t.paid,getTicketUnitPrice(t),getTicketResidualValue(t),t.memo||'']);});rows.push([]);rows.push(['合計','','','',active.reduce((s,t)=>s+t.remaining,0),'','',active.reduce((s,t)=>s+getTicketResidualValue(t),0),'']);downloadCSV(rows,'TAK回数券期末精算_2027年3月.csv');}
+
+// 履歴から回数券残数を再計算
+function recalcAllTicketRemaining(){
+  if(!tickets.length){alert('登録済み回数券がありません。先に回数券を登録してください。');return;}
+  if(!confirm(
+    '全ての手動登録回数券について、残数を「総回数」にリセットしてから、\n'+
+    '来院履歴の「回数券利用」「回数券ご利用」を古い順に消化計算します。\n\n'+
+    '※過去の回数券で総回数を超える消化があっても残数0で停止します。\n'+
+    '実行しますか？'
+  )) return;
+
+  // 1. 全ticketsの残数をtotalにリセット & consumedLogをクリア
+  tickets.forEach(t=>{
+    t.remaining=t.total;
+    t.consumedLog=[];
+  });
+
+  // 2. historyを日付昇順 + 時刻昇順でソート
+  const sorted=[...history].sort((a,b)=>{
+    const da=a.date||'', db=b.date||'';
+    if(da!==db) return da.localeCompare(db);
+    const ma=a.memo&&a.memo.match(/^(\d{2}:\d{2})/);
+    const mb=b.memo&&b.memo.match(/^(\d{2}:\d{2})/);
+    const ta=ma?ma[1]:'', tb=mb?mb[1]:'';
+    return ta.localeCompare(tb);
+  });
+
+  // 3. 各「回数券利用」を該当顧客の最古アクティブ回数券から-1
+  let consumed=0, skipped=0;
+  const skippedDetails=[];
+  sorted.forEach(h=>{
+    if(!isTicketUseEntry(h.menu)||!h.customerId) return;
+    const active=tickets.filter(t=>t.customerId===h.customerId && t.remaining>0);
+    if(active.length===0){
+      skipped++;
+      if(skippedDetails.length<5) skippedDetails.push('・'+h.date+' '+h.customerName+' '+h.menu);
+      return;
+    }
+    active.sort((a,b)=>(a.purchaseDate||'').localeCompare(b.purchaseDate||''));
+    const t=active[0];
+    t.remaining=Math.max(0,t.remaining-1);
+    t.consumedLog=t.consumedLog||[];
+    t.consumedLog.push({date:h.date, historyId:h.id, source:'recalc'});
+    consumed++;
+  });
+
+  saveTickets();
+  renderTicketList();
+  renderTicketSummary();
+  renderDash();
+
+  let msg='✅ 再計算完了\n\n消化処理: '+consumed+'件\n対応回数券なしでスキップ: '+skipped+'件';
+  if(skippedDetails.length){
+    msg+='\n\n【スキップ例（先頭5件）】\n'+skippedDetails.join('\n');
+    msg+='\n\nこれらの顧客には、消化時点で有効な回数券が登録されていません。';
+  }
+  alert(msg);
+}
 
 // 広告費
 let adCosts=JSON.parse(localStorage.getItem('tak_adcosts')||'[]');
@@ -1793,10 +1862,13 @@ function commitNisshi(){
   if(!nisshiPending.length){alert('取込待ちデータがありません');return;}
   if(!confirm(nisshiPending.length+'件を会計アプリに登録しますか？')) return;
 
+  let ticketConsumed = 0, ticketSkipped = 0;
+
   nisshiPending.forEach(r=>{
     const c=customers.find(x=>x.id===r.customerId);
+    const newId = genId();
     history.unshift({
-      id: genId(),
+      id: newId,
       importTag: 'nisshi_'+r.date,
       customerId:   r.customerId,
       customerName: r.customerName,
@@ -1815,15 +1887,34 @@ function commitNisshi(){
       c.visitCount=(c.visitCount||0)+1;
       if(!c.lastVisit||r.date>c.lastVisit) c.lastVisit=r.date;
     }
+    // ★ 回数券消化処理（古い順に-1）
+    if(isTicketUseEntry(r.course) && r.customerId){
+      const active=tickets.filter(t=>t.customerId===r.customerId && t.remaining>0);
+      if(active.length>0){
+        active.sort((a,b)=>(a.purchaseDate||'').localeCompare(b.purchaseDate||''));
+        const t=active[0];
+        t.remaining=Math.max(0,t.remaining-1);
+        t.consumedLog=t.consumedLog||[];
+        t.consumedLog.push({date:r.date, historyId:newId, source:'nisshi'});
+        ticketConsumed++;
+      } else {
+        ticketSkipped++;
+      }
+    }
   });
 
   save();
+  saveTickets();
   const count=nisshiPending.length;
   nisshiPending=[]; saveNisshiPending();
+  let extra = '';
+  if(ticketConsumed>0) extra += `<br>🎟 回数券消化: ${ticketConsumed}件`;
+  if(ticketSkipped>0)  extra += `<br>⚠️ 対応回数券なしでスキップ: ${ticketSkipped}件`;
   document.getElementById('ni-status').innerHTML=
-    `<div class="import-result success" style="margin-top:10px">✅ ${count}件を登録しました！来院履歴タブで確認できます。</div>`;
+    `<div class="import-result success" style="margin-top:10px">✅ ${count}件を登録しました！${extra}</div>`;
   renderNisshiList();
   renderDash();
+  renderTicketSummary();
 }
 
 function renderNisshiList(){
