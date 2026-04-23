@@ -483,7 +483,11 @@
     <div class="card-title">🛒 物販販売記録</div>
     <div class="form-grid triple">
       <div class="form-group"><label>販売日</label><input type="date" id="bs-date"></div>
-      <div class="form-group"><label>顧客（任意）</label><select id="bs-customer"><option value="">-- 選択 --</option></select></div>
+      <div class="form-group">
+        <label>顧客（任意）</label>
+        <input type="text" id="bs-customer-search" placeholder="名前で検索…" oninput="filterBussanCustomers()" style="margin-bottom:4px">
+        <select id="bs-customer"><option value="">-- 選択 --</option></select>
+      </div>
       <div class="form-group"><label>商品</label><select id="bs-product" onchange="bsProductChanged()"><option value="">-- 商品を選択 --</option></select></div>
     </div>
     <div class="form-grid triple" style="margin-top:10px">
@@ -1383,6 +1387,7 @@ function showPanel(id){
 // 物販
 function renderBussanPanel(){populateBussanCustomerSelect();populateBussanProductSelect();renderBussanSummary();renderBussanHistory();renderProductMaster();}
 function populateBussanCustomerSelect(){const sel=document.getElementById('bs-customer');const cur=sel.value;sel.innerHTML='<option value="">-- 選択 --</option>';[...customers].sort((a,b)=>a.name.localeCompare(b.name,'ja')).forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=(c.no?`[${c.no}] `:'')+c.name;sel.appendChild(o);});sel.value=cur;}
+function filterBussanCustomers(){const q=(document.getElementById('bs-customer-search').value||'').toLowerCase();const sel=document.getElementById('bs-customer');const cur=sel.value;sel.innerHTML='<option value="">-- 選択 --</option>';[...customers].filter(c=>!q||c.name.toLowerCase().includes(q)||(c.kana||'').toLowerCase().includes(q)||(c.no||'').includes(q)).sort((a,b)=>a.name.localeCompare(b.name,'ja')).forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=(c.no?`[${c.no}] `:'')+c.name;sel.appendChild(o);});sel.value=cur;}
 function populateBussanProductSelect(){const sel=document.getElementById('bs-product');const cur=sel.value;sel.innerHTML='<option value="">-- 商品を選択 --</option>';products.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name+'  '+fmt(p.price);sel.appendChild(o);});sel.value=cur;}
 function bsProductChanged(){const pid=document.getElementById('bs-product').value;const p=products.find(x=>x.id===pid);const qty=parseInt(document.getElementById('bs-qty').value)||1;if(p){document.getElementById('bs-price').value=p.price*qty;document.getElementById('bs-profit').value=p.profit*qty;}else{document.getElementById('bs-price').value='';document.getElementById('bs-profit').value='';}}
 function bsCalc(){const pid=document.getElementById('bs-product').value;const p=products.find(x=>x.id===pid);const qty=parseInt(document.getElementById('bs-qty').value)||1;if(p){document.getElementById('bs-price').value=p.price*qty;document.getElementById('bs-profit').value=p.profit*qty;}}
@@ -1406,7 +1411,7 @@ function filterLineCustomers(){const q=document.getElementById('line-customer-se
 function menuChanged(){const sel=document.getElementById('co-menu');const price=sel.options[sel.selectedIndex].dataset.price;if(price!==undefined&&price!=='0') document.getElementById('co-price').value=price;}
 function coTypeChanged(){const t=document.getElementById('co-type').value;document.getElementById('co-refund-note').style.display=t==='refund'?'block':'none';}
 
-function addCheckout(){const cid=document.getElementById('co-customer').value;const date=document.getElementById('co-date').value;const menu=document.getElementById('co-menu').value;const type=document.getElementById('co-type').value;const rawPrice=parseInt(document.getElementById('co-price').value)||0;const price=type==='refund'?-Math.abs(rawPrice):Math.abs(rawPrice);const pay=document.getElementById('co-pay').value;const staff=document.getElementById('co-staff').value;const memo=document.getElementById('co-memo').value;const note=document.getElementById('co-note').value.trim();const nextDate=document.getElementById('co-next-date').value;if(!cid){alert('顧客を選択してください');return;}if(!menu){alert('メニューを選択してください');return;}if(!rawPrice){alert('金額を入力してください');return;}const c=customers.find(x=>x.id===cid);const newRecord={id:genId(),customerId:cid,customerName:c?c.name:'',date,menu,type,price,pay,staff,memo,note,nextDate,createdAt:nowStr()};history.unshift(newRecord);if(c&&type!=='refund'){c.lastVisit=date;c.visitCount=(c.visitCount||0)+1;}if(isTicketUseEntry(menu)&&cid){const activeTickets=tickets.filter(t=>t.customerId===cid&&t.remaining>0);if(activeTickets.length>0){activeTickets.sort((a,b)=>a.purchaseDate.localeCompare(b.purchaseDate));const t=activeTickets[0];t.remaining=Math.max(0,t.remaining-1);t.consumedLog=t.consumedLog||[];t.consumedLog.push({date,historyId:newRecord.id});saveTickets();}}save();alert(type==='refund'?'返金処理を登録しました！':'会計を登録しました！');document.getElementById('co-type').value='normal';document.getElementById('co-refund-note').style.display='none';document.getElementById('co-menu').value='';document.getElementById('co-price').value='';document.getElementById('co-memo').value='';document.getElementById('co-note').value='';document.getElementById('co-next-date').value='';renderDash();}
+function addCheckout(){const cid=document.getElementById('co-customer').value;const date=document.getElementById('co-date').value;const menu=document.getElementById('co-menu').value;const type=document.getElementById('co-type').value;const rawPrice=parseInt(document.getElementById('co-price').value)||0;const price=type==='refund'?-Math.abs(rawPrice):Math.abs(rawPrice);const pay=document.getElementById('co-pay').value;const staff=document.getElementById('co-staff').value;const memo=document.getElementById('co-memo').value;const note=document.getElementById('co-note').value.trim();const nextDate=document.getElementById('co-next-date').value;if(!cid){alert('顧客を選択してください');return;}if(!menu){alert('メニューを選択してください');return;}if(!rawPrice && pay!=='回数券'){alert('金額を入力してください');return;}const c=customers.find(x=>x.id===cid);const newRecord={id:genId(),customerId:cid,customerName:c?c.name:'',date,menu,type,price,pay,staff,memo,note,nextDate,createdAt:nowStr()};history.unshift(newRecord);if(c&&type!=='refund'){c.lastVisit=date;c.visitCount=(c.visitCount||0)+1;}if(isTicketUseEntry(menu)&&cid){const activeTickets=tickets.filter(t=>t.customerId===cid&&t.remaining>0&&(!t.purchaseDate||date>=t.purchaseDate));if(activeTickets.length>0){activeTickets.sort((a,b)=>a.purchaseDate.localeCompare(b.purchaseDate));const t=activeTickets[0];t.remaining=Math.max(0,t.remaining-1);t.consumedLog=t.consumedLog||[];t.consumedLog.push({date,historyId:newRecord.id});saveTickets();}}save();alert(type==='refund'?'返金処理を登録しました！':'会計を登録しました！');document.getElementById('co-type').value='normal';document.getElementById('co-refund-note').style.display='none';document.getElementById('co-menu').value='';document.getElementById('co-price').value='';document.getElementById('co-memo').value='';document.getElementById('co-note').value='';document.getElementById('co-next-date').value='';renderDash();}
 
 function previewReceipt(){const cid=document.getElementById('co-customer').value;const menu=document.getElementById('co-menu').value||'施術';const price=parseInt(document.getElementById('co-price').value)||0;const date=document.getElementById('co-date').value;const c=customers.find(x=>x.id===cid);const name=c?c.name:'様';const tax=Math.round(price-price/1.1);document.getElementById('receipt-card').style.display='block';document.getElementById('receipt-content').innerHTML=`<div class="receipt-preview"><h2>領 収 書</h2><div class="sub">整体院TAK 旭町院</div><div style="margin:8px 0;font-size:12px">${date} 発行</div><div style="margin:8px 0"><strong>${name} 様</strong></div><hr style="margin:8px 0"><div class="receipt-line"><span>${menu}</span><span>${fmt(price)}</span></div><div class="receipt-line total"><span>合 計</span><span>${fmt(price)}</span></div><div class="receipt-line tax"><span>（内消費税10%）</span><span>${fmt(tax)}</span></div><hr style="margin:8px 0"><div style="font-size:11px;margin-top:8px;text-align:center">整体院TAK 旭町院<br>Assist24フィットネスジム内<br>静岡県袋井市旭町</div></div>`;}
 
@@ -1714,7 +1719,7 @@ function recalcAllTicketRemaining(){
   const skippedDetails=[];
   sorted.forEach(h=>{
     if(!isTicketUseEntry(h.menu)||!h.customerId) return;
-    const active=tickets.filter(t=>t.customerId===h.customerId && t.remaining>0);
+    const active=tickets.filter(t=>t.customerId===h.customerId && t.remaining>0 && (!t.purchaseDate || h.date>=t.purchaseDate));
     if(active.length===0){
       skipped++;
       if(skippedDetails.length<5) skippedDetails.push('・'+h.date+' '+h.customerName+' '+h.menu);
@@ -1889,7 +1894,7 @@ function commitNisshi(){
     }
     // ★ 回数券消化処理（古い順に-1）
     if(isTicketUseEntry(r.course) && r.customerId){
-      const active=tickets.filter(t=>t.customerId===r.customerId && t.remaining>0);
+      const active=tickets.filter(t=>t.customerId===r.customerId && t.remaining>0 && (!t.purchaseDate || r.date>=t.purchaseDate));
       if(active.length>0){
         active.sort((a,b)=>(a.purchaseDate||'').localeCompare(b.purchaseDate||''));
         const t=active[0];
