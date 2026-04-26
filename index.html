@@ -153,6 +153,7 @@
   <div class="tab" onclick="showPanel('bussan')">🛒 物販</div>
   <div class="tab" onclick="showPanel('subscriptions')">💳 サブスク管理</div>
   <div class="tab" onclick="showPanel('tickets')">🎟 回数券管理</div>
+  <div class="tab" onclick="showPanel('cashbook')">💰 現金出納帳</div>
   <div class="tab" onclick="showPanel('adcost')">📣 広告費</div>
   <div class="tab" onclick="showPanel('import')">📥 CSVインポート</div>
   <div class="tab" onclick="showPanel('line')">💬 LINEメッセージ</div>
@@ -609,6 +610,93 @@
 </div>
 
 <!-- 広告費管理 -->
+<!-- CASH LEDGER -->
+<div id="panel-cashbook" class="panel">
+  <div class="bussan-summary" id="cb-summary"></div>
+  <div class="card">
+    <div class="card-title">💰 現金出納帳</div>
+    <div class="form-grid triple">
+      <div class="form-group"><label>表示月</label><input type="month" id="cb-month" onchange="renderCashbook()"></div>
+      <div class="form-group"><label>前月末残高（繰越）</label><input type="number" id="cb-carryover" placeholder="例: 49142"></div>
+      <div class="form-group" style="display:flex;align-items:flex-end;gap:8px"><button class="btn btn-secondary btn-sm" onclick="saveCarryover()">💾 繰越保存</button><button class="btn btn-secondary btn-sm" onclick="renderCashbook()">🔄 再表示</button></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">➕ 出納帳に入力（手動）</div>
+    <div class="form-grid triple">
+      <div class="form-group"><label>日付</label><input type="date" id="cb-date"></div>
+      <div class="form-group"><label>区分</label>
+        <select id="cb-kind">
+          <option value="in">入金（借方）</option>
+          <option value="out">出金（貸方）</option>
+        </select>
+      </div>
+      <div class="form-group"><label>金額</label><input type="number" id="cb-amount" placeholder="0"></div>
+    </div>
+    <div class="form-grid triple" style="margin-top:10px">
+      <div class="form-group"><label>勘定科目</label>
+        <select id="cb-account" onchange="cbAccountChanged()">
+          <option value="">-- 選択 --</option>
+          <optgroup label="入金">
+            <option>整体院現金売上</option>
+            <option>インディバ売上</option>
+            <option>物販現金売上</option>
+            <option>サブスク現金売上</option>
+            <option>回数券現金売上</option>
+            <option>現金入金</option>
+            <option>その他収入</option>
+          </optgroup>
+          <optgroup label="出金">
+            <option>消耗品費</option>
+            <option>衛生費</option>
+            <option>広告費</option>
+            <option>研修費</option>
+            <option>研修代</option>
+            <option>交際費</option>
+            <option>ミーティング代</option>
+            <option>印紙代</option>
+            <option>証明書代</option>
+            <option>通信費</option>
+            <option>水道光熱費</option>
+            <option>家賃</option>
+            <option>仕入れ</option>
+            <option>給与</option>
+            <option>税金</option>
+            <option>回数券返金</option>
+            <option>その他経費</option>
+            <option>雑費</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="form-group"><label>取引先・対象（任意）</label><input type="text" id="cb-counterparty" placeholder="例: 味匠 弐"></div>
+      <div class="form-group"><label>メモ（任意）</label><input type="text" id="cb-memo" placeholder="自由入力"></div>
+    </div>
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn btn-primary" onclick="addCashbookEntry()">✅ 出納帳に登録</button>
+      <button class="btn btn-secondary" onclick="clearCashbookForm()">🔄 クリア</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📋 出納帳一覧</div>
+    <div class="btn-row" style="margin-bottom:12px">
+      <button class="btn btn-secondary btn-sm" onclick="exportCashbookCSV()">⬇ 月次CSV出力</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>日</th><th>科目</th><th>摘要</th>
+            <th style="color:#1565c0">借方（入金）</th>
+            <th style="color:#d32f2f">貸方（出金）</th>
+            <th>残高</th><th>連携</th><th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="cashbook-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <div id="panel-adcost" class="panel">
   <div class="card">
     <div class="card-title">📣 広告費・経費入力</div>
@@ -887,6 +975,8 @@ if(!products){
   localStorage.setItem('tak_products',JSON.stringify(products));
 }
 let bussanSales=JSON.parse(localStorage.getItem('tak_bussan_sales')||'[]');
+let cashbook=JSON.parse(localStorage.getItem('tak_cashbook')||'[]');
+let cashbookCarryover=JSON.parse(localStorage.getItem('tak_cashbook_carryover')||'{}');
 
 // ─── 回数券判定ヘルパー ───
 function isTicketUseEntry(menu){
@@ -903,6 +993,8 @@ function save(){
   localStorage.setItem('tak_history',JSON.stringify(history));
   localStorage.setItem('tak_products',JSON.stringify(products));
   localStorage.setItem('tak_bussan_sales',JSON.stringify(bussanSales));
+  localStorage.setItem('tak_cashbook',JSON.stringify(cashbook));
+  localStorage.setItem('tak_cashbook_carryover',JSON.stringify(cashbookCarryover));
 }
 
 // ═══════════════════════════════════════
@@ -1381,6 +1473,7 @@ function showPanel(id){
   if(id==='bussan') renderBussanPanel();
   if(id==='subscriptions'){ populateSubCustomerSelect(); renderSubSummary(); renderSubscriptions(); }
   if(id==='tickets'){ populateTicketCustomerSelect(); renderTicketList(); renderTicketSummary(); }
+  if(id==='cashbook'){ renderCashbook(); }
   if(id==='adcost'){ renderAdCostList(); }
   if(id==='nisshi'){ renderNisshiList(); }
 }
@@ -1392,10 +1485,10 @@ function filterBussanCustomers(){const q=(document.getElementById('bs-customer-s
 function populateBussanProductSelect(){const sel=document.getElementById('bs-product');const cur=sel.value;sel.innerHTML='<option value="">-- 商品を選択 --</option>';products.forEach(p=>{const o=document.createElement('option');o.value=p.id;const stock=p.stock||0;const stockLabel=stock<=0?'（在庫切れ）':`（在庫${stock}）`;o.textContent=p.name+'  '+fmt(p.price)+'  '+stockLabel;sel.appendChild(o);});sel.value=cur;}
 function bsProductChanged(){const pid=document.getElementById('bs-product').value;const p=products.find(x=>x.id===pid);const qty=parseInt(document.getElementById('bs-qty').value)||1;if(p){document.getElementById('bs-price').value=p.price*qty;document.getElementById('bs-profit').value=p.profit*qty;}else{document.getElementById('bs-price').value='';document.getElementById('bs-profit').value='';}}
 function bsCalc(){const pid=document.getElementById('bs-product').value;const p=products.find(x=>x.id===pid);const qty=parseInt(document.getElementById('bs-qty').value)||1;if(p){document.getElementById('bs-price').value=p.price*qty;document.getElementById('bs-profit').value=p.profit*qty;}}
-function addBussanSale(){const pid=document.getElementById('bs-product').value;if(!pid){alert('商品を選択してください');return;}const p=products.find(x=>x.id===pid);const qty=parseInt(document.getElementById('bs-qty').value)||1;const cid=document.getElementById('bs-customer').value;const c=customers.find(x=>x.id===cid);const priceInput=document.getElementById('bs-price').value;const profitInput=document.getElementById('bs-profit').value;const price=priceInput!==''?parseInt(priceInput):p.price*qty;const profit=profitInput!==''?parseInt(profitInput):p.profit*qty;const currentStock=p.stock||0;if(currentStock<qty && !confirm(`在庫不足です（現在${currentStock}個、販売${qty}個）。このまま販売しますか？`))return;p.stock=Math.max(0,currentStock-qty);bussanSales.unshift({id:genId(),date:document.getElementById('bs-date').value,customerId:cid,customerName:c?c.name:'（顧客未選択）',productId:pid,productName:p.name,qty,price,profit,memo:document.getElementById('bs-memo').value,createdAt:nowStr()});save();alert('販売記録を登録しました！ 在庫: '+p.stock+'個');document.getElementById('bs-product').value='';document.getElementById('bs-qty').value='1';document.getElementById('bs-price').value='';document.getElementById('bs-profit').value='';document.getElementById('bs-memo').value='';renderBussanSummary();renderBussanHistory();renderProductMaster();populateBussanProductSelect();}
+function addBussanSale(){const pid=document.getElementById('bs-product').value;if(!pid){alert('商品を選択してください');return;}const p=products.find(x=>x.id===pid);const qty=parseInt(document.getElementById('bs-qty').value)||1;const cid=document.getElementById('bs-customer').value;const c=customers.find(x=>x.id===cid);const priceInput=document.getElementById('bs-price').value;const profitInput=document.getElementById('bs-profit').value;const price=priceInput!==''?parseInt(priceInput):p.price*qty;const profit=profitInput!==''?parseInt(profitInput):p.profit*qty;const currentStock=p.stock||0;if(currentStock<qty && !confirm(`在庫不足です（現在${currentStock}個、販売${qty}個）。このまま販売しますか？`))return;p.stock=Math.max(0,currentStock-qty);bussanSales.unshift({id:genId(),date:document.getElementById('bs-date').value,customerId:cid,customerName:c?c.name:'（顧客未選択）',productId:pid,productName:p.name,qty,price,profit,memo:document.getElementById('bs-memo').value,createdAt:nowStr()});addCashbookFromBussan(bussanSales[0]);save();alert('販売記録を登録しました！ 在庫: '+p.stock+'個');document.getElementById('bs-product').value='';document.getElementById('bs-qty').value='1';document.getElementById('bs-price').value='';document.getElementById('bs-profit').value='';document.getElementById('bs-memo').value='';renderBussanSummary();renderBussanHistory();renderProductMaster();populateBussanProductSelect();}
 function renderBussanSummary(){const m=document.getElementById('bs-month').value||today().slice(0,7);const monthly=bussanSales.filter(s=>s.date&&s.date.startsWith(m));const ts=monthly.reduce((s,x)=>s+x.price,0);const tp=monthly.reduce((s,x)=>s+x.profit,0);const tc=monthly.reduce((s,x)=>s+x.qty,0);document.getElementById('bussan-summary').innerHTML=`<div class="bussan-stat"><div class="blabel">今月物販売上</div><div class="bvalue">${fmt(ts)}</div></div><div class="bussan-stat"><div class="blabel">今月物販利益</div><div class="bvalue">${fmt(tp)}</div></div><div class="bussan-stat"><div class="blabel">今月販売数</div><div class="bvalue">${tc}個</div></div>`;}
 function renderBussanHistory(){const m=document.getElementById('bs-month').value||today().slice(0,7);const list=bussanSales.filter(s=>!m||s.date.startsWith(m));const tbody=document.getElementById('bussan-history-tbody');if(!list.length){tbody.innerHTML='<tr><td colspan="7" class="empty-state">販売履歴がありません</td></tr>';return;}tbody.innerHTML=list.map(s=>`<tr><td>${s.date}</td><td>${s.customerName}</td><td>${s.productName}</td><td>${s.qty}個</td><td>${fmt(s.price)}</td><td style="color:var(--green);font-weight:600">${fmt(s.profit)}</td><td><button class="btn btn-danger btn-sm" onclick="deleteBussanSale('${s.id}')">削除</button></td></tr>`).join('');}
-function deleteBussanSale(id){showModal('削除確認','この販売記録を削除しますか？（在庫を戻します）',[{label:'削除',cls:'btn-danger',cb:()=>{const s=bussanSales.find(x=>x.id===id);if(s){const p=products.find(x=>x.id===s.productId);if(p)p.stock=(p.stock||0)+s.qty;}bussanSales=bussanSales.filter(x=>x.id!==id);save();renderBussanHistory();renderBussanSummary();renderProductMaster();populateBussanProductSelect();closeModal();}},{label:'キャンセル',cls:'btn-secondary',cb:closeModal}]);}
+function deleteBussanSale(id){showModal('削除確認','この販売記録を削除しますか？（在庫を戻し、出納帳の連携も削除）',[{label:'削除',cls:'btn-danger',cb:()=>{const s=bussanSales.find(x=>x.id===id);if(s){const p=products.find(x=>x.id===s.productId);if(p)p.stock=(p.stock||0)+s.qty;removeCashbookByLink('bussan',id);}bussanSales=bussanSales.filter(x=>x.id!==id);save();renderBussanHistory();renderBussanSummary();renderProductMaster();populateBussanProductSelect();closeModal();}},{label:'キャンセル',cls:'btn-secondary',cb:closeModal}]);}
 function renderProductMaster(){document.getElementById('product-master-tbody').innerHTML=products.map(p=>{const stock=p.stock||0;const stockColor=stock<=0?'#d32f2f':(stock<=3?'#e65100':'#1565c0');return `<tr><td><strong>${p.name}</strong></td><td>${fmt(p.price)}</td><td>${fmt(p.cost)}</td><td style="color:var(--green);font-weight:600">${fmt(p.profit)}</td><td style="color:${stockColor};font-weight:700">${stock}個 <button class="btn btn-secondary btn-sm" style="padding:2px 6px;margin-left:4px" onclick="adjustStock('${p.id}',1)">＋1</button> <button class="btn btn-secondary btn-sm" style="padding:2px 6px" onclick="adjustStock('${p.id}',10)">＋10</button> <button class="btn btn-secondary btn-sm" style="padding:2px 6px" onclick="adjustStock('${p.id}',-1)">−1</button></td><td><button class="btn btn-secondary btn-sm" onclick="openProductModal('${p.id}')">編集</button> <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">削除</button></td></tr>`;}).join('');}
 function adjustStock(pid,delta){const p=products.find(x=>x.id===pid);if(!p)return;p.stock=Math.max(0,(p.stock||0)+delta);save();renderProductMaster();populateBussanProductSelect();}
 function openProductModal(id){const overlay=document.getElementById('productModalOverlay');if(id){const p=products.find(x=>x.id===id);document.getElementById('productModalTitle').textContent='商品を編集';document.getElementById('pm-id').value=p.id;document.getElementById('pm-name').value=p.name;document.getElementById('pm-price').value=p.price;document.getElementById('pm-cost').value=p.cost;document.getElementById('pm-profit').value=p.profit;document.getElementById('pm-stock').value=p.stock||0;}else{document.getElementById('productModalTitle').textContent='商品を追加';['pm-id','pm-name','pm-price','pm-cost','pm-profit','pm-stock'].forEach(i=>document.getElementById(i).value='');}overlay.classList.add('open');}
@@ -1445,7 +1538,7 @@ function filterLineCustomers(){const q=document.getElementById('line-customer-se
 function menuChanged(){const sel=document.getElementById('co-menu');const price=sel.options[sel.selectedIndex].dataset.price;if(price!==undefined&&price!=='0') document.getElementById('co-price').value=price;}
 function coTypeChanged(){const t=document.getElementById('co-type').value;document.getElementById('co-refund-note').style.display=t==='refund'?'block':'none';}
 
-function addCheckout(){const cid=document.getElementById('co-customer').value;const date=document.getElementById('co-date').value;const menu=document.getElementById('co-menu').value;const type=document.getElementById('co-type').value;const rawPrice=parseInt(document.getElementById('co-price').value)||0;const price=type==='refund'?-Math.abs(rawPrice):Math.abs(rawPrice);const pay=document.getElementById('co-pay').value;const staff=document.getElementById('co-staff').value;const memo=document.getElementById('co-memo').value;const note=document.getElementById('co-note').value.trim();const nextDate=document.getElementById('co-next-date').value;if(!cid){alert('顧客を選択してください');return;}if(!menu){alert('メニューを選択してください');return;}if(!rawPrice && pay!=='回数券'){alert('金額を入力してください');return;}const c=customers.find(x=>x.id===cid);const newRecord={id:genId(),customerId:cid,customerName:c?c.name:'',date,menu,type,price,pay,staff,memo,note,nextDate,createdAt:nowStr()};history.unshift(newRecord);if(c&&type!=='refund'){c.lastVisit=date;c.visitCount=(c.visitCount||0)+1;}if((isTicketUseEntry(menu)||pay==='回数券')&&cid){const activeTickets=tickets.filter(t=>t.customerId===cid&&t.remaining>0&&(!t.purchaseDate||date>=t.purchaseDate));if(activeTickets.length>0){activeTickets.sort((a,b)=>a.purchaseDate.localeCompare(b.purchaseDate));const t=activeTickets[0];t.remaining=Math.max(0,t.remaining-1);t.consumedLog=t.consumedLog||[];t.consumedLog.push({date,historyId:newRecord.id});saveTickets();}}save();alert(type==='refund'?'返金処理を登録しました！':'会計を登録しました！');document.getElementById('co-type').value='normal';document.getElementById('co-refund-note').style.display='none';document.getElementById('co-menu').value='';document.getElementById('co-price').value='';document.getElementById('co-memo').value='';document.getElementById('co-note').value='';document.getElementById('co-next-date').value='';renderDash();}
+function addCheckout(){const cid=document.getElementById('co-customer').value;const date=document.getElementById('co-date').value;const menu=document.getElementById('co-menu').value;const type=document.getElementById('co-type').value;const rawPrice=parseInt(document.getElementById('co-price').value)||0;const price=type==='refund'?-Math.abs(rawPrice):Math.abs(rawPrice);const pay=document.getElementById('co-pay').value;const staff=document.getElementById('co-staff').value;const memo=document.getElementById('co-memo').value;const note=document.getElementById('co-note').value.trim();const nextDate=document.getElementById('co-next-date').value;if(!cid){alert('顧客を選択してください');return;}if(!menu){alert('メニューを選択してください');return;}if(!rawPrice && pay!=='回数券'){alert('金額を入力してください');return;}const c=customers.find(x=>x.id===cid);const newRecord={id:genId(),customerId:cid,customerName:c?c.name:'',date,menu,type,price,pay,staff,memo,note,nextDate,createdAt:nowStr()};history.unshift(newRecord);addCashbookFromCheckout(newRecord);if(c&&type!=='refund'){c.lastVisit=date;c.visitCount=(c.visitCount||0)+1;}if((isTicketUseEntry(menu)||pay==='回数券')&&cid){const activeTickets=tickets.filter(t=>t.customerId===cid&&t.remaining>0&&(!t.purchaseDate||date>=t.purchaseDate));if(activeTickets.length>0){activeTickets.sort((a,b)=>a.purchaseDate.localeCompare(b.purchaseDate));const t=activeTickets[0];t.remaining=Math.max(0,t.remaining-1);t.consumedLog=t.consumedLog||[];t.consumedLog.push({date,historyId:newRecord.id});saveTickets();}}save();alert(type==='refund'?'返金処理を登録しました！':'会計を登録しました！');document.getElementById('co-type').value='normal';document.getElementById('co-refund-note').style.display='none';document.getElementById('co-menu').value='';document.getElementById('co-price').value='';document.getElementById('co-memo').value='';document.getElementById('co-note').value='';document.getElementById('co-next-date').value='';renderDash();}
 
 function previewReceipt(){const cid=document.getElementById('co-customer').value;const menu=document.getElementById('co-menu').value||'施術';const price=parseInt(document.getElementById('co-price').value)||0;const date=document.getElementById('co-date').value;const c=customers.find(x=>x.id===cid);const name=c?c.name:'様';const tax=Math.round(price-price/1.1);document.getElementById('receipt-card').style.display='block';document.getElementById('receipt-content').innerHTML=`<div class="receipt-preview"><h2>領 収 書</h2><div class="sub">整体院TAK 旭町院</div><div style="margin:8px 0;font-size:12px">${date} 発行</div><div style="margin:8px 0"><strong>${name} 様</strong></div><hr style="margin:8px 0"><div class="receipt-line"><span>${menu}</span><span>${fmt(price)}</span></div><div class="receipt-line total"><span>合 計</span><span>${fmt(price)}</span></div><div class="receipt-line tax"><span>（内消費税10%）</span><span>${fmt(tax)}</span></div><hr style="margin:8px 0"><div style="font-size:11px;margin-top:8px;text-align:center">整体院TAK 旭町院<br>Assist24フィットネスジム内<br>静岡県袋井市旭町</div></div>`;}
 
@@ -1621,7 +1714,7 @@ function renderHistoryRows(list){
     </tr>`;
   }).join('');
 }
-function deleteHistory(id){showModal('削除確認','この履歴を削除しますか？',[{label:'削除',cls:'btn-danger',cb:()=>{history=history.filter(x=>x.id!==id);save();renderHistory();closeModal();}},{label:'キャンセル',cls:'btn-secondary',cb:closeModal}]);}
+function deleteHistory(id){showModal('削除確認','この履歴を削除しますか？',[{label:'削除',cls:'btn-danger',cb:()=>{removeCashbookByLink('checkout',id);history=history.filter(x=>x.id!==id);save();renderHistory();closeModal();}},{label:'キャンセル',cls:'btn-secondary',cb:closeModal}]);}
 function openHistoryEditModal(id){const h=history.find(x=>x.id===id);if(!h)return;document.getElementById('he-id').value=h.id;document.getElementById('he-date').value=h.date;document.getElementById('he-customer-name').value=h.customerName;document.getElementById('he-type').value=h.type||'normal';heTypeChanged();document.getElementById('he-menu').value=h.menu;document.getElementById('he-price').value=Math.abs(h.price);document.getElementById('he-pay').value=h.pay;document.getElementById('he-staff').value=h.staff||'Tak（桑原毅郎）';document.getElementById('he-memo').value=h.memo||'';document.getElementById('he-note').value=h.note||'';document.getElementById('he-next-date').value=h.nextDate||'';document.getElementById('historyEditModalOverlay').classList.add('open');}
 function heTypeChanged(){const t=document.getElementById('he-type').value;document.getElementById('he-refund-note').style.display=t==='refund'?'block':'none';}
 function saveHistoryEdit(){const id=document.getElementById('he-id').value;const idx=history.findIndex(x=>x.id===id);if(idx<0)return;const type=document.getElementById('he-type').value;const rawPrice=parseInt(document.getElementById('he-price').value)||0;const price=type==='refund'?-Math.abs(rawPrice):Math.abs(rawPrice);history[idx]={...history[idx],date:document.getElementById('he-date').value,customerName:document.getElementById('he-customer-name').value,type,price,menu:document.getElementById('he-menu').value,pay:document.getElementById('he-pay').value,staff:document.getElementById('he-staff').value,memo:document.getElementById('he-memo').value,note:document.getElementById('he-note').value,nextDate:document.getElementById('he-next-date').value};save();document.getElementById('historyEditModalOverlay').classList.remove('open');renderHistory();renderDash();}
@@ -2145,6 +2238,164 @@ async function baSaveToDrive() {
 document.addEventListener('DOMContentLoaded', function() {
   setTimeout(baLoadCustomerSelect, 500);
 });
+
+
+// ═══════════════════════════════════════
+// 💰 現金出納帳
+// ═══════════════════════════════════════
+function renderCashbook(){
+  const monthInput=document.getElementById('cb-month');
+  if(!monthInput.value)monthInput.value=today().slice(0,7);
+  if(!document.getElementById('cb-date').value)document.getElementById('cb-date').value=today();
+  const m=monthInput.value;
+  document.getElementById('cb-carryover').value=cashbookCarryover[m]||'';
+  const list=cashbook.filter(e=>e.date.startsWith(m)).sort((a,b)=>{
+    if(a.date!==b.date)return a.date.localeCompare(b.date);
+    return (a.createdAt||'').localeCompare(b.createdAt||'');
+  });
+  let balance=parseInt(cashbookCarryover[m])||0;
+  const tbody=document.getElementById('cashbook-tbody');
+  let html2=`<tr style="background:#f5f5f5;font-weight:600"><td colspan="2"></td><td>繰越</td><td></td><td></td><td>${fmt(balance)}</td><td></td><td></td></tr>`;
+  let totalIn=0,totalOut=0;
+  list.forEach(e=>{
+    const day=e.date.slice(8);
+    const inAmt=e.kind==='in'?e.amount:0;
+    const outAmt=e.kind==='out'?e.amount:0;
+    balance += inAmt - outAmt;
+    totalIn += inAmt;
+    totalOut += outAmt;
+    const linkBadge=e.linkType==='checkout'?'<span style="background:#e3f2fd;color:#1565c0;padding:2px 6px;border-radius:4px;font-size:11px">会計</span>':e.linkType==='bussan'?'<span style="background:#fff3e0;color:#e65100;padding:2px 6px;border-radius:4px;font-size:11px">物販</span>':'';
+    const editBtn=e.linkType?'':`<button class="btn btn-secondary btn-sm" onclick="editCashbookEntry('${e.id}')">編集</button>`;
+    const delBtn=e.linkType?`<button class="btn btn-secondary btn-sm" disabled style="opacity:0.4">連携</button>`:`<button class="btn btn-danger btn-sm" onclick="deleteCashbookEntry('${e.id}')">削除</button>`;
+    html2+=`<tr><td>${day}</td><td>${e.account}</td><td>${e.counterparty||''}${e.memo?' / '+e.memo:''}</td><td style="color:#1565c0;font-weight:600">${inAmt?fmt(inAmt):''}</td><td style="color:#d32f2f;font-weight:600">${outAmt?fmt(outAmt):''}</td><td>${fmt(balance)}</td><td>${linkBadge}</td><td>${editBtn} ${delBtn}</td></tr>`;
+  });
+  if(list.length===0){
+    html2+='<tr><td colspan="8" class="empty-state">この月の取引はありません</td></tr>';
+  }else{
+    html2+=`<tr style="background:#f5f5f5;font-weight:700"><td colspan="3">月計</td><td style="color:#1565c0">${fmt(totalIn)}</td><td style="color:#d32f2f">${fmt(totalOut)}</td><td>${fmt(balance)}</td><td colspan="2"></td></tr>`;
+  }
+  tbody.innerHTML=html2;
+  document.getElementById('cb-summary').innerHTML=`<div class="bussan-stat"><div class="blabel">繰越（前月末）</div><div class="bvalue">${fmt(parseInt(cashbookCarryover[m])||0)}</div></div><div class="bussan-stat"><div class="blabel">入金合計</div><div class="bvalue" style="color:#1565c0">${fmt(totalIn)}</div></div><div class="bussan-stat"><div class="blabel">出金合計</div><div class="bvalue" style="color:#d32f2f">${fmt(totalOut)}</div></div><div class="bussan-stat"><div class="blabel">月末残高</div><div class="bvalue">${fmt(balance)}</div></div>`;
+}
+function saveCarryover(){
+  const m=document.getElementById('cb-month').value;
+  if(!m){alert('月を選択してください');return;}
+  const v=document.getElementById('cb-carryover').value;
+  cashbookCarryover[m]=v?parseInt(v):0;
+  save();
+  alert('繰越金額を保存しました');
+  renderCashbook();
+}
+function cbAccountChanged(){
+  const acc=document.getElementById('cb-account').value;
+  const incomeAccounts=['整体院現金売上','インディバ売上','物販現金売上','サブスク現金売上','回数券現金売上','現金入金','その他収入'];
+  if(incomeAccounts.includes(acc))document.getElementById('cb-kind').value='in';
+  else if(acc==='回数券返金')document.getElementById('cb-kind').value='in';
+  else if(acc)document.getElementById('cb-kind').value='out';
+}
+function addCashbookEntry(){
+  const date=document.getElementById('cb-date').value;
+  const kind=document.getElementById('cb-kind').value;
+  const amount=parseInt(document.getElementById('cb-amount').value)||0;
+  const account=document.getElementById('cb-account').value;
+  const counterparty=document.getElementById('cb-counterparty').value.trim();
+  const memo=document.getElementById('cb-memo').value.trim();
+  if(!date){alert('日付を入力してください');return;}
+  if(!amount){alert('金額を入力してください');return;}
+  if(!account){alert('勘定科目を選択してください');return;}
+  cashbook.push({id:genId(),date,kind,amount,account,counterparty,memo,linkType:'',linkId:'',createdAt:nowStr()});
+  save();
+  clearCashbookForm();
+  renderCashbook();
+}
+function clearCashbookForm(){
+  document.getElementById('cb-amount').value='';
+  document.getElementById('cb-account').value='';
+  document.getElementById('cb-counterparty').value='';
+  document.getElementById('cb-memo').value='';
+}
+function editCashbookEntry(id){
+  const e=cashbook.find(x=>x.id===id);
+  if(!e)return;
+  if(e.linkType){alert('連携データは編集できません。元の会計/物販を編集してください。');return;}
+  document.getElementById('cb-date').value=e.date;
+  document.getElementById('cb-kind').value=e.kind;
+  document.getElementById('cb-amount').value=e.amount;
+  document.getElementById('cb-account').value=e.account;
+  document.getElementById('cb-counterparty').value=e.counterparty||'';
+  document.getElementById('cb-memo').value=e.memo||'';
+  cashbook=cashbook.filter(x=>x.id!==id);
+  save();
+  renderCashbook();
+  window.scrollTo(0,0);
+}
+function deleteCashbookEntry(id){
+  const e=cashbook.find(x=>x.id===id);
+  if(!e)return;
+  if(e.linkType){alert('連携データは削除できません。元の会計/物販を削除してください。');return;}
+  showModal('削除確認','この出納帳エントリを削除しますか？',[
+    {label:'削除',cls:'btn-danger',cb:()=>{cashbook=cashbook.filter(x=>x.id!==id);save();renderCashbook();closeModal();}},
+    {label:'キャンセル',cls:'btn-secondary',cb:closeModal}
+  ]);
+}
+function exportCashbookCSV(){
+  const m=document.getElementById('cb-month').value||today().slice(0,7);
+  const list=cashbook.filter(e=>e.date.startsWith(m)).sort((a,b)=>{
+    if(a.date!==b.date)return a.date.localeCompare(b.date);
+    return (a.createdAt||'').localeCompare(b.createdAt||'');
+  });
+  let balance=parseInt(cashbookCarryover[m])||0;
+  const rows=[['月','日','摘要','借方金額','貸方金額','差引残高']];
+  rows.push(['','','繰越','','',balance]);
+  let totalIn=0,totalOut=0;
+  list.forEach(e=>{
+    const inAmt=e.kind==='in'?e.amount:0;
+    const outAmt=e.kind==='out'?e.amount:0;
+    balance += inAmt - outAmt;
+    totalIn += inAmt;
+    totalOut += outAmt;
+    const summary=e.counterparty?`${e.account}（${e.counterparty}）`:e.account;
+    rows.push([m.split('-')[1],e.date.slice(8),summary,inAmt||'',outAmt||'',balance]);
+  });
+  rows.push(['','','月計',totalIn,totalOut,balance]);
+  downloadCSV(rows,'現金出納帳_'+m+'.csv');
+}
+// ─── 連携ヘルパー ───
+function addCashbookFromCheckout(historyEntry){
+  if(historyEntry.pay!=='現金')return;
+  if(!historyEntry.price||historyEntry.price<=0)return;
+  const account = (historyEntry.staff && historyEntry.staff.includes('日向')) ? 'インディバ売上' : '整体院現金売上';
+  cashbook.push({
+    id:genId(),
+    date:historyEntry.date,
+    kind:'in',
+    amount:historyEntry.price,
+    account,
+    counterparty:historyEntry.staff||'TAK',
+    memo:historyEntry.menu||'',
+    linkType:'checkout',
+    linkId:historyEntry.id,
+    createdAt:nowStr()
+  });
+}
+function removeCashbookByLink(linkType,linkId){
+  cashbook=cashbook.filter(e=>!(e.linkType===linkType && e.linkId===linkId));
+}
+function addCashbookFromBussan(sale){
+  cashbook.push({
+    id:genId(),
+    date:sale.date,
+    kind:'in',
+    amount:sale.price,
+    account:'物販現金売上',
+    counterparty:sale.customerName||'',
+    memo:sale.productName+' ×'+sale.qty,
+    linkType:'bussan',
+    linkId:sale.id,
+    createdAt:nowStr()
+  });
+}
+
 </script>
 </body>
 </html>
