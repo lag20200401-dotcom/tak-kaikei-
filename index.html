@@ -866,6 +866,7 @@
   <div class="card-title" style="color:#2e7d32;">📁 Gドライブ保存</div>
   <div class="form-group" style="margin-bottom:8px;">
     <label style="font-size:12px;color:#555;">顧客</label>
+    <input type="text" id="ba-dr-customer-search" placeholder="名前で検索…" oninput="filterBaCustomers()" style="font-size:12px;border:1px solid #a5d6a7;border-radius:4px;padding:4px 6px;width:100%;margin-bottom:4px;box-sizing:border-box">
     <select id="ba-dr-customer" class="form-control" style="font-size:12px;border-color:#a5d6a7;">
       <option value="">-- 顧客を選択 --</option>
     </select>
@@ -1752,7 +1753,35 @@ var baBlurType='logo';
 var baCurDesign='a';
 function baShowDesign(d){baCurDesign=d;var pa=document.getElementById('ba-panel-a');var pc=document.getElementById('ba-panel-c');if(pa)pa.style.display=d==='a'?'flex':'none';if(pc)pc.style.display=d==='c'?'flex':'none';var da=document.getElementById('ba-dt-a');var dc=document.getElementById('ba-dt-c');if(da)da.style.opacity=d==='a'?'1':'.45';if(dc)dc.style.opacity=d==='c'?'1':'.45';setTimeout(baDrawAll,50);}
 function baTriggerFile(side){var el=document.getElementById('ba-'+side+'-input');if(el)el.click();}
-function baLoadImage(e,side){var f=e.target.files[0];if(!f)return;e.target.value='';var reader=new FileReader();reader.onload=function(ev){var img=new Image();img.onload=function(){baImgs[side]=img;var zones=['ba-a-'+(side==='before'?'b':'a')+'zone','ba-c-'+(side==='before'?'b':'a')+'zone'];zones.forEach(function(id){var z=document.getElementById(id);if(z)z.innerHTML='<img src="'+ev.target.result+'" alt="'+side+'" style="width:100%;display:block;border-radius:6px;">';});setTimeout(baDrawAll,100);};img.src=ev.target.result;};reader.readAsDataURL(f);}
+function baLoadImage(e,side){var f=e.target.files[0];if(!f)return;e.target.value='';var reader=new FileReader();reader.onload=function(ev){var img=new Image();img.onload=function(){
+    // 自動リサイズ: 長辺が1600pxを超える場合は縮小
+    var MAX_DIM = 1600;
+    var w = img.naturalWidth, h = img.naturalHeight;
+    var resizedSrc = ev.target.result;
+    if (w > MAX_DIM || h > MAX_DIM) {
+      var scale = Math.min(MAX_DIM/w, MAX_DIM/h);
+      var nw = Math.round(w * scale), nh = Math.round(h * scale);
+      var canvas = document.createElement('canvas');
+      canvas.width = nw; canvas.height = nh;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, nw, nh);
+      resizedSrc = canvas.toDataURL('image/jpeg', 0.9);
+      var resizedImg = new Image();
+      resizedImg.onload = function() {
+        baImgs[side] = resizedImg;
+        var zones=['ba-a-'+(side==='before'?'b':'a')+'zone','ba-c-'+(side==='before'?'b':'a')+'zone'];
+        zones.forEach(function(id){var z=document.getElementById(id);if(z)z.innerHTML='<img src="'+resizedSrc+'" alt="'+side+'" style="width:100%;display:block;border-radius:6px;">';});
+        setTimeout(baDrawAll,100);
+      };
+      resizedImg.src = resizedSrc;
+      console.log('画像をリサイズしました: '+w+'x'+h+' → '+nw+'x'+nh);
+    } else {
+      baImgs[side]=img;
+      var zones=['ba-a-'+(side==='before'?'b':'a')+'zone','ba-c-'+(side==='before'?'b':'a')+'zone'];
+      zones.forEach(function(id){var z=document.getElementById(id);if(z)z.innerHTML='<img src="'+ev.target.result+'" alt="'+side+'" style="width:100%;display:block;border-radius:6px;">';});
+      setTimeout(baDrawAll,100);
+    }
+  };img.src=ev.target.result;};reader.readAsDataURL(f);}
 function baUpdatePoints(){var p1=document.getElementById('ba-point1').value||'姿勢改善';var p2=document.getElementById('ba-point2').value||'肩甲骨整列';var p3=document.getElementById('ba-point3').value||'体幹整正';var t1=document.getElementById('ba-tag1');if(t1)t1.textContent='✓ '+p1;var t2=document.getElementById('ba-tag2');if(t2)t2.textContent='✓ '+p2;var t3=document.getElementById('ba-tag3');if(t3)t3.textContent='✓ '+p3;var f1=document.getElementById('ba-cf1');if(f1)f1.textContent=p1;var f2=document.getElementById('ba-cf2');if(f2)f2.textContent=p2;var f3=document.getElementById('ba-cf3');if(f3)f3.textContent=p3;}
 function baSyncSlider(key,val){val=parseInt(val);var map={'bx':{sl:'ba-bx',vl:'ba-vbx',vlc:'ba-vbx-c',cfg:'before',prop:'x'},'by':{sl:'ba-by',vl:'ba-vby',vlc:'ba-vby-c',cfg:'before',prop:'y'},'br':{sl:'ba-br',vl:'ba-vbr',vlc:'ba-vbr-c',cfg:'before',prop:'r'},'ax':{sl:'ba-ax',vl:'ba-vax',vlc:'ba-vax-c',cfg:'after',prop:'x'},'ay':{sl:'ba-ay',vl:'ba-vay',vlc:'ba-vay-c',cfg:'after',prop:'y'},'ar':{sl:'ba-ar',vl:'ba-var',vlc:'ba-var-c',cfg:'after',prop:'r'}};var m=map[key];if(!m)return;baCfg[m.cfg][m.prop]=val;var sl=document.getElementById(m.sl);if(sl)sl.value=val;var vl=document.getElementById(m.vl);if(vl)vl.textContent=val+'%';var vlc=document.getElementById(m.vlc);if(vlc)vlc.textContent=val+'%';baDrawAll();}
 function baSetTarget(t){var sb=document.getElementById('ba-sl-before');var sa=document.getElementById('ba-sl-after');var tb=document.getElementById('ba-tgt-before');var ta=document.getElementById('ba-tgt-after');var sbc=document.getElementById('ba-sl-before-c');var sac=document.getElementById('ba-sl-after-c');var tbc=document.getElementById('ba-tgt-before-c');var tac=document.getElementById('ba-tgt-after-c');var onA='#0a1628',offA='#2a3a50',onAc='#c8f5a0',offAc='#aaa';var onC='#7c3aed',offC='#f8f6ff',onCc='#fff',offCc='#7c3aed';if(sb)sb.style.display=t==='before'?'block':'none';if(sa)sa.style.display=t==='after'?'block':'none';if(sbc)sbc.style.display=t==='before'?'block':'none';if(sac)sac.style.display=t==='after'?'block':'none';if(tb){tb.style.background=t==='before'?onA:offA;tb.style.color=t==='before'?onAc:offAc;tb.style.borderColor=t==='before'?onA:offA;}if(ta){ta.style.background=t==='after'?onA:offA;ta.style.color=t==='after'?onAc:offAc;ta.style.borderColor=t==='after'?onA:offA;}if(tbc){tbc.style.background=t==='before'?onC:offC;tbc.style.color=t==='before'?onCc:offCc;tbc.style.borderColor=t==='before'?onC:'#ddd5ff';}if(tac){tac.style.background=t==='after'?onC:offC;tac.style.color=t==='after'?onCc:offCc;tac.style.borderColor=t==='after'?onC:'#ddd5ff';}}
@@ -2118,6 +2147,28 @@ function baLoadCustomerSelect() {
       opt.textContent = c.name;
       sel.appendChild(opt);
     });
+  } catch (e) {}
+}
+function filterBaCustomers() {
+  var q = (document.getElementById('ba-dr-customer-search').value || '').toLowerCase();
+  var sel = document.getElementById('ba-dr-customer');
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">-- 顧客を選択 --</option>';
+  try {
+    var custs = JSON.parse(localStorage.getItem('tak_customers') || '[]');
+    custs.filter(function(c) {
+      if (!c.name) return false;
+      if (!q) return true;
+      return c.name.toLowerCase().includes(q) || (c.kana||'').toLowerCase().includes(q) || (c.no||'').includes(q);
+    }).sort(function(a, b) {
+      return (a.name || '').localeCompare(b.name || '', 'ja');
+    }).forEach(function(c) {
+      var opt = document.createElement('option');
+      opt.value = c.name;
+      opt.textContent = (c.no?'['+c.no+'] ':'') + c.name;
+      sel.appendChild(opt);
+    });
+    sel.value = cur;
   } catch (e) {}
 }
  
