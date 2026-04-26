@@ -222,7 +222,7 @@ class SyncManager {
 // ═══════════════════════════════════════
 // グローバル変数
 // ═══════════════════════════════════════
-let syncManager = null;
+var syncManager = null;
 
 // ═══════════════════════════════════════
 // パスコード認証
@@ -263,27 +263,31 @@ async function submitPasscode() {
 }
 
 async function tryAutoLogin() {
+  const overlay = document.getElementById('passcode-overlay');
   const saved = localStorage.getItem('tak_passcode');
   if (!saved) {
-    document.getElementById('pc-1').focus();
+    const pc1 = document.getElementById('pc-1');
+    if (pc1) pc1.focus();
     return;
   }
   syncManager = new SyncManager(GAS_URL, saved);
   const ok = await syncManager.auth();
   if (ok) {
-    const overlay = document.getElementById('passcode-overlay');
-    const p = overlay.querySelector('p');
-    if (p) p.textContent = 'データを読み込み中…';
+    if (overlay) {
+      const p = overlay.querySelector('p');
+      if (p) p.textContent = 'データを読み込み中…';
+    }
     await syncManager.pullAll();
     syncManager.startAutoSync();
-    overlay.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
     renderDash();
     populateCustomerSelect();
     renderTicketSummary();
-    if (kmCustomers.length) { kmUpdateStats(); kmApplyFilters(); }
+    if (typeof kmCustomers !== 'undefined' && kmCustomers.length) { kmUpdateStats(); kmApplyFilters(); }
   } else {
     localStorage.removeItem('tak_passcode');
-    document.getElementById('pc-1').focus();
+    const pc1 = document.getElementById('pc-1');
+    if (pc1) pc1.focus();
   }
 }
 
