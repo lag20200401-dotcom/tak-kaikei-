@@ -878,7 +878,21 @@
       <option value="diet">ダイエット（diet）</option>
     </select>
   </div>
-  <button class="btn btn-primary" onclick="baSaveToDrive()" id="ba-drive-btn" style="background:#2e7d32;width:100%;">📤 Gドライブに保存（before + after）</button>
+  <div style="margin-bottom:8px;">
+    <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#555;cursor:pointer;">
+      <input type="checkbox" id="ba-dr-composite" checked style="accent-color:#2e7d32;">
+      合成画像（横並び1枚）も保存する
+    </label>
+    <div style="display:flex;gap:6px;margin-top:4px;" id="ba-dr-design-row">
+      <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#888;cursor:pointer;">
+        <input type="radio" name="ba-dr-design" value="a" checked style="accent-color:#2e7d32;"> モノトーン(A)
+      </label>
+      <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#888;cursor:pointer;">
+        <input type="radio" name="ba-dr-design" value="c" style="accent-color:#7c3aed;"> エディトリアル(C)
+      </label>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="baSaveToDrive()" id="ba-drive-btn" style="background:#2e7d32;width:100%;">📤 Gドライブに保存（before + after + 合成）</button>
   <div id="ba-drive-status" style="font-size:11px;text-align:center;margin-top:6px;min-height:16px;"></div>
 </div>
 </div>
@@ -2218,6 +2232,68 @@ function baCaptureImage(label) {
   return out.toDataURL('image/jpeg', 0.85);
 }
  
+// ─── 合成画像レンダリング（デザインA or C） ──────
+function baRenderComposite(design) {
+  if (!baImgs.before || !baImgs.after) return null;
+  var W = 1080, half = 539, divW = 2, labelH = 50;
+  var bSrc = baImgs.before, aSrc = baImgs.after;
+  var bH = Math.round(half * bSrc.naturalHeight / bSrc.naturalWidth);
+  var aH = Math.round(half * aSrc.naturalHeight / aSrc.naturalWidth);
+  var imgH = Math.max(bH, aH);
+  var cv = document.createElement('canvas'); var ctx;
+  if (design === 'a') {
+    var tagH=44,footH=32,topH=40; var totalH=topH+labelH+imgH+tagH+footH;
+    cv.width=W; cv.height=totalH; ctx=cv.getContext('2d');
+    ctx.fillStyle='#0a1628'; ctx.fillRect(0,0,W,totalH);
+    ctx.fillStyle='#c8f5a0'; ctx.font='bold 18px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText('整体院  TAK',24,topH/2);
+    ctx.fillStyle='#444'; ctx.font='12px sans-serif'; ctx.textAlign='right'; ctx.fillText('施術後の変化',W-24,topH/2);
+    ctx.fillStyle='rgba(0,0,0,0.85)'; ctx.fillRect(0,topH,half,labelH);
+    ctx.fillStyle='#c8f5a0'; ctx.fillRect(half+divW,topH,W-half-divW,labelH);
+    ctx.font='bold 20px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='#c8f5a0'; ctx.fillText('BEFORE',half/2,topH+labelH/2);
+    ctx.fillStyle='#0a1628'; ctx.fillText('AFTER',half+divW+(W-half-divW)/2,topH+labelH/2);
+    ctx.fillStyle='#c8f5a0'; ctx.fillRect(half,topH,divW,labelH+imgH);
+    var yImg=topH+labelH; ctx.drawImage(bSrc,0,yImg,half,bH); ctx.drawImage(aSrc,half+divW,yImg,W-half-divW,aH);
+    [{side:'before',cfg:baCfg.before,ox:0,oy:yImg,iw:half,ih:bH},{side:'after',cfg:baCfg.after,ox:half+divW,oy:yImg,iw:W-half-divW,ih:aH}].forEach(function(d){
+      var type=d.cfg.blur||baBlurType; if(type==='none')return;
+      var cx2=d.ox+d.cfg.x/100*d.iw,cy2=d.oy+d.cfg.y/100*d.ih,r2=d.cfg.r/100*Math.min(d.iw,d.ih);
+      var useLogo=(type==='logo')||(type==='both'&&d.side==='before');
+      ctx.beginPath();ctx.arc(cx2,cy2,r2,0,Math.PI*2);ctx.fillStyle=useLogo?'#0a1628':'#4db8d4';ctx.fill();
+      ctx.beginPath();ctx.arc(cx2,cy2,r2,0,Math.PI*2);ctx.strokeStyle=useLogo?'#c8f5a0':'#e0f7ff';ctx.lineWidth=Math.max(2,r2*0.08);ctx.stroke();
+      ctx.fillStyle=useLogo?'#c8f5a0':'#e0f7ff';ctx.font='bold '+(r2*0.52)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(useLogo?'TAK':':)',cx2,cy2);
+    });
+    var yTag=topH+labelH+imgH; ctx.fillStyle='#0a1628'; ctx.fillRect(0,yTag,W,tagH);
+    var tags=[document.getElementById('ba-tag1')?document.getElementById('ba-tag1').textContent:'✓ 姿勢改善',document.getElementById('ba-tag2')?document.getElementById('ba-tag2').textContent:'✓ 肩甲骨整列',document.getElementById('ba-tag3')?document.getElementById('ba-tag3').textContent:'✓ 体幹整正'];
+    var tagX=20,tagY=yTag+tagH/2; ctx.font='bold 13px sans-serif'; ctx.textBaseline='middle';
+    tags.forEach(function(tag){var tw=ctx.measureText(tag).width+20;ctx.fillStyle='#112240';ctx.beginPath();ctx.roundRect(tagX,tagY-12,tw,24,12);ctx.fill();ctx.fillStyle='#c8f5a0';ctx.textAlign='left';ctx.fillText(tag,tagX+10,tagY);tagX+=tw+8;});
+    var yFoot=yTag+tagH; ctx.fillStyle='#060e1a'; ctx.fillRect(0,yFoot,W,footH);
+    ctx.fillStyle='#444'; ctx.font='12px sans-serif'; ctx.textBaseline='middle'; ctx.textAlign='left'; ctx.fillText('@seitai_tak',20,yFoot+footH/2); ctx.textAlign='right'; ctx.fillText('#整体 #腰痛 #坐骨神経痛 #姿勢改善 #袋井',W-20,yFoot+footH/2);
+  } else {
+    var cTopH=56,cLabelH=44,cChangeH=28,cFootH=40; var totalHc=cTopH+cLabelH+bH+cChangeH+aH+cFootH;
+    cv.width=W; cv.height=totalHc; ctx=cv.getContext('2d');
+    ctx.fillStyle='#f8f6ff'; ctx.fillRect(0,0,W,totalHc);
+    ctx.fillStyle='#7c3aed'; ctx.font='bold 14px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText('整体院  TAK',24,cTopH*0.38);
+    ctx.fillStyle='#bbb'; ctx.font='11px sans-serif'; ctx.fillText('BODY TRANSFORMATION',24,cTopH*0.72);
+    ctx.fillStyle='#e0d8ff'; ctx.fillRect(24,cTopH-2,W-48,1);
+    ctx.fillStyle='#7c3aed'; ctx.fillRect(0,cTopH,W,cLabelH); ctx.fillStyle='#fff'; ctx.font='bold 20px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('BEFORE',W/2,cTopH+cLabelH/2);
+    ctx.drawImage(bSrc,0,cTopH+cLabelH,W,bH);
+    var bcx=baCfg.before.x/100*W,bcy=(cTopH+cLabelH)+baCfg.before.y/100*bH,br=baCfg.before.r/100*Math.min(W,bH);
+    var btLogo=(baCfg.before.blur||baBlurType)==='logo'||(baCfg.before.blur||baBlurType)==='both';
+    if((baCfg.before.blur||baBlurType)!=='none'){ctx.beginPath();ctx.arc(bcx,bcy,br,0,Math.PI*2);ctx.fillStyle=btLogo?'#0a1628':'#4db8d4';ctx.fill();ctx.beginPath();ctx.arc(bcx,bcy,br,0,Math.PI*2);ctx.strokeStyle=btLogo?'#c8f5a0':'#e0f7ff';ctx.lineWidth=Math.max(2,br*0.08);ctx.stroke();ctx.fillStyle=btLogo?'#c8f5a0':'#e0f7ff';ctx.font='bold '+(br*0.52)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(btLogo?'TAK':':)',bcx,bcy);}
+    var yCh=cTopH+cLabelH+bH; ctx.fillStyle='#f0ebff'; ctx.fillRect(0,yCh,W,cChangeH); ctx.fillStyle='#7c3aed'; ctx.font='bold 14px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('▼  CHANGE  ▼',W/2,yCh+cChangeH/2);
+    ctx.fillStyle='#fbbf24'; ctx.fillRect(0,yCh+cChangeH,W,cLabelH); ctx.fillStyle='#1a0a00'; ctx.font='bold 20px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('AFTER',W/2,yCh+cChangeH+cLabelH/2);
+    ctx.drawImage(aSrc,0,yCh+cChangeH+cLabelH,W,aH);
+    var acx=baCfg.after.x/100*W,acy=(yCh+cChangeH+cLabelH)+baCfg.after.y/100*aH,ar2=baCfg.after.r/100*Math.min(W,aH);
+    var atLogo=(baCfg.after.blur||baBlurType)==='smile'||(baCfg.after.blur||baBlurType)==='both';
+    if((baCfg.after.blur||baBlurType)!=='none'){ctx.beginPath();ctx.arc(acx,acy,ar2,0,Math.PI*2);ctx.fillStyle=atLogo?'#4db8d4':'#0a1628';ctx.fill();ctx.beginPath();ctx.arc(acx,acy,ar2,0,Math.PI*2);ctx.strokeStyle=atLogo?'#e0f7ff':'#c8f5a0';ctx.lineWidth=Math.max(2,ar2*0.08);ctx.stroke();ctx.fillStyle=atLogo?'#e0f7ff':'#c8f5a0';ctx.font='bold '+(ar2*0.52)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(atLogo?':)':'TAK',acx,acy);}
+    var yFc=yCh+cChangeH+cLabelH+aH; ctx.fillStyle='#f0ebff'; ctx.fillRect(0,yFc,W,cFootH);
+    var fps=[document.getElementById('ba-cf1')?document.getElementById('ba-cf1').textContent:'姿勢改善',document.getElementById('ba-cf2')?document.getElementById('ba-cf2').textContent:'肩甲骨整列',document.getElementById('ba-cf3')?document.getElementById('ba-cf3').textContent:'可動域拡大'];
+    ctx.fillStyle='#e0d8ff'; ctx.fillRect(W/3,yFc+8,1,cFootH-16); ctx.fillRect(W*2/3,yFc+8,1,cFootH-16);
+    fps.forEach(function(txt,i){ctx.fillStyle='#7c3aed';ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,W/6+W/3*i,yFc+cFootH/2);});
+  }
+  return cv.toDataURL('image/jpeg', 0.90);
+}
+
 // ─── Gドライブ保存（fetch + JSON応答） ──────
 async function baSaveToDrive() {
   baLoadCustomerSelect();
@@ -2266,16 +2342,38 @@ async function baSaveToDrive() {
     }
   }
  
+  var compositeChecked = document.getElementById('ba-dr-composite').checked;
+  var compositeData = null;
+  if (compositeChecked) {
+    var designRadio = document.querySelector('input[name="ba-dr-design"]:checked');
+    var designType = designRadio ? designRadio.value : 'a';
+    compositeData = baRenderComposite(designType);
+    if (!compositeData) {
+      statusEl.textContent = '⚠ 合成画像の生成に失敗しました';
+      statusEl.style.color = '#c62828';
+      btn.disabled = false;
+      return;
+    }
+  }
+  var totalSteps = compositeChecked ? 3 : 2;
+
   try {
-    statusEl.textContent = '保存中… (1/2 before)';
+    statusEl.textContent = '保存中… (1/' + totalSteps + ' before)';
     var r1 = await sendOne('before', bData);
     if (!r1.ok) throw new Error('before失敗: ' + (r1.error || '不明'));
  
-    statusEl.textContent = '保存中… (2/2 after)';
+    statusEl.textContent = '保存中… (2/' + totalSteps + ' after)';
     var r2 = await sendOne('after', aData);
     if (!r2.ok) throw new Error('after失敗: ' + (r2.error || '不明'));
- 
-    statusEl.textContent = '✅ 保存完了！ ' + name + ' / ' + category + ' / ' + date;
+
+    if (compositeChecked && compositeData) {
+      statusEl.textContent = '保存中… (3/' + totalSteps + ' 合成画像)';
+      var r3 = await sendOne('composite', compositeData);
+      if (!r3.ok) throw new Error('合成画像失敗: ' + (r3.error || '不明'));
+    }
+
+    var savedLabel = compositeChecked ? 'before + after + 合成' : 'before + after';
+    statusEl.textContent = '✅ 保存完了！ ' + name + ' / ' + category + ' / ' + date + ' (' + savedLabel + ')';
     statusEl.style.color = '#2e7d32';
   } catch (err) {
     statusEl.textContent = '⚠ ' + err.message;
