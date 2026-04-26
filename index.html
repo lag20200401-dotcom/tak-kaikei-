@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>整体院TAK 会計アプリ</title>
+<title>整体院TAK 会計アプリ v10-cloud</title>
 <style>
   :root {
     --green: #2e7d52; --green-light: #e8f5ee; --text: #1a1a1a; --text-sub: #555;
@@ -140,9 +140,31 @@
 </style>
 </head>
 <body>
+<!-- パスコード認証画面 -->
+<div id="passcode-overlay" style="display:flex;position:fixed;inset:0;background:#f8f9fa;z-index:9999;align-items:center;justify-content:center;flex-direction:column">
+  <div style="background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.15);padding:32px;max-width:360px;width:90%;text-align:center">
+    <div style="font-size:40px;margin-bottom:12px">🌿</div>
+    <h2 style="font-size:18px;color:#2e7d52;margin-bottom:4px">整体院TAK 会計アプリ</h2>
+    <p style="font-size:12px;color:#888;margin-bottom:20px">パスコードを入力してください</p>
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px">
+      <input type="password" id="pc-1" maxlength="1" inputmode="numeric" pattern="[0-9]" style="width:48px;height:56px;text-align:center;font-size:24px;border:2px solid #ccc;border-radius:8px;font-family:inherit" oninput="pcNext(this,1)">
+      <input type="password" id="pc-2" maxlength="1" inputmode="numeric" pattern="[0-9]" style="width:48px;height:56px;text-align:center;font-size:24px;border:2px solid #ccc;border-radius:8px;font-family:inherit" oninput="pcNext(this,2)">
+      <input type="password" id="pc-3" maxlength="1" inputmode="numeric" pattern="[0-9]" style="width:48px;height:56px;text-align:center;font-size:24px;border:2px solid #ccc;border-radius:8px;font-family:inherit" oninput="pcNext(this,3)">
+      <input type="password" id="pc-4" maxlength="1" inputmode="numeric" pattern="[0-9]" style="width:48px;height:56px;text-align:center;font-size:24px;border:2px solid #ccc;border-radius:8px;font-family:inherit" oninput="pcNext(this,4)">
+    </div>
+    <div id="pc-error" style="color:#c62828;font-size:13px;margin-bottom:12px;min-height:20px"></div>
+    <button onclick="submitPasscode()" style="background:#2e7d52;color:#fff;border:none;border-radius:8px;padding:12px 32px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;width:100%">ログイン</button>
+    <label style="display:flex;align-items:center;gap:6px;justify-content:center;margin-top:12px;font-size:12px;color:#888;cursor:pointer">
+      <input type="checkbox" id="pc-remember" checked style="accent-color:#2e7d52"> このデバイスを記憶する
+    </label>
+  </div>
+</div>
 <header>
   <h1>🌿 整体院TAK 会計アプリ</h1>
-  <span id="headerDate"></span>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span id="syncIndicator" title="同期状態" style="cursor:pointer;font-size:14px" onclick="manualSync()">⏳</span>
+    <span id="headerDate"></span>
+  </div>
 </header>
 <div class="tabs">
   <div class="tab active" onclick="showPanel('dash')">📊 ダッシュボード</div>
@@ -2546,5 +2568,6 @@ function addCashbookFromBussan(sale){
 }
 
 </script>
+<script src="sync.js"></script>
 </body>
 </html>
