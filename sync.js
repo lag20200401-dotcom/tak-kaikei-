@@ -26,6 +26,71 @@ class SyncManager {
     return id;
   }
 
+  // クラウドから取得したデータの型を正規化
+  _normalizeData(d) {
+    // history: date を YYYY-MM-DD に、price を数値に
+    if (d.history) {
+      d.history.forEach(h => {
+        if (h.date && h.date.includes('T')) h.date = h.date.slice(0, 10);
+        if (h.price !== undefined) h.price = Number(h.price) || 0;
+        if (h.visitCount !== undefined) h.visitCount = Number(h.visitCount) || 0;
+        // consumedLog がJSON文字列なら復元
+        if (typeof h.consumedLog === 'string') try { h.consumedLog = JSON.parse(h.consumedLog); } catch(e) {}
+      });
+    }
+    // customers: date fields, numeric fields
+    if (d.customers) {
+      d.customers.forEach(c => {
+        if (c.lastVisit && c.lastVisit.includes('T')) c.lastVisit = c.lastVisit.slice(0, 10);
+        if (c.birth && c.birth.includes('T')) c.birth = c.birth.slice(0, 10);
+        if (c.visitCount !== undefined) c.visitCount = Number(c.visitCount) || 0;
+      });
+    }
+    // products: numeric fields
+    if (d.products) {
+      d.products.forEach(p => {
+        ['price','cost','profit','stock'].forEach(k => { if (p[k] !== undefined) p[k] = Number(p[k]) || 0; });
+      });
+    }
+    // bussan_sales: numeric fields
+    if (d.bussan_sales) {
+      d.bussan_sales.forEach(s => {
+        if (s.date && s.date.includes('T')) s.date = s.date.slice(0, 10);
+        ['qty','price','profit'].forEach(k => { if (s[k] !== undefined) s[k] = Number(s[k]) || 0; });
+      });
+    }
+    // cashbook: numeric fields
+    if (d.cashbook) {
+      d.cashbook.forEach(e => {
+        if (e.date && e.date.includes('T')) e.date = e.date.slice(0, 10);
+        if (e.amount !== undefined) e.amount = Number(e.amount) || 0;
+      });
+    }
+    // tickets: numeric fields, JSON consumedLog
+    if (d.tickets) {
+      d.tickets.forEach(t => {
+        ['total','remaining','paid'].forEach(k => { if (t[k] !== undefined) t[k] = Number(t[k]) || 0; });
+        if (t.purchaseDate && t.purchaseDate.includes('T')) t.purchaseDate = t.purchaseDate.slice(0, 10);
+        if (typeof t.consumedLog === 'string') try { t.consumedLog = JSON.parse(t.consumedLog); } catch(e) { t.consumedLog = []; }
+      });
+    }
+    // subscriptions: numeric fields
+    if (d.subscriptions) {
+      d.subscriptions.forEach(s => {
+        ['qty','monthly'].forEach(k => { if (s[k] !== undefined) s[k] = Number(s[k]) || 0; });
+        if (s.startDate && s.startDate.includes('T')) s.startDate = s.startDate.slice(0, 10);
+        if (s.cancelDate && s.cancelDate.includes('T')) s.cancelDate = s.cancelDate.slice(0, 10);
+      });
+    }
+    // km_customers: numeric fields
+    if (d.km_customers) {
+      d.km_customers.forEach(c => {
+        ['sales','avg','visits','days'].forEach(k => { if (c[k] !== undefined) c[k] = Number(c[k]) || 0; });
+      });
+    }
+    return d;
+  }
+
   _savePending() {
     localStorage.setItem('tak_pendingSync', JSON.stringify(this.pendingQueue));
   }
@@ -70,7 +135,7 @@ class SyncManager {
     try {
       const r = await this._fetch({ action: 'pull' });
       if (!r.success) { this.setStatus('🔴', '同期エラー: ' + (r.error || '')); return false; }
-      const d = r.data;
+      const d = this._normalizeData(r.data);
       // クラウドにデータがあればlocalStorageを更新
       if (d.customers && d.customers.length) { customers = d.customers; localStorage.setItem('tak_customers', JSON.stringify(customers)); }
       if (d.history && d.history.length) { history = d.history; localStorage.setItem('tak_history', JSON.stringify(history)); }
@@ -105,7 +170,7 @@ class SyncManager {
       if (this.lastSync) params.since = this.lastSync;
       const r = await this._fetch(params);
       if (!r.success) { this.setStatus('🔴', '差分同期エラー'); return; }
-      const d = r.data;
+      const d = this._normalizeData(r.data);
       const mergeArray = (local, remote, key = 'id') => {
         if (!remote || !remote.length) return local;
         const map = {};
