@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════
 // ☁️ 整体院TAK クラウド同期モジュール (sync.js)
-// v10-cloud-fix1  2026-04-30  pullAll/pullDelta品質チェック追加
+// v10-cloud-fix2  2026-04-30  品質チェック + customers.no文字列正規化
 // ═══════════════════════════════════════
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbz36Tm_LTciGrvO8VI09S_pVVT3SKme2-hcoN5pTUKE4K_u1bZXi3p__xMQIiA5V_hV/exec';
@@ -44,6 +44,8 @@ class SyncManager {
         if (c.lastVisit && c.lastVisit.includes('T')) c.lastVisit = c.lastVisit.slice(0, 10);
         if (c.birth && c.birth.includes('T')) c.birth = c.birth.slice(0, 10);
         if (c.visitCount !== undefined) c.visitCount = Number(c.visitCount) || 0;
+        // noフィールドを文字列に正規化（数値だとfilterBussanCustomers等でエラー）
+        if (c.no !== undefined && c.no !== null && typeof c.no !== 'string') c.no = String(c.no);
       });
     }
     // products: numeric fields
