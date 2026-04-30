@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════
 // ☁️ 整体院TAK クラウド同期モジュール (sync.js)
-// v10-cloud  2026-04-26
+// v10-cloud-fix1  2026-04-30  pullAll/pullDelta品質チェック追加
 // ═══════════════════════════════════════
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbz36Tm_LTciGrvO8VI09S_pVVT3SKme2-hcoN5pTUKE4K_u1bZXi3p__xMQIiA5V_hV/exec';
@@ -91,6 +91,38 @@ class SyncManager {
     return d;
   }
 
+  // クラウドデータの品質チェック（壊れたデータでローカルを上書きしない）
+  _validateCloudData(sheetName, cloudData, localData) {
+    if (!cloudData || !cloudData.length) return false; // クラウドが空→スキップ
+    if (!localData || !localData.length) return true;  // ローカルが空→クラウド採用
+
+    // history: menuが全て空ならクラウドデータは壊れている
+    if (sheetName === 'history') {
+      const validMenu = cloudData.filter(h => h.menu && h.menu !== '').length;
+      if (validMenu === 0) {
+        console.warn('[SyncManager] history: クラウドデータのmenuが全て空 → ローカルを保持');
+        return false;
+      }
+      // menuが50%以下なら警告（部分的に壊れている可能性）
+      const ratio = validMenu / cloudData.length;
+      if (ratio < 0.5) {
+        console.warn(`[SyncManager] history: クラウドデータのmenu有効率が低い (${(ratio*100).toFixed(1)}%) → ローカルを保持`);
+        return false;
+      }
+    }
+
+    // customers: nameが全て空ならクラウドデータは壊れている
+    if (sheetName === 'customers') {
+      const validName = cloudData.filter(c => c.name && c.name !== '').length;
+      if (validName === 0) {
+        console.warn('[SyncManager] customers: クラウドデータのnameが全て空 → ローカルを保持');
+        return false;
+      }
+    }
+
+    return true; // 品質OK
+  }
+
   _savePending() {
     localStorage.setItem('tak_pendingSync', JSON.stringify(this.pendingQueue));
   }
@@ -136,9 +168,9 @@ class SyncManager {
       const r = await this._fetch({ action: 'pull' });
       if (!r.success) { this.setStatus('🔴', '同期エラー: ' + (r.error || '')); return false; }
       const d = this._normalizeData(r.data);
-      // クラウドにデータがあればlocalStorageを更新
-      if (d.customers && d.customers.length) { customers = d.customers; localStorage.setItem('tak_customers', JSON.stringify(customers)); }
-      if (d.history && d.history.length) { history = d.history; localStorage.setItem('tak_history', JSON.stringify(history)); }
+      // クラウドにデータがあり、品質チェックOKならlocalStorageを更新
+      if (this._validateCloudData('customers', d.customers, customers)) { customers = d.customers; localStorage.setItem('tak_customers', JSON.stringify(customers)); }
+      if (this._validateCloudData('history', d.history, history)) { history = d.history; localStorage.setItem('tak_history', JSON.stringify(history)); }
       if (d.products && d.products.length) { products = d.products; localStorage.setItem('tak_products', JSON.stringify(products)); }
       if (d.bussan_sales && d.bussan_sales.length) { bussanSales = d.bussan_sales; localStorage.setItem('tak_bussan_sales', JSON.stringify(bussanSales)); }
       if (d.cashbook && d.cashbook.length) { cashbook = d.cashbook; localStorage.setItem('tak_cashbook', JSON.stringify(cashbook)); }
@@ -184,8 +216,9 @@ class SyncManager {
         });
         return Object.values(map);
       };
-      if (d.customers && d.customers.length) { customers = mergeArray(customers, d.customers); localStorage.setItem('tak_customers', JSON.stringify(customers)); }
-      if (d.history && d.history.length) { history = mergeArray(history, d.history); localStorage.setItem('tak_history', JSON.stringify(history)); }
+      // 品質チェック付きマージ
+      if (this._validateCloudData('customers', d.customers, customers)) { customers = mergeArray(customers, d.customers); localStorage.setItem('tak_customers', JSON.stringify(customers)); }
+      if (this._validateCloudData('history', d.history, history)) { history = mergeArray(history, d.history); localStorage.setItem('tak_history', JSON.stringify(history)); }
       if (d.products && d.products.length) { products = mergeArray(products, d.products); localStorage.setItem('tak_products', JSON.stringify(products)); }
       if (d.bussan_sales && d.bussan_sales.length) { bussanSales = mergeArray(bussanSales, d.bussan_sales); localStorage.setItem('tak_bussan_sales', JSON.stringify(bussanSales)); }
       if (d.cashbook && d.cashbook.length) { cashbook = mergeArray(cashbook, d.cashbook); localStorage.setItem('tak_cashbook', JSON.stringify(cashbook)); }
