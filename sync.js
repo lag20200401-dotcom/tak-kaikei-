@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════
 // ☁️ 整体院TAK クラウド同期モジュール (sync.js)
-// v10-cloud-fix2  2026-04-30  品質チェック + customers.no文字列正規化
+// v10-cloud-fix3  2026-05-01  レコード単位の品質チェック + mergeArray壊れデータ拒否
 // ═══════════════════════════════════════
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbz36Tm_LTciGrvO8VI09S_pVVT3SKme2-hcoN5pTUKE4K_u1bZXi3p__xMQIiA5V_hV/exec';
@@ -93,36 +93,99 @@ class SyncManager {
     return d;
   }
 
-  // クラウドデータの品質チェック（壊れたデータでローカルを上書きしない）
+  // 【fix3】レコード単位の必須フィールド定義
+  _requiredFields(sheetName) {
+    const map = {
+      history: ['menu'],     // historyはmenuが必須（pay経由ticket消費でも空はNG）
+      customers: ['name'],
+      products: ['name'],
+      tickets: ['customerId'],
+      subscriptions: ['customerId']
+    };
+    return map[sheetName] || [];
+  }
+
+  // 【fix3】個々のレコードが「壊れているか」判定
+  _isRecordBroken(sheetName, record) {
+    const required = this._requiredFields(sheetName);
+    if (!required.length) return false;
+    return required.some(f => !record[f] || record[f] === '');
+  }
+
+  // 【fix3】全体品質チェック（pullAll用）— 厳格化
   _validateCloudData(sheetName, cloudData, localData) {
     if (!cloudData || !cloudData.length) return false; // クラウドが空→スキップ
     if (!localData || !localData.length) return true;  // ローカルが空→クラウド採用
 
-    // history: menuが全て空ならクラウドデータは壊れている
-    if (sheetName === 'history') {
-      const validMenu = cloudData.filter(h => h.menu && h.menu !== '').length;
-      if (validMenu === 0) {
-        console.warn('[SyncManager] history: クラウドデータのmenuが全て空 → ローカルを保持');
-        return false;
-      }
-      // menuが50%以下なら警告（部分的に壊れている可能性）
-      const ratio = validMenu / cloudData.length;
-      if (ratio < 0.5) {
-        console.warn(`[SyncManager] history: クラウドデータのmenu有効率が低い (${(ratio*100).toFixed(1)}%) → ローカルを保持`);
-        return false;
-      }
+    const required = this._requiredFields(sheetName);
+    if (!required.length) return true;
+
+    const validCount = cloudData.filter(r => !this._isRecordBroken(sheetName, r)).length;
+    const localValidCount = localData.filter(r => !this._isRecordBroken(sheetName, r)).length;
+    const cloudRatio = validCount / cloudData.length;
+    const localRatio = localValidCount / localData.length;
+
+    // 【fix3】絶対基準: クラウドの有効率が90%未満なら拒否
+    if (cloudRatio < 0.9) {
+      console.warn(`[SyncManager] ${sheetName}: クラウド有効率が低い (${(cloudRatio*100).toFixed(1)}% / 必須:${required.join(',')}) → ローカル保持`);
+      return false;
     }
 
-    // customers: nameが全て空ならクラウドデータは壊れている
-    if (sheetName === 'customers') {
-      const validName = cloudData.filter(c => c.name && c.name !== '').length;
-      if (validName === 0) {
-        console.warn('[SyncManager] customers: クラウドデータのnameが全て空 → ローカルを保持');
-        return false;
-      }
+    // 【fix3】相対基準: ローカルより5%以上劣化していれば拒否
+    if (cloudRatio < localRatio - 0.05) {
+      console.warn(`[SyncManager] ${sheetName}: クラウド有効率がローカルより劣化 (cloud:${(cloudRatio*100).toFixed(1)}% < local:${(localRatio*100).toFixed(1)}%) → ローカル保持`);
+      return false;
+    }
+
+    // 【fix3】絶対基準: クラウド件数がローカルより著しく少ない場合も拒否（誤削除対策）
+    if (cloudData.length < localData.length * 0.8) {
+      console.warn(`[SyncManager] ${sheetName}: クラウド件数が少ない (cloud:${cloudData.length} < local:${localData.length}×0.8) → ローカル保持`);
+      return false;
     }
 
     return true; // 品質OK
+  }
+
+  // 【fix3】mergeArray を SyncManager のメソッド化＋レコード単位の品質チェック内蔵
+  _mergeArray(sheetName, local, remote, key = 'id') {
+    if (!remote || !remote.length) return local;
+    const map = {};
+    local.forEach(r => { if (r[key]) map[r[key]] = r; });
+
+    let rejected = 0;
+    let updated = 0;
+    let added = 0;
+
+    remote.forEach(r => {
+      if (!r[key]) return;
+      const existing = map[r[key]];
+      const remoteBroken = this._isRecordBroken(sheetName, r);
+      const localBroken = existing ? this._isRecordBroken(sheetName, existing) : true;
+
+      // 【fix3 核心】リモートが壊れていてローカルが正常なら、絶対に上書きしない
+      if (remoteBroken && !localBroken) {
+        rejected++;
+        return;
+      }
+
+      // 既存なし → 追加（壊れててもローカルに無いなら入れる。後でpush/手動修正可能）
+      if (!existing) {
+        map[r[key]] = r;
+        added++;
+        return;
+      }
+
+      // 通常のupdatedAt比較
+      if (!existing.updatedAt || (r.updatedAt && r.updatedAt > existing.updatedAt)) {
+        map[r[key]] = r;
+        updated++;
+      }
+    });
+
+    if (rejected > 0 || updated > 0 || added > 0) {
+      console.log(`[SyncManager] _mergeArray ${sheetName}: 追加${added} / 更新${updated} / 拒否${rejected}`);
+    }
+    return Object.values(map);
   }
 
   _savePending() {
@@ -173,7 +236,7 @@ class SyncManager {
       // クラウドにデータがあり、品質チェックOKならlocalStorageを更新
       if (this._validateCloudData('customers', d.customers, customers)) { customers = d.customers; localStorage.setItem('tak_customers', JSON.stringify(customers)); }
       if (this._validateCloudData('history', d.history, history)) { history = d.history; localStorage.setItem('tak_history', JSON.stringify(history)); }
-      if (d.products && d.products.length) { products = d.products; localStorage.setItem('tak_products', JSON.stringify(products)); }
+      if (d.products && d.products.length && this._validateCloudData('products', d.products, products)) { products = d.products; localStorage.setItem('tak_products', JSON.stringify(products)); }
       if (d.bussan_sales && d.bussan_sales.length) { bussanSales = d.bussan_sales; localStorage.setItem('tak_bussan_sales', JSON.stringify(bussanSales)); }
       if (d.cashbook && d.cashbook.length) { cashbook = d.cashbook; localStorage.setItem('tak_cashbook', JSON.stringify(cashbook)); }
       if (d.cashbook_carryover && Object.keys(d.cashbook_carryover).length) { cashbookCarryover = d.cashbook_carryover; localStorage.setItem('tak_cashbook_carryover', JSON.stringify(cashbookCarryover)); }
@@ -205,29 +268,18 @@ class SyncManager {
       const r = await this._fetch(params);
       if (!r.success) { this.setStatus('🔴', '差分同期エラー'); return; }
       const d = this._normalizeData(r.data);
-      const mergeArray = (local, remote, key = 'id') => {
-        if (!remote || !remote.length) return local;
-        const map = {};
-        local.forEach(r => { if (r[key]) map[r[key]] = r; });
-        remote.forEach(r => {
-          if (!r[key]) return;
-          const existing = map[r[key]];
-          if (!existing || !existing.updatedAt || (r.updatedAt && r.updatedAt > existing.updatedAt)) {
-            map[r[key]] = r;
-          }
-        });
-        return Object.values(map);
-      };
-      // 品質チェック付きマージ
-      if (this._validateCloudData('customers', d.customers, customers)) { customers = mergeArray(customers, d.customers); localStorage.setItem('tak_customers', JSON.stringify(customers)); }
-      if (this._validateCloudData('history', d.history, history)) { history = mergeArray(history, d.history); localStorage.setItem('tak_history', JSON.stringify(history)); }
-      if (d.products && d.products.length) { products = mergeArray(products, d.products); localStorage.setItem('tak_products', JSON.stringify(products)); }
-      if (d.bussan_sales && d.bussan_sales.length) { bussanSales = mergeArray(bussanSales, d.bussan_sales); localStorage.setItem('tak_bussan_sales', JSON.stringify(bussanSales)); }
-      if (d.cashbook && d.cashbook.length) { cashbook = mergeArray(cashbook, d.cashbook); localStorage.setItem('tak_cashbook', JSON.stringify(cashbook)); }
+
+      // 【fix3】mergeArray は this._mergeArray に置き換え（レコード単位の品質チェック内蔵）
+      // historyは特に重要：壊れたリモートレコードはマージ拒否
+      if (d.customers && d.customers.length) { customers = this._mergeArray('customers', customers, d.customers); localStorage.setItem('tak_customers', JSON.stringify(customers)); }
+      if (d.history && d.history.length) { history = this._mergeArray('history', history, d.history); localStorage.setItem('tak_history', JSON.stringify(history)); }
+      if (d.products && d.products.length) { products = this._mergeArray('products', products, d.products); localStorage.setItem('tak_products', JSON.stringify(products)); }
+      if (d.bussan_sales && d.bussan_sales.length) { bussanSales = this._mergeArray('bussan_sales', bussanSales, d.bussan_sales); localStorage.setItem('tak_bussan_sales', JSON.stringify(bussanSales)); }
+      if (d.cashbook && d.cashbook.length) { cashbook = this._mergeArray('cashbook', cashbook, d.cashbook); localStorage.setItem('tak_cashbook', JSON.stringify(cashbook)); }
       if (d.cashbook_carryover && Object.keys(d.cashbook_carryover).length) { Object.assign(cashbookCarryover, d.cashbook_carryover); localStorage.setItem('tak_cashbook_carryover', JSON.stringify(cashbookCarryover)); }
-      if (d.subscriptions && d.subscriptions.length) { subscriptions = mergeArray(subscriptions, d.subscriptions); localStorage.setItem('tak_subscriptions', JSON.stringify(subscriptions)); }
-      if (d.tickets && d.tickets.length) { tickets = mergeArray(tickets, d.tickets); localStorage.setItem('tak_tickets', JSON.stringify(tickets)); }
-      if (d.km_customers && d.km_customers.length) { kmCustomers = mergeArray(kmCustomers, d.km_customers, 'no'); localStorage.setItem('tak_km_customers', JSON.stringify(kmCustomers)); }
+      if (d.subscriptions && d.subscriptions.length) { subscriptions = this._mergeArray('subscriptions', subscriptions, d.subscriptions); localStorage.setItem('tak_subscriptions', JSON.stringify(subscriptions)); }
+      if (d.tickets && d.tickets.length) { tickets = this._mergeArray('tickets', tickets, d.tickets); localStorage.setItem('tak_tickets', JSON.stringify(tickets)); }
+      if (d.km_customers && d.km_customers.length) { kmCustomers = this._mergeArray('km_customers', kmCustomers, d.km_customers, 'no'); localStorage.setItem('tak_km_customers', JSON.stringify(kmCustomers)); }
 
       this.lastSync = r.timestamp || new Date().toISOString();
       localStorage.setItem('tak_lastSync', this.lastSync);
